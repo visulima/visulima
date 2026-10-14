@@ -1,6 +1,6 @@
 {
     "name": "@visulima/disposable-email-domains",
-    "version": "1.1.17",
+    "version": "1.1.25",
     "description": "A regularly updated list of disposable and temporary email domains.",
     "keywords": [
         "disposable-email",
@@ -34,7 +34,9 @@
         "name": "Daniel Bannert",
         "email": "d.bannert@anolilab.de"
     },
-    "sideEffects": false,
+    "sideEffects": [
+        "./dist/edge.js"
+    ],
     "type": "module",
     "exports": {
         ".": {
@@ -44,6 +46,10 @@
         "./domains": {
             "types": "./dist/domains.d.ts",
             "default": "./dist/domains.js"
+        },
+        "./edge": {
+            "types": "./dist/edge.d.ts",
+            "default": "./dist/edge.js"
         },
         "./package.json": "./package.json"
     },
@@ -89,6 +95,7 @@
         "esbuild": "catalog:build",
         "eslint": "catalog:lint",
         "fallow": "catalog:lint",
+        "miniflare": "catalog:test",
         "prettier": "catalog:lint",
         "publint": "catalog:dev",
         "rimraf": "catalog:node",

@@ -10,7 +10,7 @@ import {
 import createHttpError from "http-errors";
 
 import type { UploadFile } from "../../storage/utils/file";
-import { getIdFromRequest } from "../../utils/http";
+import { drainAbandonedBody, getIdFromRequest } from "../../utils/http";
 import ValidationError from "../../utils/validation-error";
 import BaseHandlerNode from "../base/base-handler-node";
 import type { Handlers, ResponseFile, UploadOptions } from "../types";
@@ -81,6 +81,10 @@ class Multipart<
 
             return this.multipartBase.handlePost(filePart, parts, this.locationOf(request));
         } catch (error) {
+            // The parser stops reading wherever it failed and leaves the body paused: drain the rest so
+            // the client reads the error response. A no-op once the body was read to its end.
+            drainAbandonedBody(request);
+
             if (error instanceof MaxFileSizeExceededError || error instanceof MaxTotalSizeExceededError || error instanceof MaxPartsExceededError) {
                 throw createHttpError(413, "File size limit exceeded");
             }

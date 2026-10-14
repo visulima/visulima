@@ -137,6 +137,24 @@ Providers are imported from `@visulima/notification/providers/<name>` so unused 
 > pieces are **APNs** (`node:http2`) and the **bullmq / pg-boss / sqs** queue adapters — import those from a Node runtime.
 > See the [runtime matrix](https://visulima.com/docs/packages/notification/installation#runtime-support).
 
+### Push delivery hints
+
+A push payload can carry per-message `ttl` (seconds, non-negative integer) and `urgency`
+(`"very-low" | "low" | "normal" | "high"`), overriding the provider's configured defaults:
+
+```ts
+await notify.send({ push: { to: subscription, title: "Approval needed", body: "…", urgency: "high", ttl: 3600 } });
+```
+
+| Provider   | `ttl`             | `urgency`                                              |
+| ---------- | ----------------- | ------------------------------------------------------ |
+| `web-push` | `TTL` header      | `Urgency` header (falls back to config, then `normal`) |
+| `fcm`      | `android.ttl`     | `android.priority` (`high` → high, else normal)        |
+| `apns`     | `apns-expiration` | `apns-priority` (`high` → 10, `low`/`very-low` → 5)    |
+| `expo`     | `ttl`             | `priority` (`high` → high, `low`/`very-low` → normal)  |
+
+An invalid `ttl` fails the send with a `NotificationError` before any request is made.
+
 ## Writing a provider
 
 Every provider implements the same contract; author one with `defineProvider`:

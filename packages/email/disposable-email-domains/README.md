@@ -52,28 +52,28 @@ pnpm add @visulima/disposable-email-domains
 
 <!-- START_PLACEHOLDER_CONTRIBUTING -->
 
-| Repository | Domains | Success | Performance |
-|------------|---------|---------|-------------|
-| disposable/disposable-email-domains | 98,982 | ✅ | 0.36s (1.5 MB) |
-| willwhite/freemail | 88,162 | ✅ | 0.41s (1.3 MB) |
-| FGRibreau/mailchecker | 56,513 | ✅ | 0.23s (848.5 KB) |
-| wesbos/burner-email-providers | 27,277 | ✅ | 0.11s (388.0 KB) |
-| groundcat/disposable-email-domain-list | 24,316 | ✅ | 0.44s (371.6 KB) |
-| 7c/fakefilter | 10,546 | ✅ | 0.09s (145.1 KB) |
-| sublime-security/static-files | 10,522 | ✅ | 0.23s (144.0 KB) |
-| disposable-email-domains/disposable-email-domains | 9,205 | ✅ | 0.11s (127.3 KB) |
-| eser/sanitizer-svc | 3,855 | ✅ | 0.17s (48.9 KB) |
-| unkn0w/disposable-email-domain-list | 3,616 | ✅ | 0.27s (45.7 KB) |
-| MattKetmo/EmailChecker | 2,515 | ✅ | 0.29s (32.4 KB) |
-| GeroldSetz/emailondeck.com-domains | 1,121 | ✅ | 0.14s (15.4 KB) |
-| castle/disposable-email-domains | 1,000 | ✅ | 0.01s (13.3 KB) |
-| jespernissen/disposable-maildomain-list | 983 | ✅ | 0.10s (12.7 KB) |
-| TheDahoom/disposable-email | 18 | ✅ | 0.21s (234 B) |
+| Repository                                        | Domains | Success | Performance      |
+| ------------------------------------------------- | ------- | ------- | ---------------- |
+| disposable/disposable-email-domains               | 98,530  | ✅      | 0.42s (1.5 MB)   |
+| willwhite/freemail                                | 88,162  | ✅      | 0.32s (1.3 MB)   |
+| FGRibreau/mailchecker                             | 56,512  | ✅      | 0.27s (848.5 KB) |
+| wesbos/burner-email-providers                     | 27,277  | ✅      | 0.21s (388.0 KB) |
+| groundcat/disposable-email-domain-list            | 21,453  | ✅      | 0.04s (329.4 KB) |
+| 7c/fakefilter                                     | 10,630  | ✅      | 0.02s (146.1 KB) |
+| sublime-security/static-files                     | 10,522  | ✅      | 0.11s (144.0 KB) |
+| disposable-email-domains/disposable-email-domains | 9,881   | ✅      | 0.13s (139.6 KB) |
+| eser/sanitizer-svc                                | 3,855   | ✅      | 0.19s (48.9 KB)  |
+| unkn0w/disposable-email-domain-list               | 3,616   | ✅      | 0.01s (45.7 KB)  |
+| MattKetmo/EmailChecker                            | 2,515   | ✅      | 0.14s (32.4 KB)  |
+| GeroldSetz/emailondeck.com-domains                | 1,121   | ✅      | 0.18s (15.4 KB)  |
+| castle/disposable-email-domains                   | 1,000   | ✅      | 0.11s (13.1 KB)  |
+| jespernissen/disposable-maildomain-list           | 982     | ✅      | 0.12s (12.6 KB)  |
+| TheDahoom/disposable-email                        | 18      | ✅      | 1.20s (234 B)    |
 
 <!-- END_PLACEHOLDER_CONTRIBUTING -->
 <!-- START_PLACEHOLDER_LAST_UPDATED -->
 
-_Last updated: 2026-10-07_
+_Last updated: 2026-10-14_
 
 <!-- END_PLACEHOLDER_LAST_UPDATED -->
 
@@ -161,11 +161,23 @@ extractDomain("User@Example.COM"); // "example.com"
 
 ### Edge / browser / bundled runtimes
 
-By default the package reads `dist/domains.json` from disk via `node:fs`. That does not work in Cloudflare Workers, Next.js middleware/edge, Deno, or bundles that relocate `index.js` away from the data file. For those environments, import the list statically and inject it once at startup with `setDomains`:
+For Cloudflare Workers, Next.js middleware/edge and other bundles, import from the `/edge` subpath. It exports the same API as the main entry, but ships the list inside your bundle and registers it for you, so there is no filesystem access and no `setDomains` call:
+
+```typescript
+import { isDisposableEmail } from "@visulima/disposable-email-domains/edge";
+
+isDisposableEmail("user@mailinator.com"); // true, no setup
+```
+
+The list is about 2.8 MB (about 0.9 MB gzipped) of your bundle and cannot be tree-shaken, which is why it is a separate entry: use `/edge` only where you need it, and use the main entry with `setDomains` if you supply your own list.
+
+**Using the main entry instead?** By default the package reads `dist/domains.json` from disk via `node:fs`, the first time a lookup needs it. That is not possible in Cloudflare Workers, Next.js middleware/edge, or bundles that relocate `index.js` away from the data file, and in Deno it needs `process.getBuiltinModule`, `import.meta.url` and read permission for the data file. Importing the package is safe everywhere, but when the loader cannot read the list nothing matches the built-in list (only `customDomains` you pass per call still match) and a single warning is logged.
+
+Inject the list once at startup with `setDomains` and, since disposable detection is often a signup gate, call `assertListLoaded()` at startup so a missed or failed load throws instead of failing open (`isListLoaded()` is the non-throwing check):
 
 ```typescript
 import { setDomains, isDisposableEmail } from "@visulima/disposable-email-domains";
-import domains from "@visulima/disposable-email-domains/domains" with { type: "json" };
+import domains from "@visulima/disposable-email-domains/domains";
 
 setDomains(domains);
 
@@ -186,10 +198,10 @@ if (!isListLoaded()) {
 
 ### Raw domain list (`./domains`)
 
-The raw, sorted array of disposable domains is exported from the `./domains` subpath. In Node ESM you must use a JSON import attribute:
+The raw, sorted array of disposable domains is the default export of the `./domains` subpath. It is a plain ES module, so no JSON import attribute is needed:
 
 ```typescript
-import domains from "@visulima/disposable-email-domains/domains" with { type: "json" };
+import domains from "@visulima/disposable-email-domains/domains";
 
 console.log(domains.length); // number of disposable domains
 ```

@@ -16,13 +16,16 @@ import type { PerPackageReleaseConfig, VisReleaseConfig } from "../types";
 /**
  * RFC §19.4 / npm package-name spec: lowercase ASCII letters, digits, dots,
  * underscores, hyphens; optional `@scope/` prefix; total length ≤ 214.
+ * Path-like names (Go module paths, Composer `vendor/package`) add `/`-separated
+ * segments of the same characters. Only the character set is checked here, so
+ * the names stay safe to pass as argv.
  *
  * Rejecting anything outside this set is the second trust gate for shell
  * interpolation (the first is `sq()`). Even the platform packages a NAPI
  * parent publishes get validated, on the assumption that a malicious
  * dependency could land a crafted directory under `npm/&lt;name>/`.
  */
-const VALID_PACKAGE_NAME = /^(?:@[a-z0-9-]{1,39}\/)?[a-z0-9._-]{1,214}$/;
+const VALID_PACKAGE_NAME = /^(?:@[a-z0-9-]{1,39}\/)?[a-z0-9._-]{1,214}(?:\/[a-z0-9._-]{1,214})*$/;
 
 export const isValidPackageName = (name: string): boolean => {
     if (typeof name !== "string" || name.length === 0 || name.length > 214) {
@@ -40,7 +43,7 @@ export const assertValidPackageName = (name: string): void => {
     if (!isValidPackageName(name)) {
         throw new VisReleaseError({
             code: "CONFIG_INVALID",
-            message: `Invalid package name: ${JSON.stringify(name)}. Must match ^(@scope/)?[a-z0-9._-]+$ and be ≤ 214 chars (npm spec).`,
+            message: `Invalid package name: ${JSON.stringify(name)}. Must match ^(@scope/)?[a-z0-9._-]+(/[a-z0-9._-]+)*$ and be ≤ 214 chars.`,
             packageName: typeof name === "string" ? name : undefined,
         });
     }

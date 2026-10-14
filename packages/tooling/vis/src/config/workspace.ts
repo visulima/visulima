@@ -1,5 +1,5 @@
 import { isAccessibleSync, readFileSync, readJsonSync, walkSync } from "@visulima/fs";
-import { join, resolve } from "@visulima/path";
+import { basename, join, resolve } from "@visulima/path";
 import type {
     DependencyType,
     InputDefinition,
@@ -15,10 +15,42 @@ import { parse as parseYaml } from "@visulima/yaml";
 
 import { VisUserError } from "../errors/vis-user-error";
 import { BUILT_IN_DETECTORS, inferProjectTargets } from "../inference";
+import { cargoDetector } from "../inference/detectors/cargo";
+import { composerDetector } from "../inference/detectors/composer";
+import { dartDetector } from "../inference/detectors/dart";
+import { gemDetector } from "../inference/detectors/gem";
+import { goDetector } from "../inference/detectors/go";
+import { gradleDetector } from "../inference/detectors/gradle";
+import { hexDetector } from "../inference/detectors/hex";
+import { mavenDetector } from "../inference/detectors/maven";
+import { nugetDetector } from "../inference/detectors/nuget";
+import { pythonDetector } from "../inference/detectors/python";
+import { swiftDetector } from "../inference/detectors/swift";
+import { zigDetector } from "../inference/detectors/zig";
+import type { Detector } from "../inference/types";
 import { mergeTargetWithInherit } from "../task/target-merge";
 import type { VisTargetConfiguration } from "../task/target-options";
 import { applyPreset, defaultCacheForType } from "../task/target-options";
 import { buildGitignoreMatcher } from "../util/gitignore-matcher";
+import { readZigManifestName } from "../util/zig-manifest";
+import {
+    buildCargoFileOwners,
+    collectCargoPathDependencies,
+    findOwningProject,
+    isProjectCandidate,
+    readCargoPackageName,
+    resolveCargoProjectDirectories,
+} from "./cargo-projects";
+import { resolveComposerProjectDirectories } from "./composer-projects";
+import { resolveDartProjectDirectories } from "./dart-projects";
+import { resolveGemProjectDirectories } from "./gem-projects";
+import { resolveGoProjectDirectories } from "./go-projects";
+import { resolveGradleProjectDirectories } from "./gradle-projects";
+import { resolveHexProjectDirectories } from "./hex-projects";
+import { readMavenProjectArtifact, resolveMavenProjectDirectories } from "./maven-projects";
+import { resolveNuGetProjectDirectories } from "./nuget-projects";
+import { readPythonProjectName, resolvePythonProjectDirectories } from "./python-projects";
+import { readSwiftProjectName, resolveSwiftProjectDirectories } from "./swift-projects";
 import type {
     PackageJson,
     PackageJsonIndex,
@@ -29,6 +61,7 @@ import type {
     VisProjectConfiguration,
     VisTaskConfigIndex,
 } from "./types";
+import { resolveZigProjectDirectories } from "./zig-projects";
 
 const TRAILING_SLASH_RE = /\/+$/;
 const DOUBLE_GLOB_SUFFIX_RE = /\/\*\*$/;
@@ -36,6 +69,9 @@ const NESTED_GLOB_SUFFIX_RE = /\/\*\/\*$/;
 const QUOTES_RE = /^['"]|['"]$/g;
 const NODE_MODULES_RE = /node_modules/;
 const DOT_GIT_RE = /\.git/;
+
+/** Default project-directory test for workspace globs: the package manager's own rule. */
+const hasPackageJson = (directory: string): boolean => isAccessibleSync(join(directory, "package.json"));
 
 /**
  * Reads and parses a JSON file, returning undefined on failure.
@@ -52,13 +88,13 @@ const readJsonFileSafe = <T>(filePath: string): T | undefined => {
 /**
  * Recursively scans a directory for packages (directories containing package.json).
  */
-const scanDirectoryRecursive = (baseDirectory: string, base: string, results: string[]): void => {
+const scanDirectoryRecursive = (baseDirectory: string, base: string, results: string[], isProjectDirectory: (directory: string) => boolean): void => {
     for (const entry of walkSync(baseDirectory, { includeFiles: false, includeSymlinks: false, skip: [NODE_MODULES_RE, DOT_GIT_RE] })) {
         if (entry.path === baseDirectory) {
             continue;
         }
 
-        if (isAccessibleSync(join(entry.path, "package.json"))) {
+        if (isProjectDirectory(entry.path)) {
             const relativePath = entry.path.slice(baseDirectory.length + 1);
 
             results.push(`${base}/${relativePath}`);
@@ -69,7 +105,7 @@ const scanDirectoryRecursive = (baseDirectory: string, base: string, results: st
 /**
  * Resolves a simple glob pattern like "packages/*" to directories containing package.json.
  */
-const resolveSimpleGlob = (workspaceRoot: string, cleanPattern: string, results: string[]): void => {
+const resolveSimpleGlob = (workspaceRoot: string, cleanPattern: string, results: string[], isProjectDirectory: (directory: string) => boolean): void => {
     const base = cleanPattern.slice(0, -2);
     const baseDirectory = resolve(workspaceRoot, base);
 
@@ -82,7 +118,7 @@ const resolveSimpleGlob = (workspaceRoot: string, cleanPattern: string, results:
             continue;
         }
 
-        if (isAccessibleSync(join(entry.path, "package.json"))) {
+        if (isProjectDirectory(entry.path)) {
             results.push(join(base, entry.name));
         }
     }
@@ -91,7 +127,7 @@ const resolveSimpleGlob = (workspaceRoot: string, cleanPattern: string, results:
 /**
  * Resolves a double glob pattern like "packages/**" or "packages/ * / *" to directories containing package.json.
  */
-const resolveDoubleGlob = (workspaceRoot: string, cleanPattern: string, results: string[]): void => {
+const resolveDoubleGlob = (workspaceRoot: string, cleanPattern: string, results: string[], isProjectDirectory: (directory: string) => boolean): void => {
     const base = cleanPattern.replace(DOUBLE_GLOB_SUFFIX_RE, "").replace(NESTED_GLOB_SUFFIX_RE, "");
     const baseDirectory = resolve(workspaceRoot, base);
 
@@ -99,16 +135,16 @@ const resolveDoubleGlob = (workspaceRoot: string, cleanPattern: string, results:
         return;
     }
 
-    scanDirectoryRecursive(baseDirectory, base, results);
+    scanDirectoryRecursive(baseDirectory, base, results, isProjectDirectory);
 };
 
 /**
  * Resolves an exact directory pattern.
  */
-const resolveExactDirectory = (workspaceRoot: string, cleanPattern: string, results: string[]): void => {
+const resolveExactDirectory = (workspaceRoot: string, cleanPattern: string, results: string[], isProjectDirectory: (directory: string) => boolean): void => {
     const fullPath = resolve(workspaceRoot, cleanPattern);
 
-    if (isAccessibleSync(fullPath) && isAccessibleSync(join(fullPath, "package.json"))) {
+    if (isAccessibleSync(fullPath) && isProjectDirectory(fullPath)) {
         results.push(cleanPattern);
     }
 };
@@ -120,7 +156,7 @@ const REGEX_SPECIALS_RE = /[$()+.?[\\\]^{|}]/g;
  * shortcuts for "scope-prefixed children of the workspace root". `*` is
  * the only meta-character supported; everything else is escaped.
  */
-const resolveBareGlob = (workspaceRoot: string, cleanPattern: string, results: string[]): void => {
+const resolveBareGlob = (workspaceRoot: string, cleanPattern: string, results: string[], isProjectDirectory: (directory: string) => boolean): void => {
     const escaped = cleanPattern.replaceAll(REGEX_SPECIALS_RE, String.raw`\$&`).replaceAll("*", ".*");
     const regex = new RegExp(`^${escaped}$`);
 
@@ -129,7 +165,7 @@ const resolveBareGlob = (workspaceRoot: string, cleanPattern: string, results: s
             continue;
         }
 
-        if (regex.test(entry.name) && isAccessibleSync(join(entry.path, "package.json"))) {
+        if (regex.test(entry.name) && isProjectDirectory(entry.path)) {
             results.push(entry.name);
         }
     }
@@ -145,8 +181,11 @@ const resolveBareGlob = (workspaceRoot: string, cleanPattern: string, results: s
  * The workspace root's `.gitignore` is also applied so packages living
  * inside ignored directories (generated apps, scratch checkouts) don't
  * sneak into update / outdated runs.
+ *
+ * `isProjectDirectory` decides which matched directories count; it
+ * defaults to "has a package.json", the package manager's own rule.
  */
-const resolveWorkspacePatterns = (workspaceRoot: string, patterns: string[]): string[] => {
+const resolveWorkspacePatterns = (workspaceRoot: string, patterns: string[], isProjectDirectory: (directory: string) => boolean = hasPackageJson): string[] => {
     const positives: string[] = [];
     const negatives: string[] = [];
 
@@ -178,13 +217,13 @@ const resolveWorkspacePatterns = (workspaceRoot: string, patterns: string[]): st
 
     for (const cleanPattern of positives) {
         if (cleanPattern.endsWith("/**") || cleanPattern.endsWith("/*/*")) {
-            resolveDoubleGlob(workspaceRoot, cleanPattern, directories);
+            resolveDoubleGlob(workspaceRoot, cleanPattern, directories, isProjectDirectory);
         } else if (cleanPattern.endsWith("/*")) {
-            resolveSimpleGlob(workspaceRoot, cleanPattern, directories);
+            resolveSimpleGlob(workspaceRoot, cleanPattern, directories, isProjectDirectory);
         } else if (!cleanPattern.includes("/") && cleanPattern.includes("*")) {
-            resolveBareGlob(workspaceRoot, cleanPattern, directories);
+            resolveBareGlob(workspaceRoot, cleanPattern, directories, isProjectDirectory);
         } else {
-            resolveExactDirectory(workspaceRoot, cleanPattern, directories);
+            resolveExactDirectory(workspaceRoot, cleanPattern, directories, isProjectDirectory);
         }
     }
 
@@ -195,6 +234,169 @@ const resolveWorkspacePatterns = (workspaceRoot: string, patterns: string[]): st
     const matcher = buildGitignoreMatcher({ cwd: workspaceRoot, extraPatterns: negatives });
 
     return matcher.filterDirectories(directories);
+};
+
+/**
+ * Resolves every project directory of the workspace: the package.json
+ * directories the package manager sees, followed by Cargo crates and
+ * `project.json`-only directories (see `./cargo-projects`). The second
+ * group is returned separately so callers know those have no package.json.
+ */
+interface NonJsOptions {
+    composerProjects: boolean;
+    dartProjects: boolean;
+    gemProjects: boolean;
+    goProjects: boolean;
+    gradleProjects: boolean;
+    hexProjects: boolean;
+    mavenProjects: boolean;
+    nugetProjects: boolean;
+    pythonProjects: boolean;
+    swiftProjects: boolean;
+    zigProjects: boolean;
+}
+
+/**
+ * The non-JS ecosystems vis discovers as task projects. Discovery runs in this
+ * order, and each one claims the directories it returns, so a later ecosystem
+ * never sees a directory an earlier one kept. A directory's ecosystem is the one
+ * whose resolver returned it.
+ */
+interface NonJsEcosystem {
+    detector: Detector;
+    enabled: (options: NonJsOptions) => boolean;
+    id: "cargo" | "composer" | "dart" | "gem" | "go" | "gradle" | "hex" | "maven" | "nuget" | "python" | "swift" | "zig";
+    /** The project name the manifest declares, or undefined to fall back to the directory name. */
+    readName: (projectRoot: string) => string | undefined;
+    resolve: (workspaceRoot: string, candidates: string[], claimed: string[]) => string[];
+}
+
+const NON_JS_ECOSYSTEMS: ReadonlyArray<NonJsEcosystem> = [
+    {
+        detector: cargoDetector,
+        enabled: () => true,
+        id: "cargo",
+        readName: readCargoPackageName,
+        resolve: (workspaceRoot, candidates, claimed) => resolveCargoProjectDirectories(workspaceRoot, candidates, claimed),
+    },
+    {
+        detector: pythonDetector,
+        enabled: (options) => options.pythonProjects,
+        id: "python",
+        readName: readPythonProjectName,
+        resolve: (workspaceRoot, candidates, claimed) => resolvePythonProjectDirectories(workspaceRoot, candidates, claimed),
+    },
+    {
+        detector: mavenDetector,
+        enabled: (options) => options.mavenProjects,
+        id: "maven",
+        readName: readMavenProjectArtifact,
+        resolve: (workspaceRoot, candidates, claimed) => resolveMavenProjectDirectories(workspaceRoot, candidates, claimed),
+    },
+    {
+        // Go modules come from the `use` entries of go.work, not the workspace patterns.
+        detector: goDetector,
+        enabled: (options) => options.goProjects,
+        id: "go",
+        readName: () => undefined,
+        resolve: (workspaceRoot, _candidates, claimed) => resolveGoProjectDirectories(workspaceRoot, claimed),
+    },
+    {
+        // Gradle modules come from settings.gradle(.kts), not the workspace patterns, so
+        // the candidates are not used; the name falls back to the directory.
+        detector: gradleDetector,
+        enabled: (options) => options.gradleProjects,
+        id: "gradle",
+        readName: () => undefined,
+        resolve: (workspaceRoot, _candidates, claimed) => resolveGradleProjectDirectories(workspaceRoot, claimed),
+    },
+    {
+        // Hex apps come from the umbrella mix.exs's apps_path, not the workspace patterns.
+        detector: hexDetector,
+        enabled: (options) => options.hexProjects,
+        id: "hex",
+        readName: () => undefined,
+        resolve: (workspaceRoot, _candidates, claimed) => resolveHexProjectDirectories(workspaceRoot, claimed),
+    },
+    {
+        // Swift packages are found by their Package.swift under the root, not the workspace patterns.
+        detector: swiftDetector,
+        enabled: (options) => options.swiftProjects,
+        id: "swift",
+        readName: readSwiftProjectName,
+        resolve: (workspaceRoot, _candidates, claimed) => resolveSwiftProjectDirectories(workspaceRoot, claimed),
+    },
+    {
+        // Gem directories are found by their gemspec under the root, not the workspace patterns.
+        detector: gemDetector,
+        enabled: (options) => options.gemProjects,
+        id: "gem",
+        readName: () => undefined,
+        resolve: (workspaceRoot, _candidates, claimed) => resolveGemProjectDirectories(workspaceRoot, claimed),
+    },
+    {
+        // NuGet project directories come from the project files under the root, not the workspace patterns.
+        detector: nugetDetector,
+        enabled: (options) => options.nugetProjects,
+        id: "nuget",
+        readName: () => undefined,
+        resolve: (workspaceRoot, _candidates, claimed) => resolveNuGetProjectDirectories(workspaceRoot, claimed),
+    },
+    {
+        // Zig packages come from the root manifest's path dependencies, not the workspace patterns.
+        detector: zigDetector,
+        enabled: (options) => options.zigProjects,
+        id: "zig",
+        readName: (projectRoot) => readZigManifestName(projectRoot),
+        resolve: (workspaceRoot, _candidates, claimed) => resolveZigProjectDirectories(workspaceRoot, claimed),
+    },
+    {
+        // Dart members come from the root pubspec's workspace list, not the workspace patterns.
+        detector: dartDetector,
+        enabled: (options) => options.dartProjects,
+        id: "dart",
+        readName: () => undefined,
+        resolve: (workspaceRoot, _candidates, claimed) => resolveDartProjectDirectories(workspaceRoot, claimed),
+    },
+    {
+        // Composer packages are found by their composer.json under the root, not the workspace patterns.
+        detector: composerDetector,
+        enabled: (options) => options.composerProjects,
+        id: "composer",
+        readName: () => undefined,
+        resolve: (workspaceRoot, _candidates, claimed) => resolveComposerProjectDirectories(workspaceRoot, claimed),
+    },
+];
+
+const NON_JS_DETECTORS: ReadonlySet<Detector> = new Set(NON_JS_ECOSYSTEMS.map((ecosystem) => ecosystem.detector));
+
+const resolveProjectDirectories = (
+    workspaceRoot: string,
+    patterns: string[],
+    options: NonJsOptions,
+): { directories: string[]; nonJsEcosystems: Map<string, NonJsEcosystem> } => {
+    const candidates = resolveWorkspacePatterns(workspaceRoot, patterns, isProjectCandidate);
+    const packageDirectories = candidates.filter((directory) => hasPackageJson(join(workspaceRoot, directory)));
+    const packageSet = new Set(packageDirectories);
+    const nonPackageCandidates = candidates.filter((directory) => !packageSet.has(directory));
+    const nonJsEcosystems = new Map<string, NonJsEcosystem>();
+    let claimed = packageDirectories;
+
+    for (const ecosystem of NON_JS_ECOSYSTEMS) {
+        if (!ecosystem.enabled(options)) {
+            continue;
+        }
+
+        const directories = ecosystem.resolve(workspaceRoot, nonPackageCandidates, claimed);
+
+        for (const directory of directories) {
+            nonJsEcosystems.set(directory, ecosystem);
+        }
+
+        claimed = [...claimed, ...directories];
+    }
+
+    return { directories: [...packageDirectories, ...nonJsEcosystems.keys()], nonJsEcosystems };
 };
 
 /**
@@ -830,6 +1032,39 @@ const scriptMatchesInferredCommand = (scriptCommand: string | undefined, inferre
 };
 
 /**
+ * `project.json#name` wins; then `package.json#name`, or for a project
+ * without one, the Cargo `[package].name` and finally the directory name.
+ */
+const resolveProjectName = (
+    workspaceRoot: string,
+    projectDirectory: string,
+    pkg: PackageJson | undefined,
+    projectJson: ProjectJson | undefined,
+    ecosystem: NonJsEcosystem | undefined,
+): string | undefined =>
+    projectJson?.name ?? (pkg ? pkg.name : (ecosystem?.readName(join(workspaceRoot, projectDirectory)) ?? basename(projectDirectory)));
+
+/**
+ * The non-JS discovery flags for a config. Shared by `discoverWorkspace` and
+ * the overlay pre-pass so both keep exactly the same directories.
+ */
+const nonJsDiscoverOptions = (config: VisConfig): NonJsOptions => {
+    return {
+        composerProjects: config.composer?.discover === true,
+        dartProjects: config.dart?.discover === true,
+        gemProjects: config.gem?.discover === true,
+        goProjects: config.go?.discover === true,
+        gradleProjects: config.gradle?.discover === true,
+        hexProjects: config.hex?.discover === true,
+        mavenProjects: config.maven?.discover === true,
+        nugetProjects: config.nuget?.discover === true,
+        pythonProjects: config.python?.discover === true,
+        swiftProjects: config.swift?.discover === true,
+        zigProjects: config.zig?.discover === true,
+    };
+};
+
+/**
  * Discovers all projects in the workspace and builds a WorkspaceConfiguration.
  */
 const discoverWorkspace = (
@@ -838,6 +1073,13 @@ const discoverWorkspace = (
     taskConfigs?: VisTaskConfigIndex,
 ): {
     config: VisConfig;
+
+    /**
+     * Files outside every project root that belong to specific projects
+     * (a Cargo workspace's root `Cargo.lock` → its member crates). Pass to
+     * `getAffectedProjects` as `fileOwners`.
+     */
+    fileOwners: Record<string, string[]> | undefined;
     packageJsons: PackageJsonIndex;
     projectOptions: ProjectOptionsIndex;
     workspace: WorkspaceConfiguration;
@@ -861,41 +1103,54 @@ const discoverWorkspace = (
         throw new VisUserError("No workspace configuration found. Expected pnpm-workspace.yaml or package.json workspaces field.");
     }
 
-    const projectDirectories = resolveWorkspacePatterns(workspaceRoot, workspacePatterns);
+    const { directories: projectDirectories, nonJsEcosystems } = resolveProjectDirectories(
+        workspaceRoot,
+        workspacePatterns,
+        nonJsDiscoverOptions(config),
+    );
 
     for (const projectDirectory of projectDirectories) {
-        const packageJsonPath = join(workspaceRoot, projectDirectory, "package.json");
-        const pkg = readJsonFileSafe<PackageJson>(packageJsonPath);
+        const nonJs = nonJsEcosystems.get(projectDirectory);
+        const isNonJs = nonJs !== undefined;
+        const pkg = isNonJs ? undefined : readJsonFileSafe<PackageJson>(join(workspaceRoot, projectDirectory, "package.json"));
 
-        if (!pkg) {
+        if (!pkg && !isNonJs) {
             continue;
         }
 
-        const projectJsonPath = join(workspaceRoot, projectDirectory, "project.json");
-        const projectJson = readJsonFileSafe<ProjectJson>(projectJsonPath);
-
-        // project.json#name takes precedence over package.json#name; fall
-        // back to package.json#name so existing workspaces keep working.
-        const projectName = projectJson?.name ?? pkg.name;
+        const projectJson = readJsonFileSafe<ProjectJson>(join(workspaceRoot, projectDirectory, "project.json"));
+        const projectName = resolveProjectName(workspaceRoot, projectDirectory, pkg, projectJson, nonJs);
 
         if (!projectName) {
             continue;
         }
 
-        packageJsons.set(projectName, pkg);
+        // JS projects keep their historic last-wins behaviour; a crate is
+        // new to the graph, so a clash there is a config error to surface,
+        // not a project to silently replace.
+        if (isNonJs && projects[projectName] !== undefined) {
+            throw new VisUserError(
+                `Project name "${projectName}" of ${projectDirectory} is already used by ${projects[projectName].root}. `
+                + `Set a unique "name" in ${projectDirectory}/project.json.`,
+            );
+        }
+
+        if (pkg) {
+            packageJsons.set(projectName, pkg);
+        }
 
         let projectType: ProjectType = "library";
 
         if (projectJson?.projectType) {
             projectType = projectJson.projectType;
-        } else if (pkg.bin !== undefined) {
+        } else if (pkg?.bin !== undefined) {
             projectType = "application";
         }
 
         const defaults = collectTargetDefaults(config, projectJson, projectType);
 
         const overlayTargets = mergeProjectTargets(projectJson?.targets, taskConfigs?.get(projectDirectory)?.tasks);
-        const visTargets = createTargetsFromScripts(pkg.scripts, overlayTargets, defaults, config.fileGroups);
+        const visTargets = createTargetsFromScripts(pkg?.scripts, overlayTargets, defaults, config.fileGroups);
 
         // Project Crystal-style inference. Runs *after* the explicit
         // pipeline so the command from a package.json script,
@@ -914,12 +1169,20 @@ const discoverWorkspace = (
         //     command (guarded — see `scriptMatchesInferredCommand`).
         //     Compound/customised scripts skip the precise outputs and
         //     fall back to the auto-write capture below.
-        const detectorEnabled = resolveInferTargetOption(config.inferTargets);
+        // The JS detectors read package.json and run only on JS packages. A
+        // Cargo crate (no package.json, a `[package]` manifest) gets the cargo
+        // detector alone, so a JS package's nested or root Cargo.toml never
+        // infers cargo targets. `project.json`-only projects get none.
+        const projectRoot = join(workspaceRoot, projectDirectory);
+        const detectorEnabled = pkg || nonJs ? resolveInferTargetOption(config.inferTargets) : undefined;
 
         if (detectorEnabled !== undefined) {
-            const projectRoot = join(workspaceRoot, projectDirectory);
-            const enabledDetectors = BUILT_IN_DETECTORS.filter((detector) => detectorEnabled(detector.name));
-            const inference = inferProjectTargets({ pkg, projectDirectory, projectRoot }, enabledDetectors);
+            // A non-JS project gets only its own detector, and a JS package never gets
+            // one, so a stray Cargo.toml or pom.xml in a JS package cannot infer targets for it.
+            const enabledDetectors = BUILT_IN_DETECTORS.filter(
+                (detector) => (nonJs === undefined ? !NON_JS_DETECTORS.has(detector) : detector === nonJs.detector) && detectorEnabled(detector.name),
+            );
+            const inference = inferProjectTargets({ pkg: pkg ?? {}, projectDirectory, projectRoot }, enabledDetectors);
 
             // Synthesizing a target the project never had is the one part of
             // inference that changes what runs, so it needs an explicit
@@ -939,7 +1202,7 @@ const discoverWorkspace = (
             // and the part that genuinely never changes what runs), and still
             // synthesize freely for a project that declares nothing, where
             // there is no prior behaviour to change.
-            const declaresOwnTargets = Object.keys(pkg.scripts ?? {}).length > 0 || Object.keys(overlayTargets ?? {}).length > 0;
+            const declaresOwnTargets = Object.keys(pkg?.scripts ?? {}).length > 0 || Object.keys(overlayTargets ?? {}).length > 0;
             const synthesizeNewTargets = config.inferTargets !== undefined || !declaresOwnTargets;
 
             for (const [name, inferredTarget] of Object.entries(inference.targets)) {
@@ -1041,7 +1304,7 @@ const discoverWorkspace = (
         };
     }
 
-    return { config, packageJsons, projectOptions, workspace: { projects } };
+    return { config, fileOwners: buildCargoFileOwners(workspaceRoot, projects), packageJsons, projectOptions, workspace: { projects } };
 };
 
 /**
@@ -1090,6 +1353,19 @@ const buildProjectGraph = (workspaceRoot: string, workspace: WorkspaceConfigurat
         const pkg = pkgByProject.get(name);
 
         if (!pkg) {
+            // A project without package.json may be a crate: its path
+            // dependencies are edges to whichever project owns the path.
+            const seenCrates = new Set<string>([name]);
+
+            for (const { path, type } of collectCargoPathDependencies(workspaceRoot, config.root)) {
+                const targetName = findOwningProject(path, workspace.projects);
+
+                if (targetName && !seenCrates.has(targetName)) {
+                    seenCrates.add(targetName);
+                    dependencies[name]?.push({ source: name, target: targetName, type });
+                }
+            }
+
             continue;
         }
 
@@ -1127,14 +1403,15 @@ const buildProjectGraph = (workspaceRoot: string, workspace: WorkspaceConfigurat
 /**
  * Pre-load every project's `vis.task.ts` overlay in parallel. Returns
  * a {@link VisTaskConfigIndex} keyed by relative project directory, ready
- * to pass into {@link discoverWorkspace}.
+ * to pass into {@link discoverWorkspace}. Pass the same `config` so the
+ * overlays cover exactly the directories discovery keeps.
  *
  * This pre-pass is the bridge between sync `discoverWorkspace` and the
  * async overlay loader — callers that want overlay support load this
  * once up front, callers that don't simply omit the third argument and
  * keep the legacy "no overlay" behaviour.
  */
-const loadVisTaskConfigsForWorkspace = async (workspaceRoot: string): Promise<VisTaskConfigIndex> => {
+const loadVisTaskConfigsForWorkspace = async (workspaceRoot: string, config: VisConfig = {}): Promise<VisTaskConfigIndex> => {
     const { loadVisTaskConfig } = await import("./config");
     const pnpmPatterns = readPnpmWorkspacePatterns(workspaceRoot);
     const rootPkg = readJsonFileSafe<PackageJson>(join(workspaceRoot, "package.json"));
@@ -1151,19 +1428,27 @@ const loadVisTaskConfigsForWorkspace = async (workspaceRoot: string): Promise<Vi
         return new Map();
     }
 
-    const projectDirectories = resolveWorkspacePatterns(workspaceRoot, workspacePatterns);
+    // Use the same candidate set as discoverWorkspace. An overlay for a directory
+    // that is not discovered could fail to load and reject the whole workspace.
+    const { directories: projectDirectories, nonJsEcosystems } = resolveProjectDirectories(
+        workspaceRoot,
+        workspacePatterns,
+        nonJsDiscoverOptions(config),
+    );
     const result: VisTaskConfigIndex = new Map();
 
     await Promise.all(
         projectDirectories.map(async (projectDirectory) => {
-            const pkg = readJsonFileSafe<PackageJson>(join(workspaceRoot, projectDirectory, "package.json"));
+            const nonJs = nonJsEcosystems.get(projectDirectory);
+            const isNonJs = nonJs !== undefined;
+            const pkg = isNonJs ? undefined : readJsonFileSafe<PackageJson>(join(workspaceRoot, projectDirectory, "package.json"));
             const projectJson = readJsonFileSafe<ProjectJson>(join(workspaceRoot, projectDirectory, "project.json"));
-            const projectName = projectJson?.name ?? pkg?.name;
+            const projectName = resolveProjectName(workspaceRoot, projectDirectory, pkg, projectJson, nonJs);
 
             // Match the skip semantics in discoverWorkspace so we never
             // load an overlay for a directory that won't appear in the
             // workspace graph.
-            if (!projectName || !pkg) {
+            if (!projectName || (!pkg && !isNonJs)) {
                 return;
             }
 

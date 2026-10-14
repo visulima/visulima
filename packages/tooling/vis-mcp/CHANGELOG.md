@@ -1,3 +1,25 @@
+## @visulima/vis-mcp [1.0.46](https://github.com/visulima/visulima/compare/@visulima/vis-mcp@1.0.45...@visulima/vis-mcp@1.0.46) (2026-10-13)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.1.0
+* **@visulima/vis:** upgraded to 4.3.0
+
+## @visulima/vis-mcp [1.0.45](https://github.com/visulima/visulima/compare/@visulima/vis-mcp@1.0.44...@visulima/vis-mcp@1.0.45) (2026-10-09)
+
+
+### Dependencies
+
+* **@visulima/vis:** upgraded to 4.2.0
+
+## @visulima/vis-mcp [1.0.44](https://github.com/visulima/visulima/compare/@visulima/vis-mcp@1.0.43...@visulima/vis-mcp@1.0.44) (2026-10-07)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.29
+
 ## @visulima/vis-mcp [1.0.43](https://github.com/visulima/visulima/compare/@visulima/vis-mcp@1.0.42...@visulima/vis-mcp@1.0.43) (2026-10-05)
 
 

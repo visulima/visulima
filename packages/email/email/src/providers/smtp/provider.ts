@@ -8,8 +8,8 @@ import { createTransportDkimSigner } from "../../crypto/dkim-signer";
 import EmailError from "../../errors/email-error";
 import RequiredOptionError from "../../errors/required-option-error";
 import type { EmailResult, Result } from "../../types";
+import applyMessageId from "../../utils/apply-message-id";
 import buildMimeMessage from "../../utils/build-mime-message";
-import generateMessageId from "../../utils/generate-message-id";
 import isPortAvailable from "../../utils/is-port-available";
 import validateEmailOptions from "../../utils/validation/validate-email-options";
 import type { ProviderFactory } from "../provider";
@@ -829,7 +829,9 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
                     await sendSmtpCommand(socket, "DATA", "354");
 
                     // Build and send MIME message
-                    let mimeMessage = await buildMimeMessage(emailOptions);
+                    // Set the Message-ID ourselves so the id we return is the one recipients see.
+                    const { headers, messageId } = applyMessageId(emailOptions);
+                    let mimeMessage = await buildMimeMessage({ ...emailOptions, headers });
 
                     // Add special headers based on email options.
                     // DSN is requested at the envelope level via RCPT TO NOTIFY=...
@@ -959,9 +961,6 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
                     const stuffedMessage = mimeMessage.replaceAll("\r\n.", "\r\n..").replace(LEADING_DOT_REGEX, "..");
 
                     await sendSmtpCommand(socket, `${stuffedMessage}\r\n.`, "250");
-
-                    // Generate message ID if not present in response
-                    const messageId = generateMessageId();
 
                     // Return connection to pool or close it
                     await closeConnection(socket, options.pool);

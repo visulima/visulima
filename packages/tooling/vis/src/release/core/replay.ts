@@ -1,5 +1,5 @@
 /**
- * Replay changelogs (tegami parity).
+ * Replay changelogs.
  *
  * A change file may carry `replay` conditions instead of (or alongside being)
  * a normal one-shot bump. A replay file is *retained* on `version` — not
@@ -23,7 +23,11 @@ import { isValidPackageName } from "./security";
 const EXIT_PRERELEASE_RE = /^exit[\s-]prerelease\s*:\s*(.+)$/i;
 const VERSION_RE = /^(.+)@(\d+\.\d+\.\d+(?:[-+].*)?)$/;
 
-/** Validate a replay target package name at parse time so malformed entries fail loudly. */
+/**
+ * Validate a replay target package name at parse time so malformed entries fail loudly.
+ * Maven coordinates (`groupId:artifactId`) fail here on purpose: replay stays strict and
+ * does not accept them as targets.
+ */
 const assertReplayPackage = (name: string, value: string, file: string): string => {
     if (!isValidPackageName(name)) {
         throw new VisReleaseError({

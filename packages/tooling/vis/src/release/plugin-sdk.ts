@@ -118,7 +118,7 @@ export { type NotificationChannel, type NotificationContext, type NotificationPa
 export { type PublishResult } from "./core/package-managers/interface";
 
 /**
- * Author a lifecycle plugin (tegami parity). Unlike the single-purpose
+ * Author a lifecycle plugin. Unlike the single-purpose
  * `define*` helpers above, a plugin hooks arbitrary points of the release
  * lifecycle — `applyDraft`, `willPublish`, `afterPublish`, `afterPublishAll`.
  *

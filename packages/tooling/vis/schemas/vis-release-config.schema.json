@@ -84,6 +84,16 @@
             "type": "boolean",
             "description": "Companion to `bumpMinorPreMajor` — also demote `minor` bumps to `patch` for pre-1.0 versions. Maps to release-please's `bump-patch-for-minor-pre-major`. No-op without `bumpMinorPreMajor`. Default `false`."
         },
+        "cargo": {
+            "type": "object",
+            "properties": {
+                "discover": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Cargo crates as release packages. Off by default: a repo with Rust crates sees no change until `discover` is set. When on, every crate in the root `Cargo.toml`'s `[workspace].members` (minus `exclude`) is a release package, unless a JS package already claims its manifest."
+        },
         "changedFilePatterns": {
             "type": "array",
             "items": {
@@ -128,6 +138,16 @@
             },
             "description": "Per-channel routing config (semantic-release-style)."
         },
+        "composer": {
+            "type": "object",
+            "properties": {
+                "discover": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Composer packages as release packages. Off by default. When on, the root `composer.json` with a `name` is a release package. The version is the highest `vX.Y.Z` git tag, and the release creates the next tag. Nested packages and a `\"version\"` key are refused."
+        },
         "currentVersionResolver": {
             "type": "string",
             "enum": [
@@ -136,6 +156,16 @@
                 "registry"
             ],
             "description": "Source of truth for \"what is the current version of this package?\", controlling how `oldVersion` is resolved when building the release plan.\n\n  `\"disk\"` (default) — read `package.json#version` (or the equivalent       manifest field for non-npm versionActions). Preserves vis's       historical behaviour and is the right choice when the manifest       on disk is the canonical source.   `\"registry\"` — query the package registry via the package's       `versionActions.readPublishedVersion()`. Useful when the manifest       drifts between repo and registry (e.g. teams that publish       out-of-band) and you want the registry to win.   `\"git-tag\"` — find the highest `releaseTagPattern`-matching tag in       the current commit's ancestry and parse the version out of it.       Matches nx's `git-tag` resolver and release-please's tag-based       lookup.\n\n`\"registry\"` and `\"git-tag\"` fall back to the manifest version when their primary source cannot produce a valid semver (e.g. registry 404 on a freshly-added package, no matching tag yet, etc.) and surface a plan warning so the operator sees what happened.\n\nOverridable per-package via `packages.&lt;name>.currentVersionResolver`.\n\nThe `--first-release` CLI flag is the bootstrap shortcut for this setting — it forces `\"disk\"` regardless of config and additionally skips remote-tag collision checks, so the very first run on a greenfield monorepo can't trip over missing tags or registry 404s."
+        },
+        "dart": {
+            "type": "object",
+            "properties": {
+                "discover": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Dart packages as release packages. Off by default. When on, the root `pubspec.yaml` (when it sets a version) and each member of its `workspace:` list is a release package named by its `name:`. The version must be a `version:` literal in that pubspec. Publishes to pub.dev with `dart pub publish`."
         },
         "defaultManaged": {
             "type": "boolean",
@@ -164,6 +194,16 @@
             "type": "boolean",
             "description": "Run the project's Prettier over the files the version step writes (package.json bumps + CHANGELOG.md entries) before committing them (RFC §14 step 7). Scoped to the changed files only — never the whole tree. Resolves the project's own Prettier from the workspace root; soft-fails if Prettier isn't installed.\n\nDefault: `false` (opt-in — a project that doesn't use Prettier, or whose Prettier config conflicts with how vis writes JSON, leaves this off)."
         },
+        "gem": {
+            "type": "object",
+            "properties": {
+                "discover": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Gems as release packages. Off by default. Every `*.gemspec` under the root (skipping `vendor`, `node_modules` and `.bundle`) is a release package named by its `spec.name` literal. The version is `spec.version = \"…\"`, or `Name::VERSION` with `VERSION = \"…\"` in `lib/&lt;name>/version.rb`. Publish runs `gem build` and `gem push` (POSIX only)."
+        },
         "githubHost": {
             "type": "string",
             "description": "Self-hosted GitHub Enterprise host (e.g. `\"github.acme.com\"` — no scheme). Translates to the `GH_HOST` env var that the `gh` CLI consumes natively, so all adapter calls land on the right instance. Operators can also export `GH_HOST` directly; this config knob is the typed, vis.config.ts-discoverable equivalent. Ignored when `provider` resolves to anything other than `github`."
@@ -180,12 +220,42 @@
             "$ref": "#/$defs/GitUserConfig",
             "description": "Git committer identity used by CI workflows."
         },
+        "go": {
+            "type": "object",
+            "properties": {
+                "discover": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Go modules as release packages. Off by default. When on, every `use` entry of `go.work` (or the root `go.mod` without one) is a release package named by its module path. The version is the highest git tag for the module, and the release creates the next tag. A `/vN` major needs a matching module path."
+        },
+        "gradle": {
+            "type": "object",
+            "properties": {
+                "discover": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Gradle modules as release packages. Off by default. When on, the root build and every module in `settings.gradle(.kts)` is a release package named `group:artifact`. The version must be a string literal in the module's script or the root script's allprojects / subprojects block; a group or version the release cannot read fails it."
+        },
         "groupPreVersionCommands": {
             "type": "object",
             "additionalProperties": {
                 "type": "string"
             },
             "description": "Group-scoped preVersion command. Runs once before any package in the group is versioned. `groupName` matches a `fixed`/`linked` array's index (group-0, group-1, …) or a named entry (future)."
+        },
+        "hex": {
+            "type": "object",
+            "properties": {
+                "discover": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Hex packages as release packages. Off by default. The root `mix.exs` is a package, and so is each `&lt;apps_path>/*` app of an umbrella. The name is the `package: [name: \"…\"]` string, or the `app:` atom. The version is a `version: \"…\"` literal, or `version: \\@version` with a literal `\\@version \"…\"` attribute; a `mix.exs` with no `version:` key is an aggregate and is skipped. Publish runs `mix hex.publish --yes` (POSIX only), with the key in `HEX_API_KEY`."
         },
         "httpProxy": {
             "type": "string",
@@ -230,13 +300,33 @@
             },
             "description": "Linked groups: members share bump levels but only changed members publish. Accepts the same dual-shape format as `fixed` — see the `ReleaseGroupConfig` doc comment for details."
         },
+        "maven": {
+            "type": "object",
+            "properties": {
+                "discover": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Maven modules as release packages. Off by default. When on, the root `pom.xml` and every module reachable through `&lt;modules>` is a release package named `groupId:artifactId`. A version the release cannot rewrite (no literal, no resolvable parent or property) fails the release."
+        },
         "notifications": {
             "$ref": "#/$defs/NotificationsConfig",
             "description": "Notifications — post-release fan-out to chat / webhook destinations. See  {@link  NotificationsConfig } . Each channel runs in parallel; per-channel failures log a warning but do NOT fail the publish."
         },
+        "nuget": {
+            "type": "object",
+            "properties": {
+                "discover": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false,
+            "description": "NuGet projects as release packages. Off by default. Every `*.csproj` / `*.fsproj` under the root (skipping `bin`, `obj`, `node_modules` and claimed JS directories) is a release package named by its lowercased package id. The version is a plain `&lt;Version>` literal in the project file, or in the nearest `Directory.Build.props`, which releases its inheriting projects in lockstep. Publish runs `dotnet pack` and `dotnet nuget push` (POSIX only)."
+        },
         "oneCommitPerPackage": {
             "type": "boolean",
-            "description": "Emit one release commit per package (a `release(channel): pkg@version [skip ci]` message) instead of a single aggregate commit for the whole wave (RFC §19.5). Mirrors the per-package commit history that multi-semantic-release produced — useful for projects migrating off it that want to preserve `git log` shape. Only honoured when `aggregateRelease` is falsy. Shared artifacts (lockfile + consumed change-file deletions) ride along in the final package's commit.\n\nDefault: `false` (one aggregate commit per wave)."
+            "description": "Emit one release commit per package (a `release(channel): pkg\\@version [skip ci]` message) instead of a single aggregate commit for the whole wave (RFC §19.5). Mirrors the per-package commit history that multi-semantic-release produced — useful for projects migrating off it that want to preserve `git log` shape. Only honoured when `aggregateRelease` is falsy. Shared artifacts (lockfile + consumed change-file deletions) ride along in the final package's commit.\n\nDefault: `false` (one aggregate commit per wave)."
         },
         "packages": {
             "type": "object",
@@ -250,7 +340,7 @@
             "items": {
                 "$ref": "#/$defs/ReleasePlugin"
             },
-            "description": "Lifecycle plugins (tegami-style hooks: `applyDraft` / `willPublish` / `afterPublish` / `afterPublishAll`)."
+            "description": "Lifecycle plugins (hooks: `applyDraft` / `willPublish` / `afterPublish` / `afterPublishAll`)."
         },
         "postPublishCommand": {
             "type": "string",
@@ -298,6 +388,16 @@
             "$ref": "#/$defs/PublishConfig",
             "description": "Publish-related config."
         },
+        "python": {
+            "type": "object",
+            "properties": {
+                "discover": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Python projects as release packages. Off by default. When on, the root `pyproject.toml` (with `[project]`) and every `[tool.uv.workspace].members` entry (minus `exclude`) is a release package. A dynamic or missing version fails the release instead of being skipped."
+        },
         "releaseNoteTemplate": {
             "type": "object",
             "properties": {
@@ -344,6 +444,16 @@
             "$ref": "#/$defs/SuccessWalkConfig",
             "description": "Post-release notification walk. Configures the \"🎉 This is included in version X.Y.Z\" comment + `released` label pass that runs after a successful publish wave.\n\n**Default OFF.** Leave undefined and the walk never runs — vis will not touch third-party PRs referenced in changelog bodies. Set to `{}` to opt in with defaults, or pass an object to override the comment template / labels / prerelease behaviour."
         },
+        "swift": {
+            "type": "object",
+            "properties": {
+                "discover": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Swift packages as release packages. Off by default. Every directory under the root with a `Package.swift` is a release package named by its `Package(name: \"…\")` literal. The version comes from Git tags, and the release creates the tag."
+        },
         "updateInternalDependencies": {
             "$ref": "#/$defs/UpdateInternalDependenciesMode",
             "description": "Dep-propagation mode. Default: `\"out-of-range\"`."
@@ -372,6 +482,16 @@
                 }
             ],
             "description": "Workspace-level changelog config (RFC §6.1 / nx parity). When set, renders one CHANGELOG.md at the workspace root in addition to per-package files."
+        },
+        "zig": {
+            "type": "object",
+            "properties": {
+                "discover": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Zig packages as release packages. Off by default. When on, the workspace root's `build.zig.zon` and each in-workspace `.path` dependency that has one is a release package named by its `.name`. The version must be a `.version` string literal; a package with no `.version` is an aggregate and is skipped. Release is a git tag: Zig has no registry, so nothing is uploaded."
         }
     },
     "additionalProperties": false,
@@ -524,7 +644,7 @@
                         },
                         "syncGitTag": {
                             "type": "boolean",
-                            "description": "Emit a single shared git tag (and one aggregate GitHub/GitLab release) for the whole group instead of one tag + release per member (tegami parity). Default `false`."
+                            "description": "Emit a single shared git tag (and one aggregate GitHub/GitLab release) for the whole group instead of one tag + release per member. Default `false`."
                         },
                         "tagPattern": {
                             "type": "string",
@@ -930,6 +1050,13 @@
                 "versionActions": {
                     "type": "string",
                     "description": "Built-in id (`\"npm\"`, `\"native-addon\"`, `\"private\"`, `\"shell\"`, `\"cargo\"`, `\"python\"`, `\"maven\"`, `\"container\"`, `\"jsr\"`) or a path to a custom implementation module."
+                },
+                "versionFiles": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Non-JS version manifests to bump alongside `package.json`, relative to the package directory. Supported basenames: `Cargo.toml` (`[package]` and `[workspace.package]`) and `tauri.conf.json` (Tauri v1 `package.version` and v2 top-level `version`). Unlike `extraFiles` no regex is needed, and an unsupported basename fails the release instead of being skipped."
                 }
             },
             "additionalProperties": false
@@ -1017,7 +1144,7 @@
                 "name"
             ],
             "additionalProperties": true,
-            "description": "A release lifecycle plugin (tegami parity). Unlike the single-purpose `defineVersionActions` / `defineChangelogFormatter` / `defineNotificationChannel` extension points, a plugin can hook arbitrary points of the version/publish lifecycle — e.g. run a build in `willPublish`, push docs in `afterPublishAll`.\n\nError semantics: `applyDraft` and `willPublish` throw-propagate (they gate the release — fail fast). `afterPublish` / `afterPublishAll` are post-effect: a throw is logged and swallowed so a side-effect hiccup can't \"unpublish\"."
+            "description": "A release lifecycle plugin. Unlike the single-purpose `defineVersionActions` / `defineChangelogFormatter` / `defineNotificationChannel` extension points, a plugin can hook arbitrary points of the version/publish lifecycle — e.g. run a build in `willPublish`, push docs in `afterPublishAll`.\n\nError semantics: `applyDraft` and `willPublish` throw-propagate (they gate the release — fail fast). `afterPublish` / `afterPublishAll` are post-effect: a throw is logged and swallowed so a side-effect hiccup can't \"unpublish\"."
         },
         "PublishConfig": {
             "type": "object",
@@ -1070,7 +1197,7 @@
                 },
                 "lockInGit": {
                     "type": "boolean",
-                    "description": "Persist in-progress publish state to a git-TRACKED `&lt;changesDir>/publish-lock.json` instead of the gitignored `.state.json`. Default `false`.\n\nThe tracked lock is committed (and pushed by the publish flow) so a partially-failed publish can be resumed from a *fresh checkout on a different runner* — the ephemeral-CI case where `.state.json` (untracked) never survives the clone. On full success the lock is removed and the removal committed. Mirrors tegami's `publish-lock.yaml`-in-git model."
+                    "description": "Persist in-progress publish state to a git-TRACKED `&lt;changesDir>/publish-lock.json` instead of the gitignored `.state.json`. Default `false`.\n\nThe tracked lock is committed (and pushed by the publish flow) so a partially-failed publish can be resumed from a *fresh checkout on a different runner* — the ephemeral-CI case where `.state.json` (untracked) never survives the clone. On full success the lock is removed and the removal committed."
                 },
                 "noRelease": {
                     "type": "boolean",

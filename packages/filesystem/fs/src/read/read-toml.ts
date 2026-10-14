@@ -2,6 +2,7 @@ import { parse } from "smol-toml";
 
 import type { CompressionType, ReadTomlOptions } from "../types";
 import readFile from "./read-file";
+import toPlainObject from "./utils/to-plain-object";
 
 /**
  * Asynchronously reads a TOML file and parses it into an object.
@@ -20,7 +21,7 @@ import readFile from "./read-file";
 const readToml = async <R = Record<string, unknown>>(path: URL | string, options?: ReadTomlOptions<CompressionType>): Promise<R> => {
     const content = await readFile(path, { encoding: "utf8", ...options });
 
-    return parse(content) as R;
+    return toPlainObject(parse(content)) as R;
 };
 
 export default readToml;

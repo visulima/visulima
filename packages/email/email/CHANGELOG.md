@@ -1,3 +1,9 @@
+## @visulima/email [3.0.28](https://github.com/visulima/visulima/compare/@visulima/email@3.0.27...@visulima/email@3.0.28) (2026-10-08)
+
+### Bug Fixes
+
+* **email:** keep caller Message-ID and generate it on the sender domain ([#935](https://github.com/visulima/visulima/issues/935)) ([923251b](https://github.com/visulima/visulima/commit/923251be324789160654791014f020e4b13a97e5))
+
 ## @visulima/email [3.0.27](https://github.com/visulima/visulima/compare/@visulima/email@3.0.26...@visulima/email@3.0.27) (2026-10-05)
 
 

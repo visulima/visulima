@@ -102,11 +102,38 @@ flowchart TD
 ## How It Works
 
 1. **Diff** — Runs `git diff` between `--base` and `--head` to find changed files
-2. **Map** — Maps changed files to the projects that contain them
+2. **Map** — Maps changed files to the projects that contain them. A changed file outside every project (a root `tsconfig.json`, `package.json`, …) is a global change and marks **every** project affected, unless it matches [`affectedIgnore`](#ignoring-unowned-files)
 3. **Expand** — Includes upstream/downstream based on `--upstream`/`--downstream` scope
 4. **Query** — Applies `--query` filter on top of the affected set
 5. **Forward** — Passes changed file list to `vis run` via `VIS_AFFECTED_FILES` env var
 6. **Execute** — Runs the target on affected projects only, in dependency order
+
+## Ignoring unowned files
+
+A changed file that belongs to no project marks every project affected. That is
+right for a root `tsconfig.json`, but not for generated reports, planning notes
+or a root `README.md`. List those in `vis.config.ts#affectedIgnore` and they stop
+counting as a change:
+
+```typescript
+export default defineConfig({
+    affectedIgnore: ["api-snapshots/**", "plans/**", "*.md"],
+});
+```
+
+- Patterns are workspace-relative globs (`path.matchesGlob` syntax). `*` does not
+  cross `/`, so `*.md` matches `README.md` but not `docs/guide.md`.
+- Only files that belong to **no** project are checked. A file inside a project
+  root is never filtered, so a broad pattern like `*.md` cannot hide a real
+  package change.
+- Skipped files are reported as a note (`ignoring N changed path(s) outside any
+project matching affectedIgnore`) and are still forwarded in
+  `VIS_AFFECTED_FILES`.
+- Do **not** list paths whose changes really do affect projects, such as
+  bundler-inlined shared source or the root `tsconfig.json`: an edit there would
+  then run nothing.
+
+The same option applies to `vis run --affected`, `vis ci` and `vis ci ignore`.
 
 ## Use Cases
 

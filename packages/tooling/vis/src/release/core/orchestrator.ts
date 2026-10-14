@@ -14,6 +14,7 @@
  */
 
 import { unlink, writeFile } from "node:fs/promises";
+import { resolve } from "node:path";
 
 import semver from "semver";
 
@@ -25,6 +26,7 @@ import { parseCatalogs } from "./catalog";
 import { readChangeFiles } from "./change-file-reader";
 import { detectCurrentBranch, resolveChannel } from "./channels";
 import { DependencyGraph } from "./dep-graph";
+import { ecosystemPerPackage, isDiscoveryEnabled, RELEASE_ECOSYSTEMS, RELEASE_PLAN_ORDER } from "./ecosystems";
 import { createAdapter, detectPackageManager } from "./package-managers/detect";
 import type { PackageManagerAdapter } from "./package-managers/interface";
 import { collectContributors, expandReleaseNoteTemplate } from "./release-note-template";
@@ -33,6 +35,8 @@ import { createShellRunner } from "./shell-runner";
 import type { VersionActions } from "./version-actions/interface";
 import { createVersionActions } from "./version-actions/registry";
 import { discoverPackages, resolveVersionActionsId } from "./workspace";
+
+export { isGemVersionRbPath } from "./ecosystems";
 
 export interface OrchestratorContext {
     branch?: string;
@@ -65,6 +69,9 @@ export interface OrchestratorContext {
      * exists.
      */
     preMode?: import("./pre-mode").PreModeFile;
+
+    /** Projects each discovered ecosystem produced, keyed by its id (`maven`, `gradle`, ...). An id is absent when its discover flag is off. */
+    projectsByEcosystem?: ReadonlyMap<string, ReadonlyArray<unknown>>;
 }
 
 export interface BuildContextOptions {
@@ -193,7 +200,69 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
         },
     };
 
-    const { packages, perPackageConfig } = await discoverPackages(reader, config, { cwd });
+    const discovered = await discoverPackages(reader, config, { cwd });
+    const { perPackageConfig } = discovered;
+    let { packages } = discovered;
+
+    // Discovered ecosystems are added in table order. Each one claims directories from the packages and per-package config that
+    // earlier ones have already added, so the loop runs one entry at a time.
+    const projectsByEcosystem = new Map<string, ReadonlyArray<unknown>>();
+
+    if (RELEASE_ECOSYSTEMS.some((eco) => isDiscoveryEnabled(config, eco))) {
+        for (const eco of RELEASE_ECOSYSTEMS) {
+            if (!isDiscoveryEnabled(config, eco)) {
+                continue;
+            }
+
+            const claimedDirs = new Set<string>();
+
+            for (const pkg of packages) {
+                for (const dir of eco.claimedDirs(pkg, perPackageConfig.get(pkg.name) ?? {}, cwd)) {
+                    claimedDirs.add(dir);
+                }
+            }
+
+            const projects = await eco.discover({ claimedDirs, cwd });
+
+            for (const project of projects) {
+                const { name } = eco.toPackage(project);
+
+                perPackageConfig.set(name, { ...ecosystemPerPackage(eco, project, cwd), ...config.packages?.[name] });
+            }
+
+            packages = [...packages, ...projects.map((project) => eco.toPackage(project))];
+            projectsByEcosystem.set(eco.id, projects);
+        }
+
+        // Discovered modules are named by their own coordinates (bare `core`, `group:artifact`, …), so a
+        // clash with an earlier package is an error for every ecosystem, not only Gradle. JS packages keep
+        // their historic last-wins behaviour between themselves.
+        const owners = new Map<string, WorkspacePackage>();
+
+        for (const pkg of packages) {
+            const prior = owners.get(pkg.name);
+
+            if (prior !== undefined && pkg.ecosystem !== undefined) {
+                throw new VisReleaseError({
+                    code: "CONFIG_INVALID",
+                    message: `${pkg.name} is discovered as a ${pkg.ecosystem} project, but ${prior.dir} already has that name. Rename one of them in config.packages.`,
+                    packageName: pkg.name,
+                });
+            }
+
+            owners.set(pkg.name, pkg);
+        }
+    }
+
+    // Reject unsupported versionFiles before planning, so a config error never
+    // reaches the point where writes are produced.
+    {
+        const { assertSupportedVersionFiles } = await import("./version-files");
+
+        for (const [name, perPkg] of perPackageConfig) {
+            assertSupportedVersionFiles(name, perPkg.versionFiles ?? []);
+        }
+    }
     const depGraph = new DependencyGraph(packages);
 
     // Read change files
@@ -375,6 +444,21 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
         plan.releases = plan.releases.filter((r) => globs.some((g) => r.name === g || zeptomatch(g, r.name)));
     }
 
+    // Refuse a Go major the module path cannot carry before the plan is shown, not at apply time.
+    {
+        const goReleases = plan.releases.flatMap((release) => {
+            const pkg = depGraph.getPackage(release.name);
+
+            return pkg?.ecosystem === "go" ? [{ name: release.name, newVersion: release.newVersion }] : [];
+        });
+
+        if (goReleases.length > 0) {
+            const { planGoWorkspace } = await import("./go-plan");
+
+            planGoWorkspace({ projects: (projectsByEcosystem.get("go") ?? []) as Parameters<typeof planGoWorkspace>[0]["projects"], releases: goReleases });
+        }
+    }
+
     return {
         branch,
         channel: resolved ? { mode: resolved.mode, prerelease: resolved.prerelease, tag: resolved.tag } : undefined,
@@ -389,6 +473,7 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
         // M9: snapshot pre-mode here so applyContext doesn't race with a
         // concurrent `pre exit` between context-build and apply.
         preMode,
+        projectsByEcosystem,
     };
 };
 
@@ -684,16 +769,17 @@ export const applyContext = async (context: OrchestratorContext, options: ApplyO
             }),
     });
 
-    // Apply extra-files rules per release. Workspace + per-package
-    // configurations both flow through `applyExtraFilesForRelease`; the
-    // resulting writes are appended to the applied set so the existing
+    // Apply extra-files rules and built-in versionFiles per release. Both
+    // produce writes that are appended to the applied set so the existing
     // commit + dry-run code paths pick them up automatically.
     const extraFileWarnings: string[] = [];
 
     {
         const { applyExtraFilesForRelease } = await import("./extra-files");
+        const { applyVersionFilesForRelease } = await import("./version-files");
+        const { cargoManifestPaths } = await import("./cargo-lock");
 
-        const extraResults = await Promise.all(
+        const perReleaseResults = await Promise.all(
             context.plan.releases.map(async (release) => {
                 const pkg = context.depGraph.getPackage(release.name);
 
@@ -703,21 +789,120 @@ export const applyContext = async (context: OrchestratorContext, options: ApplyO
 
                 const perPkgRules = context.perPackageConfig.get(release.name)?.extraFiles ?? [];
                 const workspaceRules = context.config.publish?.extraFiles ?? [];
+                const versionFiles = context.perPackageConfig.get(release.name)?.versionFiles ?? [];
 
-                if (perPkgRules.length === 0 && workspaceRules.length === 0) {
-                    return { warnings: [], writes: [] };
-                }
+                const hasExtraRules = perPkgRules.length > 0 || workspaceRules.length > 0;
+                const extra = hasExtraRules
+                    ? await applyExtraFilesForRelease(context.cwd, pkg.dir, release.newVersion, release.name, workspaceRules, perPkgRules)
+                    : { warnings: [], writes: [] };
 
-                return applyExtraFilesForRelease(context.cwd, pkg.dir, release.newVersion, release.name, workspaceRules, perPkgRules);
+                // Runs after extraFiles and reads its output, so a file named by
+                // both is rewritten once with both edits instead of the later write
+                // silently discarding the earlier one.
+                const versioned
+                    = versionFiles.length > 0
+                        ? await applyVersionFilesForRelease(pkg.dir, versionFiles, release.newVersion, release.name, new Map(extra.writes.map((write) => [write.path, write.content])))
+                        : { writes: [] };
+
+                return { warnings: extra.warnings, writes: [...extra.writes, ...versioned.writes] };
             }),
         );
 
-        for (const result of extraResults) {
+        // Cargo edits are planned once for the whole wave: crate versions,
+        // dependents' requirements and Cargo.lock. Per-release steps started
+        // from the original files, so two releases in one file (or one lock)
+        // silently dropped each other's edit. Everything below reads and
+        // writes one pending map.
+        const pending = new Map<string, string>();
+        const touched = new Set<string>();
+
+        for (const result of perReleaseResults) {
             for (const write of result.writes) {
-                applied.writes.push({ content: write.content, path: write.path });
+                pending.set(write.path, write.content);
+                touched.add(write.path);
             }
 
             extraFileWarnings.push(...result.warnings);
+        }
+
+        const cargoCrates = context.packages.filter((pkg) => pkg.ecosystem === "cargo");
+        const planReleases = context.plan.releases.flatMap((release) => {
+            const pkg = context.depGraph.getPackage(release.name);
+
+            // Python projects, Maven and Gradle modules have their own plans (planPythonWorkspace,
+            // planMavenWorkspace, planGradleWorkspace); a uv.lock is not a Cargo.lock, and a pom or a build script is not one either.
+            if (!pkg || (pkg.ecosystem !== undefined && pkg.ecosystem !== "cargo")) {
+                return [];
+            }
+
+            const manifestPaths
+                = pkg.ecosystem === "cargo" ? [pkg.manifestPath] : cargoManifestPaths(pkg.dir, context.perPackageConfig.get(release.name) ?? {});
+
+            return manifestPaths.length > 0 || pkg.ecosystem === "cargo"
+                ? [{ ecosystem: pkg.ecosystem, manifestPaths, name: release.name, newVersion: release.newVersion }]
+                : [];
+        });
+
+        if (planReleases.length > 0) {
+            // Every Cargo manifest a JS package claims is rescanned too, so a
+            // dependent in a JS-owned crate still gets its requirement moved.
+            const scanManifests = new Set(cargoCrates.map((pkg) => pkg.manifestPath));
+
+            // A virtual root has no [package], so discovery never returns it, but its
+            // [workspace.dependencies] requirements must still follow a bumped crate.
+            if (cargoCrates.length > 0) {
+                scanManifests.add(resolve(context.cwd, "Cargo.toml"));
+            }
+
+            for (const pkg of context.packages) {
+                if (pkg.ecosystem === undefined) {
+                    for (const manifestPath of cargoManifestPaths(pkg.dir, context.perPackageConfig.get(pkg.name) ?? {})) {
+                        scanManifests.add(manifestPath);
+                    }
+                }
+            }
+
+            const { planCargoWorkspace } = await import("./cargo-plan");
+            const cargo = await planCargoWorkspace({
+                crateManifests: cargoCrates.map((pkg) => pkg.manifestPath),
+                cwd: context.cwd,
+                pending,
+                releases: planReleases,
+                // Other crates' requirements move only for discovered crates; a `cargo()` package keeps its lock in step.
+                rewriteDependents: context.config.cargo?.discover === true,
+                scanManifests: [...scanManifests],
+            });
+
+            for (const path of cargo.touched) {
+                touched.add(path);
+            }
+
+            extraFileWarnings.push(...cargo.warnings);
+        }
+
+        // Cargo planned above: its release filter also covers JS packages that claim a Cargo manifest. The rest run in plan order.
+        for (const eco of RELEASE_PLAN_ORDER) {
+            const releases = context.plan.releases.flatMap((release) => {
+                const pkg = context.depGraph.getPackage(release.name);
+
+                return pkg?.ecosystem === eco.id ? [{ name: release.name, newVersion: release.newVersion }] : [];
+            });
+
+            if (releases.length === 0 || eco.plan === undefined) {
+                continue;
+            }
+
+            const outcome = await eco.plan({ context, pending, projects: context.projectsByEcosystem?.get(eco.id) ?? [], releases });
+
+            for (const path of outcome.touched) {
+                touched.add(path);
+            }
+
+            extraFileWarnings.push(...outcome.warnings);
+        }
+
+        for (const path of touched) {
+            applied.writes.push({ content: pending.get(path)!, path });
         }
 
         // Surface warnings through plan.warnings so they bubble up to
@@ -1261,7 +1446,7 @@ export const publishContext = async (context: OrchestratorContext, options: Publ
         const { clearState, filterPlanByState, newState, readState, writeState } = await import("./state");
         const { readStagedRegistry, removePendingStages, upsertPendingStages, writeStagedRegistry } = await import("./staged-registry");
         const changesDir = context.config.changesDir ?? DEFAULT_CHANGES_DIR;
-        // Git-tracked publish lock (RFC §19.1 / tegami parity): persists state to
+        // Git-tracked publish lock (RFC §19.1): persists state to
         // a committed `publish-lock.json` so an ephemeral runner can resume.
         // When enabled, a committed lock means "resume" even without --resume —
         // its mere presence signals an in-progress publish from another runner.
@@ -1536,7 +1721,7 @@ export const publishContext = async (context: OrchestratorContext, options: Publ
             });
         }
 
-        // syncGitTag groups (tegami parity): members collapse to one shared tag +
+        // syncGitTag groups: members collapse to one shared tag +
         // aggregate release. Resolved once for the wave — both the tag-creation
         // phase below and createRemoteReleases consume it (no double resolution).
         const { resolveSyncTagGroups } = await import("./group-tags");
@@ -1578,17 +1763,16 @@ export const publishContext = async (context: OrchestratorContext, options: Publ
                     );
                     result.tags.push(tag);
                 } catch (error) {
-                    // Don't fail the whole batch on a single tag collision —
-                    // it usually means an idempotent re-run is hitting an
-                    // already-tagged version. Surface as a skip with reason.
-                    // Under `--first-release` we additionally suppress the
-                    // TAG_COLLISION surface: a freshly-cloned greenfield repo
-                    // can't legitimately produce colliding tags, so this is
-                    // always the "re-run with dangling state" recovery path.
+                    // Under `--first-release` a TAG_COLLISION is the "re-run with
+                    // dangling state" recovery path: a freshly-cloned greenfield repo
+                    // can't legitimately produce colliding tags, so it is skipped.
+                    // Any other tag-creation failure leaves the package published but
+                    // untagged, so it is a failure: the command exits non-zero and the
+                    // state file stays so the tag can be retried.
                     if (context.firstRelease && error instanceof VisReleaseError && error.code === "TAG_COLLISION") {
                         result.skipped.push({ name: tag, reason: "tag-creation: tag already exists (first-release — skipped)" });
                     } else {
-                        result.skipped.push({ name: tag, reason: `tag-creation: ${(error as Error).message}` });
+                        result.failed.push({ name: tag, reason: `tag-creation: ${(error as Error).message}` });
                     }
                 }
 
@@ -1652,7 +1836,7 @@ export const publishContext = async (context: OrchestratorContext, options: Publ
                     if (context.firstRelease && error instanceof VisReleaseError && error.code === "TAG_COLLISION") {
                         result.skipped.push({ name: group.tag, reason: "tag-creation: tag already exists (first-release — skipped)" });
                     } else {
-                        result.skipped.push({ name: group.tag, reason: `tag-creation: ${(error as Error).message}` });
+                        result.failed.push({ name: group.tag, reason: `tag-creation: ${(error as Error).message}` });
                     }
                 }
             }

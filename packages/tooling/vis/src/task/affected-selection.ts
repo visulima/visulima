@@ -34,6 +34,9 @@ export interface AffectedSelectionOptions {
 }
 
 export interface SelectAffectedInput {
+    /** Unowned-path globs from `vis.config.ts#affectedIgnore`. */
+    affectedIgnore?: string[];
+
     /** Default base branch from `vis.config.ts#defaultBase`. */
     defaultBase?: string;
 
@@ -122,7 +125,7 @@ const defaultReadWorkingTreeChanges = (workspaceRoot: string): string[] => {
  */
 export const selectAffectedProjects = async (
     options: AffectedSelectionOptions,
-    workspace: { projectGraph: ProjectGraph; projects: Record<string, ProjectConfiguration>; workspaceRoot: string },
+    workspace: { fileOwners?: Record<string, string[]>; projectGraph: ProjectGraph; projects: Record<string, ProjectConfiguration>; workspaceRoot: string },
     input: SelectAffectedInput = {},
 ): Promise<SelectAffectedResult> => {
     const downstreamValue = options.downstream ?? "deep";
@@ -136,7 +139,7 @@ export const selectAffectedProjects = async (
         throw new VisUserError(`Invalid --upstream value: "${upstreamValue}". Must be "none", "direct", or "deep".`);
     }
 
-    const { projectGraph, projects, workspaceRoot } = workspace;
+    const { fileOwners, projectGraph, projects, workspaceRoot } = workspace;
     const notes: string[] = [];
 
     let { base } = options;
@@ -184,7 +187,10 @@ export const selectAffectedProjects = async (
                 .map((project) => project.root?.replace(/\/$/, ""))
                 .filter((root): root is string => Boolean(root) && root !== ".");
 
-            additionalChangedFiles = workingTreeFiles.filter((file) => projectRoots.some((root) => file === root || file.startsWith(`${root}/`)));
+            additionalChangedFiles = workingTreeFiles.filter(
+                (file) =>
+                    (fileOwners !== undefined && Object.hasOwn(fileOwners, file)) || projectRoots.some((root) => file === root || file.startsWith(`${root}/`)),
+            );
 
             const skipped = workingTreeFiles.length - additionalChangedFiles.length;
 
@@ -207,12 +213,18 @@ export const selectAffectedProjects = async (
         additionalChangedFiles,
         base,
         downstream: downstreamValue as AffectedScope,
+        fileOwners,
         head,
+        ignoredFiles: input.affectedIgnore,
         projectGraph,
         projects,
         upstream: upstreamValue as AffectedScope,
         workspaceRoot,
     });
+
+    if (result.ignoredFiles.length > 0) {
+        notes.push(`ignoring ${result.ignoredFiles.length} changed path(s) outside any project matching affectedIgnore`);
+    }
 
     return { ...result, notes, uncommittedFileCount: additionalChangedFiles.length };
 };

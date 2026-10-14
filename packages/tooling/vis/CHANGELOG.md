@@ -1,3 +1,45 @@
+## @visulima/vis [4.3.0](https://github.com/visulima/visulima/compare/@visulima/vis@4.2.0...@visulima/vis@4.3.0) (2026-10-13)
+
+### Features
+
+* **vis:** release, task, audit and SBOM support for all languages ([#954](https://github.com/visulima/visulima/issues/954)) ([3bbd816](https://github.com/visulima/visulima/commit/3bbd816777b409d841bb6a2501ebc96db9bf0233)), closes [#947](https://github.com/visulima/visulima/issues/947)
+
+
+### Dependencies
+
+* **@visulima/tui:** upgraded to 4.0.30
+* **@visulima/tui-kit:** upgraded to 1.0.33
+* **@visulima/cerebro:** upgraded to 3.1.3
+* **@visulima/colorize:** upgraded to 2.2.0
+* **@visulima/fs:** upgraded to 6.1.0
+* **@visulima/package:** upgraded to 5.0.43
+* **@visulima/pail:** upgraded to 5.0.1
+* **@visulima/tsconfig:** upgraded to 3.2.37
+
+## @visulima/vis [4.2.0](https://github.com/visulima/visulima/compare/@visulima/vis@4.1.20...@visulima/vis@4.2.0) (2026-10-09)
+
+### Features
+
+* **vis:** add affectedIgnore config option ([#937](https://github.com/visulima/visulima/issues/937)) ([3576acb](https://github.com/visulima/visulima/commit/3576acbf523007b0244815f34ca7e309f69396b7))
+
+### Bug Fixes
+
+* **vis:** stop clean --empty-packages from deleting source directories ([#939](https://github.com/visulima/visulima/issues/939)) ([08ef1fd](https://github.com/visulima/visulima/commit/08ef1fded6f3cb0af1464ddc7716a86bedd513a7))
+
+### Build System
+
+* **deps:** bump proxy-addr ([#934](https://github.com/visulima/visulima/issues/934)) ([11ef6ee](https://github.com/visulima/visulima/commit/11ef6eecbf8c3e1089993d5cab010ed7fd0f3951))
+* **deps:** combine open Dependabot dependency updates ([#926](https://github.com/visulima/visulima/issues/926)) ([1f276d6](https://github.com/visulima/visulima/commit/1f276d60e2b0c08059ccccfc9b7c8e5bd61f8c7c))
+
+### Continuous Integration
+
+* **cargo-test:** gate clippy and record fat-lto evidence ([#929](https://github.com/visulima/visulima/issues/929)) ([fb6bef8](https://github.com/visulima/visulima/commit/fb6bef801299981ae74b62f531c0254d5c710112))
+
+
+### Dependencies
+
+* **@visulima/task-runner:** upgraded to 1.1.0
+
 ## @visulima/vis [4.1.20](https://github.com/visulima/visulima/compare/@visulima/vis@4.1.19...@visulima/vis@4.1.20) (2026-10-05)
 
 

@@ -1150,6 +1150,19 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
         }
     }
 
+    // versionFiles drift. A non-JS manifest (Cargo.toml, tauri.conf.json)
+    // that declares a different version than package.json means the next
+    // release will ship two versions. Doctor reports it before the release does.
+    {
+        const { checkVersionFile } = await import("../../../release/core/version-files");
+
+        for (const pkg of ctx.packages) {
+            for (const entry of ctx.perPackageConfig.get(pkg.name)?.versionFiles ?? []) {
+                checks.push(await checkVersionFile({ entry, packageDir: pkg.dir, packageName: pkg.name, packageVersion: pkg.version }));
+            }
+        }
+    }
+
     // uv-aware Python packages (release-please #2560 / #2561).
     //
     // Per-package config carries `uvLockPath` (the operator wants vis

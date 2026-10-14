@@ -134,10 +134,15 @@ export const applyReleasePlan = async (
             return {
                 changelogEntry: entry,
                 changelogPath: cl,
-                manifestWrite: {
-                    content: serializeManifest(updatedManifest, originalManifest),
-                    path: pkg.manifestPath,
-                } satisfies AppliedFileChange,
+                // A non-npm manifest (Cargo.toml, pyproject.toml) is TOML: its version and
+                // requirements are written by the ecosystem plan, never serialized from the synthetic manifest.
+                manifestWrite:
+                    pkg.ecosystem === undefined
+                        ? ({
+                            content: serializeManifest(updatedManifest, originalManifest),
+                            path: pkg.manifestPath,
+                        } satisfies AppliedFileChange)
+                        : undefined,
             };
         }),
     );
@@ -156,7 +161,9 @@ export const applyReleasePlan = async (
             continue;
         }
 
-        writes.push(result.manifestWrite);
+        if (result.manifestWrite) {
+            writes.push(result.manifestWrite);
+        }
 
         const existing = changelogBuckets.get(result.changelogPath);
 

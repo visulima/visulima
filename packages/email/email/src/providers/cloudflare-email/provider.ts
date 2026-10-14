@@ -2,9 +2,8 @@ import { createTransportDkimSigner } from "../../crypto/dkim-signer";
 import EmailError from "../../errors/email-error";
 import RequiredOptionError from "../../errors/required-option-error";
 import type { EmailResult, Result } from "../../types";
+import applyMessageId from "../../utils/apply-message-id";
 import buildMimeMessage from "../../utils/build-mime-message";
-import generateMessageId from "../../utils/generate-message-id";
-import headersToRecord from "../../utils/headers-to-record";
 import validateEmailOptions from "../../utils/validation/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
@@ -73,11 +72,8 @@ const cloudflareEmailProvider: ProviderFactory<CloudflareEmailConfig> = definePr
                     return { error: new EmailError(PROVIDER_NAME, "A single `to` recipient is required"), success: false };
                 }
 
-                const messageId = generateMessageId();
-                let raw = await buildMimeMessage({
-                    ...emailOptions,
-                    headers: { ...emailOptions.headers ? headersToRecord(emailOptions.headers) : {}, "Message-ID": messageId },
-                });
+                const { headers, messageId } = applyMessageId(emailOptions);
+                let raw = await buildMimeMessage({ ...emailOptions, headers });
 
                 // DKIM commits to the serialized message, so it has to run here — after the MIME
                 // is built and before the binding takes it.

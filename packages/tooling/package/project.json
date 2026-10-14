@@ -4,5 +4,5 @@
     "sourceRoot": "packages/tooling/package/src",
     "projectType": "library",
     "tags": ["package", "type:package", "category:file-system"],
-    "implicitDependencies": ["filesystem/fs", "filesystem/path"]
+    "implicitDependencies": ["data-manipulation/yaml", "filesystem/fs", "filesystem/path"]
 }

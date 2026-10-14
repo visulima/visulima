@@ -8,6 +8,8 @@ rules:
         # checks out PR-controlled refs, so the fork-takeover pattern that makes
         # pull_request_target dangerous doesn't apply here.
         ignore:
+            - "pr-size.yml"
+            - "pr-vouch.yml"
             - "allo-allo.yaml"
             - "labeler.yml"
             - "require-allow-edits.yml"

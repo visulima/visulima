@@ -86,9 +86,11 @@ describe.runIf(!("window" in globalThis))("colors", () => {
     it("should return a function colorized if color is set to true", () => {
         expect.assertions(1);
 
+        // Build the expected value with the same `stylize` call: colorize wraps a multi-line
+        // source once per line, so a single hand-written wrap does not match.
         const functionString = function foo() {}.toString();
 
-        expect(inspect(function foo() {}, { stylize })).toBe(`\u001B[36m[Function: ${functionString}]\u001B[39m`);
+        expect(inspect(function foo() {}, { stylize })).toBe(stylize(`[Function: ${functionString}]`, "special"));
     });
 
     it("should return a POSITIVE_INFINITY colorized if color is set to true", () => {

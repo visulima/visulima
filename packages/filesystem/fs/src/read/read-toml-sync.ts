@@ -2,6 +2,7 @@ import { parse } from "smol-toml";
 
 import type { CompressionType, ReadTomlOptions } from "../types";
 import readFileSync from "./read-file-sync";
+import toPlainObject from "./utils/to-plain-object";
 
 /**
  * Synchronously reads a TOML file and parses it into an object.
@@ -20,7 +21,7 @@ import readFileSync from "./read-file-sync";
 const readTomlSync = (path: URL | string, options?: ReadTomlOptions<CompressionType>): Record<string, unknown> => {
     const content = readFileSync(path, { encoding: "utf8", ...options });
 
-    return parse(content);
+    return toPlainObject(parse(content));
 };
 
 export default readTomlSync;

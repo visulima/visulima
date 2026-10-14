@@ -255,6 +255,28 @@ export interface ScopedTasksBlock {
 }
 
 export interface VisConfig {
+    /**
+     * Workspace-relative glob patterns for changed files outside every
+     * project that `vis affected`, `vis run --affected`, `vis ci` and
+     * `vis ci ignore` should not count as a change.
+     *
+     * By default a changed file that belongs to no project (a root
+     * `tsconfig.json`, `package.json`, …) is a global change and marks every
+     * project affected. A changed file matching one of these patterns is
+     * skipped instead. The patterns are only checked for files that belong
+     * to NO project: a file inside a project root is never filtered, so a
+     * broad pattern like `*.md` cannot hide a real package change.
+     *
+     * Patterns use `path.matchesGlob` syntax, where `*` does not cross `/`:
+     * `*.md` matches `README.md` but not `docs/guide.md`.
+     *
+     * Do NOT list paths whose changes really do affect projects, such as
+     * bundler-inlined shared source or the root `tsconfig.json`: an edit
+     * there would then run nothing.
+     * @example ["api-snapshots/**", "plans/**", "*.md"]
+     */
+    affectedIgnore?: string[];
+
     /** AI analysis configuration */
     ai?: {
         /** Cache TTL in milliseconds. Overrides default (1h / 30min for security). */
@@ -283,6 +305,12 @@ export interface VisConfig {
      * renders the generated CODEOWNERS file.
      */
     codeowners?: CodeownersConfig;
+
+    /**
+     * Composer packages as task projects. Off by default: a `composer.json` in a
+     * subdirectory gets validate and, when its scripts define them, test and lint targets.
+     */
+    composer?: { discover?: boolean };
 
     /**
      * Project dependency constraints.
@@ -364,6 +392,13 @@ export interface VisConfig {
          */
         templates?: Record<string, string>;
     };
+
+    /**
+     * Dart pub workspace members as task projects. Off by default: each member listed
+     * under the root `pubspec.yaml`'s `workspace:` gets analyze, test and format-check
+     * targets only when this is set.
+     */
+    dart?: { discover?: boolean };
 
     /**
      * Default base branch used by `vis affected`, `vis ci`, and `vis run --affected`
@@ -464,6 +499,14 @@ export interface VisConfig {
     };
 
     /**
+     * Gems as task projects. Off by default: each `*.gemspec` directory (except `vendor`,
+     * `node_modules` and `.bundle`) gets build, test and lint targets when this is set. The
+     * root directory is not a task project. POSIX only: the inferred commands are not verified
+     * on Windows.
+     */
+    gem?: { discover?: boolean };
+
+    /**
      * Configuration for the `vis generate` in-repo scaffolding command.
      * Points at additional template directories beyond the defaults
      * (`.vis/templates/` and `.moon/templates/`).
@@ -496,6 +539,25 @@ export interface VisConfig {
          */
         templates?: string[];
     };
+
+    /**
+     * Go modules (the `use` entries of `go.work`) as task projects. Off by default.
+     * The root module is not a task project.
+     */
+    go?: { discover?: boolean };
+
+    /**
+     * Gradle projects as task projects. Off by default: a `settings.gradle(.kts)`
+     * with a build script for each module gets build and test targets only when this is set.
+     */
+    gradle?: { discover?: boolean };
+
+    /**
+     * Hex apps as task projects. Off by default: each `&lt;apps_path>/*` app of an umbrella
+     * `mix.exs` gets build, test and format-check targets when this is set. The root project
+     * is not a task project. POSIX only: the inferred commands are not verified on Windows.
+     */
+    hex?: { discover?: boolean };
 
     /**
      * Auto-create targets from detected config files (Project Crystal-style).
@@ -669,6 +731,12 @@ export interface VisConfig {
     };
 
     /**
+     * Maven modules as task projects. Off by default: a directory with a
+     * `pom.xml` (and a project-root `artifactId`) gets build and test targets only when this is set.
+     */
+    maven?: { discover?: boolean };
+
+    /**
      * `vis-mcp` promotion notice shown after successful commands when an
      * AI CLI (Claude Code, Cursor, Windsurf, Continue, Zed, Cline) is
      * installed but `@visulima/vis-mcp` is not wired into its config.
@@ -695,6 +763,13 @@ export interface VisConfig {
      * to task-runner's `namedInputs` but configurable from the vis config.
      */
     namedInputs?: NamedInputs;
+
+    /**
+     * NuGet projects as task projects. Off by default: each directory with one `*.csproj` or
+     * `*.fsproj` (outside `bin`, `obj` and `node_modules`) gets build, test and format:check
+     * targets when this is set. POSIX only: the inferred commands are not verified on Windows.
+     */
+    nuget?: { discover?: boolean };
 
     /** Package override mappings applied during migration (e.g., `{ "lodash": "lodash-es" }`) */
     overrides?: Record<string, string>;
@@ -1023,6 +1098,12 @@ export interface VisConfig {
     };
 
     /**
+     * Python projects as task projects. Off by default: a directory with a
+     * `pyproject.toml` (and `[project]`) gets an inferred build target only when this is set.
+     */
+    python?: { discover?: boolean };
+
+    /**
      * Configuration for the `vis release` subsystem. Controls change-file
      * authoring, version computation, channel routing, publish behavior,
      * and CI integration. See `packages/tooling/vis/rfc/design-release-manager.md`.
@@ -1096,6 +1177,20 @@ export interface VisConfig {
      * cross-runtime multi-tool (see `rfc/design-runtime-multitool.md`).
      */
     runtime?: RuntimeId;
+
+    /**
+     * Options for `vis sbom`. `ecosystems` opts in ecosystems that the BOM otherwise leaves out:
+     * Maven, Gradle, Hex, Go, Dart, Swift, NuGet and Zig. An ecosystem is also included when its
+     * discover key (`maven.discover`, `go.discover`, ...) is on. Presence of a lock file or manifest
+     * alone does not include it; `vis sbom` reports such ecosystems on stderr instead.
+     * @example
+     * ```
+     * sbom: { ecosystems: ["go", "zig"] }
+     * ```
+     */
+    sbom?: {
+        ecosystems?: ("dart" | "go" | "gradle" | "hex" | "maven" | "nuget" | "swift" | "zig")[];
+    };
 
     /**
      * Cascading scoped-task blocks. Each block may narrow its tasks to a
@@ -1992,6 +2087,12 @@ export interface VisConfig {
     strictEnv?: boolean;
 
     /**
+     * Swift packages (a `Package.swift` directory under the root) as task projects.
+     * Off by default. Commands are `swift build`, `swift test`, and a `swift-format lint --strict` check.
+     */
+    swift?: { discover?: boolean };
+
+    /**
      * Named bundles of target dependencies, referenceable from any task's
      * `dependsOn`. `dependsOn: [{ group: "lint" }]` expands to every entry
      * in the named group; nested groups are resolved recursively and a
@@ -2030,6 +2131,7 @@ export interface VisConfig {
     toolchain?: Omit<InternalToolchainConfig, "preferredManager"> & {
         readonly preferredManager?: Exclude<VersionManagerName, "self-activate">;
     };
+
     /** Terminal UI configuration */
     tui?: {
         /**
@@ -2136,6 +2238,13 @@ export interface VisConfig {
      * @example ">=1.0.0"
      */
     versionConstraint?: string;
+
+    /**
+     * Zig packages as task projects. Off by default: the workspace root's
+     * `build.zig.zon` and its in-workspace `.path` dependencies get build, test and
+     * format-check targets only when this is set. The root itself is not a task project.
+     */
+    zig?: { discover?: boolean };
 }
 
 /**

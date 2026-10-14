@@ -1,3 +1,49 @@
+## @visulima/storage [2.0.39](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.38...@visulima/storage@2.0.39) (2026-10-13)
+
+### Bug Fixes
+
+* **storage:** drop unneeded auth cast in google drive client ([#958](https://github.com/visulima/visulima/issues/958)) ([28c79e2](https://github.com/visulima/visulima/commit/28c79e2a3f78651fa71408ecced32d8e53efe615))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.1.0
+
+## @visulima/storage [2.0.38](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.37...@visulima/storage@2.0.38) (2026-10-12)
+
+### Bug Fixes
+
+* **storage:** retry metafile delete while windows holds it open ([#946](https://github.com/visulima/visulima/issues/946)) ([04ed038](https://github.com/visulima/visulima/commit/04ed0380265ac9b32e0cf5fb385cbc89567f11bc))
+
+## @visulima/storage [2.0.37](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.36...@visulima/storage@2.0.37) (2026-10-09)
+
+### Bug Fixes
+
+* **storage:** drain bodies abandoned by failed writes and web adapters ([#944](https://github.com/visulima/visulima/issues/944)) ([273cda1](https://github.com/visulima/visulima/commit/273cda1b185634534c255bcd5d94d14024737bb7))
+
+## @visulima/storage [2.0.36](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.35...@visulima/storage@2.0.36) (2026-10-09)
+
+### Bug Fixes
+
+* **storage:** drain abandoned tus and multipart bodies before the 413 ([#943](https://github.com/visulima/visulima/issues/943)) ([6c37576](https://github.com/visulima/visulima/commit/6c37576916dfe8e5824864825991cb195e0d2d15))
+
+## @visulima/storage [2.0.35](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.34...@visulima/storage@2.0.35) (2026-10-09)
+
+### Bug Fixes
+
+* **storage:** drain an oversized body before closing so clients read the 413 ([#942](https://github.com/visulima/visulima/issues/942)) ([1f32696](https://github.com/visulima/visulima/commit/1f3269648c7a13311e14af284cd81090d9ca9203))
+
+## @visulima/storage [2.0.34](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.33...@visulima/storage@2.0.34) (2026-10-07)
+
+### Bug Fixes
+
+* **package:** depend on @visulima/yaml directly ([#932](https://github.com/visulima/visulima/issues/932)) ([852c6d3](https://github.com/visulima/visulima/commit/852c6d3298c59d2895c998c1f4ceb7db0be6bb6f)), closes [#931](https://github.com/visulima/visulima/issues/931)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.29
+
 ## @visulima/storage [2.0.33](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.32...@visulima/storage@2.0.33) (2026-10-05)
 
 ### Bug Fixes

@@ -28,6 +28,7 @@ const emptyResult = {
     changedFiles: [],
     changedProjects: [],
     downstreamProjects: [],
+    ignoredFiles: [],
     upstreamProjects: [],
 };
 
@@ -140,6 +141,28 @@ describe(selectAffectedProjects, () => {
         expect(result.notes.join("\n")).toMatch(/ignoring 3 uncommitted path\(s\) outside any project/);
     });
 
+    it("should keep an uncommitted root file that has owners, and forward the owners with affectedIgnore", async () => {
+        expect.assertions(1);
+
+        getAffectedProjectsMock.mockResolvedValueOnce(emptyResult);
+
+        const fileOwners = { "Cargo.lock": ["api"] };
+
+        await selectAffectedProjects(
+            { base: "HEAD~1", head: "HEAD" },
+            { ...workspace, fileOwners },
+            {
+                affectedIgnore: ["*.md"],
+                readWorkingTreeChanges: () => ["Cargo.lock", "packages/api/src/index.ts", "notes.md"],
+                runningInCi: false,
+            },
+        );
+
+        expect(getAffectedProjectsMock).toHaveBeenCalledWith(
+            expect.objectContaining({ additionalChangedFiles: ["Cargo.lock", "packages/api/src/index.ts"], fileOwners, ignoredFiles: ["*.md"] }),
+        );
+    });
+
     it("should ignore the working tree in CI, where the checkout is the whole truth", async () => {
         expect.assertions(2);
 
@@ -178,5 +201,18 @@ describe(selectAffectedProjects, () => {
 
         expect(readWorkingTreeChanges).not.toHaveBeenCalled();
         expect(result.notes.join("\n")).toMatch(/ignoring --uncommitted/);
+    });
+
+    it("should forward affectedIgnore and note the changed paths it skipped", async () => {
+        expect.assertions(2);
+
+        getAffectedProjectsMock.mockResolvedValueOnce({ ...emptyResult, ignoredFiles: ["api-snapshots/a.api.md", "README.md"] });
+
+        const result = await selectAffectedProjects({ base: "HEAD~1", head: "HEAD", uncommitted: false }, workspace, {
+            affectedIgnore: ["api-snapshots/**", "*.md"],
+        });
+
+        expect(getAffectedProjectsMock).toHaveBeenCalledWith(expect.objectContaining({ ignoredFiles: ["api-snapshots/**", "*.md"] }));
+        expect(result.notes).toStrictEqual(["ignoring 2 changed path(s) outside any project matching affectedIgnore"]);
     });
 });

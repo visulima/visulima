@@ -1,4 +1,6 @@
-import type { IncomingMessage, OutgoingHttpHeader, ServerResponse } from "node:http";
+import type { OutgoingHttpHeader, ServerResponse } from "node:http";
+import { IncomingMessage } from "node:http";
+import type { Socket } from "node:net";
 import { Readable } from "node:stream";
 import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 
@@ -14,6 +16,20 @@ import type { Header, Headers, IncomingMessageWithBody } from "./types";
  * @internal
  */
 export const BODY_LIMIT_EXCEEDED_MESSAGE = "Request body length limit exceeded";
+
+/**
+ * Bytes past its limit that a refused body is still read and discarded for, so the client gets to
+ * read the 413; a client sending more has its connection cut.
+ * @internal
+ */
+export const MAX_DRAIN_BYTES = 4 * 1024 * 1024;
+
+/**
+ * Milliseconds a refused body is drained for before its connection is cut, so a slow or stalled
+ * client can't hold it open.
+ * @internal
+ */
+export const MAX_DRAIN_MS = 5000;
 
 const jsonType = new TypeIs(["json"]);
 
@@ -51,6 +67,97 @@ const extractForwarded = (request: IncomingMessage): { host: string; proto: stri
     return { host, proto };
 };
 
+const drainingBodies = new WeakSet<Readable>();
+
+/**
+ * Reads and discards the rest of a request body nothing will read any more, so the client gets to
+ * read the error response. Closing the connection while the client is still sending makes the kernel
+ * answer with a reset, which on macOS and Windows drops the response before the client reads it; and
+ * a consumed body left paused is never dumped by Node, leaving the connection stuck until a timeout.
+ * Once drained, the connection stays usable for the next request. A client that sends more than
+ * {@link MAX_DRAIN_BYTES} past this call, or for longer than {@link MAX_DRAIN_MS}, is cut off; for a
+ * request its reader already destroyed, only the time limit applies. Calling it again for the same
+ * body is a no-op.
+ * @internal
+ * @param request Request whose body was abandoned mid-stream
+ * @param socket The request's connection, needed for a request a reader already destroyed
+ */
+export const drainAbandonedBody = (request: Readable, socket?: Socket | null): void => {
+    if (request.readableEnded || drainingBodies.has(request)) {
+        return;
+    }
+
+    if (request.destroyed) {
+        // pipeline() and for-await destroy a server request with its socket detached, so the response
+        // can still be sent, but the HTTP parser then stops reading the socket. Mark the body dumped,
+        // which makes the parser discard the rest (Node's own handling of an unread body, an internal
+        // API), and resume the socket.
+        if (!(request instanceof IncomingMessage) || request.complete || !socket || socket.destroyed) {
+            return;
+        }
+
+        drainingBodies.add(request);
+        (request as IncomingMessage & { _dump: () => void })._dump();
+        socket.resume();
+
+        // Only the time cap applies here: the parser reads the socket natively, so no byte passes
+        // through this code to be counted.
+        setTimeout(() => {
+            if (!request.complete) {
+                socket.destroy();
+            }
+        }, MAX_DRAIN_MS).unref();
+
+        return;
+    }
+
+    drainingBodies.add(request);
+
+    // Detach whatever was reading it (a pipe, a web stream adapter), which would otherwise keep
+    // buffering the body or pause it again.
+    request.unpipe();
+    request.removeAllListeners("data");
+
+    let drained = 0;
+    const timer = setTimeout(() => request.destroy(), MAX_DRAIN_MS).unref();
+    const stopTimer = (): void => {
+        clearTimeout(timer);
+    };
+
+    request.on("data", (chunk: Buffer | string) => {
+        drained += Buffer.byteLength(chunk);
+
+        if (drained > MAX_DRAIN_BYTES) {
+            request.destroy();
+        }
+    });
+    request.once("close", stopTimer);
+    request.once("end", stopTimer);
+    request.resume();
+};
+
+/**
+ * {@link drainAbandonedBody} for a Web API request whose body nothing holds any more. Cancelling the
+ * body instead leaves the rest to the runtime, and a Node adapter may then close the connection
+ * mid-body (`@hono/node-server`'s body wrapper ignores the cancel, its reader stalls, and the adapter
+ * closes the socket after 500 ms), losing the error response to the reset.
+ * @internal
+ * @param request Web API request whose body was abandoned mid-stream
+ */
+export const drainAbandonedWebBody = (request: Request): void => {
+    if (!request.body || request.body.locked) {
+        return;
+    }
+
+    const body = Readable.fromWeb(request.body as unknown as NodeReadableStream);
+
+    // A client disconnecting mid-drain errors the stream; nothing else listens.
+    body.on("error", () => {
+        // Nothing left to answer
+    });
+    drainAbandonedBody(body);
+};
+
 /**
  * Reads the body of an HTTP request as a string with optional size limit.
  * @param request HTTP request object to read body from
@@ -78,13 +185,11 @@ export const readBody = (
             byteLength += buf.length;
 
             if (limit !== undefined && byteLength > limit) {
-                // Stop buffering but keep the socket open so the caller can still send the 413;
-                // the remaining body is discarded and `Connection: close` ends the socket after the response.
-                request.off("data", onData);
+                // Stop buffering, but drain the rest so the client gets to read the 413.
                 request.off("end", onEnd);
-                request.resume();
                 chunks.length = 0;
-                reject(createHttpError(413, BODY_LIMIT_EXCEEDED_MESSAGE, { headers: { Connection: "close" } }));
+                drainAbandonedBody(request);
+                reject(createHttpError(413, BODY_LIMIT_EXCEEDED_MESSAGE));
 
                 return;
             }
@@ -134,7 +239,8 @@ export const readWebRequestText = async (request: Request, limit: number): Promi
         byteLength += value.byteLength;
 
         if (byteLength > limit) {
-            await reader.cancel();
+            reader.releaseLock();
+            drainAbandonedWebBody(request);
 
             throw createHttpError(413, BODY_LIMIT_EXCEEDED_MESSAGE);
         }

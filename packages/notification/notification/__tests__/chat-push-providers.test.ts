@@ -121,4 +121,48 @@ describe("chat + push providers", () => {
         expect(getAccessToken).toHaveBeenCalledTimes(1);
         expect(String(fetchMock.mock.calls[0][0])).toContain("/v1/projects/p/messages:send");
     });
+
+    it("fcm maps per-message ttl and urgency onto the android block", async () => {
+        expect.assertions(2);
+
+        fetchMock
+            .mockResolvedValueOnce(jsonResponse({ name: "projects/p/messages/0:1" }))
+            .mockResolvedValueOnce(jsonResponse({ name: "projects/p/messages/0:2" }));
+
+        const provider = createFcmProvider({ accessToken: "ya29.token", projectId: "p" });
+
+        await provider.send({ body: "hi", to: "devtoken", ttl: 60, urgency: "high" });
+        await provider.send({ body: "hi", to: "devtoken" });
+
+        const withHints = JSON.parse(String(fetchMock.mock.calls[0][1].body)) as { message: Record<string, unknown> };
+        const plain = JSON.parse(String(fetchMock.mock.calls[1][1].body)) as { message: Record<string, unknown> };
+
+        expect(withHints.message.android).toStrictEqual({ priority: "high", ttl: "60s" });
+        expect(plain.message.android).toBeUndefined();
+    });
+
+    it("expo maps per-message ttl and urgency onto each message", async () => {
+        expect.assertions(1);
+
+        fetchMock.mockResolvedValue(jsonResponse({ data: [{ id: "t1", status: "ok" }] }));
+
+        const provider = createExpoProvider({});
+
+        await provider.send({ body: "hi", to: "ExpoTok1", ttl: 0, urgency: "low" });
+
+        const [message] = JSON.parse(String(fetchMock.mock.calls[0][1].body)) as Record<string, unknown>[];
+
+        expect(message).toMatchObject({ priority: "normal", ttl: 0 });
+    });
+
+    it("push providers reject an invalid ttl without calling fetch", async () => {
+        expect.assertions(3);
+
+        const fcm = await createFcmProvider({ accessToken: "ya29.token", projectId: "p" }).send({ body: "hi", to: "devtoken", ttl: -5 });
+        const expo = await createExpoProvider({}).send({ body: "hi", to: "ExpoTok1", ttl: 2.5 });
+
+        expect(fcm.success).toBe(false);
+        expect(expo.success).toBe(false);
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
 });

@@ -245,7 +245,8 @@ class LocalMetaStorage<T extends File = File> extends MetaStorage<T> {
     }
 
     public override async delete(id: string): Promise<void> {
-        await remove(this.getMetaPath(id));
+        // rm retries the EPERM/EBUSY Windows raises while another handle is reading the metafile.
+        await remove(this.getMetaPath(id), { maxRetries: 20, retryDelay: LOCK_RETRY_DELAY_MS });
     }
 
     /**

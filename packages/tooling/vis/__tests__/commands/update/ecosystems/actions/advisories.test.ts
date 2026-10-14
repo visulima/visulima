@@ -9,8 +9,11 @@ vi.mock(import("node:fs"), async () => {
     return { ...actual, existsSync: vi.fn() };
 });
 
-vi.mock(import("../../../../../src/security/advisories"), () => {
+vi.mock(import("../../../../../src/security/advisories"), async (importOriginal) => {
+    const actual = await importOriginal();
+
     return {
+        ...actual,
         queryAdvisories: vi.fn(),
         resolveAdvisoryDbPath: vi.fn(() => "/fake/db"),
     };
@@ -18,6 +21,7 @@ vi.mock(import("../../../../../src/security/advisories"), () => {
 
 const { existsSync } = await import("node:fs");
 const { queryAdvisories } = await import("../../../../../src/security/advisories");
+const { advisoryKey } = await import("../../../../../src/security/advisories");
 const { decorateActionsAdvisories } = await import("../../../../../src/commands/update/ecosystems/actions/advisories");
 
 const mockedExistsSync = vi.mocked(existsSync);
@@ -74,11 +78,11 @@ describe(decorateActionsAdvisories.name, () => {
         expect(decorateActionsAdvisories("/repo", updates)).toStrictEqual(updates);
     });
 
-    it("attaches advisories from the OSV result keyed by package name", () => {
+    it("attaches advisories from the OSV result keyed by name and version", () => {
         expect.assertions(2);
 
         mockedExistsSync.mockReturnValue(true);
-        mockedQueryAdvisories.mockReturnValue(new Map([["actions/checkout", [vuln("GHSA-1", "boom")]]]));
+        mockedQueryAdvisories.mockReturnValue(new Map([[advisoryKey("actions/checkout", "v1.0.0"), [vuln("GHSA-1", "boom")]]]));
 
         const updates = [makeUpdate({ name: "actions/checkout" })];
         const result = decorateActionsAdvisories("/repo", updates);
@@ -93,8 +97,7 @@ describe(decorateActionsAdvisories.name, () => {
         mockedExistsSync.mockReturnValue(true);
 
         // Two updates of the same action pinned to different versions.
-        // The fix is to issue one query per unique (name, version) — so
-        // the name-keyed result map can't collide on itself.
+        // One query per unique (name, version) keeps each result isolated.
         mockedQueryAdvisories.mockReset();
         mockedQueryAdvisories.mockImplementation((packages) => {
             const onlyQuery = packages[0];
@@ -104,7 +107,7 @@ describe(decorateActionsAdvisories.name, () => {
             }
 
             if (onlyQuery.version === "v1.0.0") {
-                return new Map([[onlyQuery.name, [vuln("GHSA-old")]]]);
+                return new Map([[advisoryKey(onlyQuery.name, onlyQuery.version), [vuln("GHSA-old")]]]);
             }
 
             if (onlyQuery.version === "v3.0.0") {
@@ -135,7 +138,7 @@ describe(decorateActionsAdvisories.name, () => {
 
         mockedExistsSync.mockReturnValue(true);
         mockedQueryAdvisories.mockReset();
-        mockedQueryAdvisories.mockReturnValue(new Map([["actions/checkout", [vuln("GHSA-shared")]]]));
+        mockedQueryAdvisories.mockReturnValue(new Map([[advisoryKey("actions/checkout", "v1.0.0"), [vuln("GHSA-shared")]]]));
 
         const updates = [makeUpdate({ file: "/a.yml", name: "actions/checkout" }), makeUpdate({ file: "/b.yml", name: "actions/checkout" })];
 

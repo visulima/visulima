@@ -102,6 +102,152 @@ Detected from lockfile + `packageManager` field:
 
 Why always `npm publish`? Yarn refuses to publish pre-built tarballs in `yarn npm publish`; bun lacks OIDC and `--provenance`. The npm CLI is the lowest-common-denominator that works with foreign tarballs and supports trusted publishing.
 
+## Non-JS version manifests (`versionFiles`)
+
+A package that also ships a version in another ecosystem's manifest lists those files on its per-package config (`package.json["vis-release"]` or `release.packages.<name>`). Paths are relative to the package directory:
+
+```json
+{
+    "vis-release": {
+        "versionFiles": ["src-tauri/Cargo.toml", "src-tauri/tauri.conf.json"]
+    }
+}
+```
+
+Supported basenames:
+
+- `Cargo.toml` — `version` under `[package]` and `[workspace.package]`. Dependency requirements (`serde = { version = "1" }`) and inherited versions (`version.workspace = true`) are never touched.
+- `tauri.conf.json` — Tauri v2 top-level `version`, or Tauri v1 `package.version`. A path value such as `"../package.json"` is already in sync and is left alone.
+
+Edits are targeted, so comments, formatting and line endings survive. An unsupported basename fails the release with `CONFIG_INVALID`. `vis release doctor` warns when a listed manifest declares a different version from `package.json`.
+
+`Cargo.lock` follows the bump: the `[[package]]` block for the crate (the one with no `source` line) gets the new version. Registry and git dependencies are never touched. The lockfile is looked up from the crate directory up to the workspace root. A crate missing from the lockfile produces a warning, not a failure.
+
+## Cargo crates as release packages (`release.cargo.discover`)
+
+Opt-in. With `release: { cargo: { discover: true } }` in `vis.config.ts`, every crate in the root `Cargo.toml`'s `[workspace].members` (minus `exclude`) becomes a release package, even without a `package.json`. Off by default, so a repo with Rust code sees no change.
+
+- Crates a JS package already claims through `versionFiles`, `cargo()` or `cargoTomlPath` are not discovered again.
+- `publish = false` makes a crate private: it gets the `private` actions, never `cargo publish`.
+- A bump updates the crate's version and `Cargo.lock`. With `cargo.discover` on, every path dependency's requirement on it also moves (Cargo rules: a bare `0.1.0` is `^0.1.0`, the operator is kept, compound requirements are left with a warning), and so does the dependent's patch bump. Without it, a `cargo()` package releases its own crate and lock only, and other crates' requirements are not rewritten.
+- A crate that inherits `version.workspace = true` moves with its whole group. The group must release together at one version, or the release fails with `CONFIG_INVALID`.
+- Snapshot releases skip Cargo crates.
+
+## Python projects as release packages (`release.python.discover`)
+
+Opt-in. With `release: { python: { discover: true } }`, the root `pyproject.toml` (when it has `[project]`) and every `[tool.uv.workspace].members` entry (minus `exclude`) is a release package, even without a `package.json`.
+
+- A project with a dynamic or missing version fails the release with `CONFIG_INVALID`. vis only bumps a literal `[project].version`.
+- `Private :: Do Not Upload` makes a project private: it gets the `private` actions, never `python` publish.
+- A bump updates the project's version and its `uv.lock` workspace-member entry, plus the dependents' patch bumps.
+- A workspace dependency (`[tool.uv.sources] name = { workspace = true }`) whose specifier the new version falls outside is reported, not rewritten. PEP 440 rewrites need more than a line edit.
+- Snapshot releases skip non-npm packages.
+
+## Maven modules as release packages (`release.maven.discover`)
+
+Opt-in. With `release: { maven: { discover: true } }`, the root `pom.xml` and every module reachable through `<modules>` (recursively) is a release package named `groupId:artifactId`, even without a `package.json`.
+
+- A module's version comes from its own literal `<version>`, its parent's literal (inherited), or a `${property}` resolved from `<properties>` in it or an ancestor. Anything else fails the release with `CONFIG_INVALID`.
+- Modules that share an owner (a parent's literal, or one property) must release together at one version. A partial release fails with `CONFIG_INVALID` naming the modules left out.
+- A `<dependency>` on a released module whose `<version>` is a literal is rewritten to the new version. Maven literals are exact pins, so this is not a range check the way Cargo's requirements are. `${property}` versions are left alone.
+- Dependencies in `<dependencyManagement>` and `<build>` are not graph edges.
+- A module a JS package already releases (`pomPath`, `pomXml()`, or an `extraFiles` rule on a `pom.xml`) is not discovered again.
+- Maven has no lockfile, so nothing else is written. Publishing is per-module through `versionActions: "maven"`, which runs `mvn -B -f <pom> deploy` (see `docs/guides/release-maven.mdx`).
+
+## Gradle modules as release packages (`release.gradle.discover`)
+
+Opt-in. With `release: { gradle: { discover: true } }`, every module listed in `settings.gradle(.kts)` is a release package named `group:artifact`, even without a `package.json`. The root build is released only with its own `version`.
+
+- A module's version is a string literal in its own script, or in the root script's `allprojects` / `subprojects` block (`version = "…"` or `version '…'`). Anything else fails the release with `CONFIG_INVALID`, and so does a version declared twice on one path.
+- Modules that share one declaration must release together at one version. A partial release fails with `CONFIG_INVALID` naming the modules left out.
+- A `project(":x")` dependency on a released module orders the publish. It carries no version, so nothing is rewritten.
+- A `version=` in `gradle.properties` fails the release: vis reads only build-script literals. `projectDir` remaps, `archivesName` renames, and a group that is not declared fail it too. A module with no version is an aggregate and is skipped.
+- Publishing runs `<root>/gradlew :<path>:publish` through the argv runner, with no shell, POSIX only. A version the Maven metadata already lists is skipped first (`mavenMetadataUrl` overrides the URL, `""` disables the check).
+- Gradle has no lockfile vis maintains, so nothing else is written.
+
+## Composer packages as release packages (`release.composer.discover`)
+
+Opt-in. With `release: { composer: { discover: true } }`, the root `composer.json` with a `name` (`vendor/package`) is a release package. Nothing else is discovered.
+
+- The version is the highest `vX.Y.Z` git tag, `0.0.0` without one. The tag pattern is `v{version}`. The release writes no file.
+- A `"version"` key fails the release with `CONFIG_INVALID`: Packagist ignores it and reads the tag.
+- A named `composer.json` in a subdirectory fails the release with `CONFIG_INVALID`: Packagist reads only the repository root.
+- Publish checks the tag locally (`alreadyPublished` skips it). The orchestrator creates and pushes the tag after every publish succeeds. Packagist is not queried.
+- POSIX only: publish refuses on Windows with `CONFIG_INVALID` after the dry run.
+- `composer.lock` feeds the audit (`Packagist`) and the SBOM graph (`pkg:composer/...` with `require` edges).
+- Tasks (`composer.discover`, separate opt-in) infer `format:check` only from a dev dependency: `laravel/pint` runs `vendor/bin/pint --test`; `squizlabs/php_codesniffer` runs `vendor/bin/phpcs` only with a `phpcs.xml` or `phpcs.xml.dist`. No formatter, no format target.
+
+## Go modules as release packages (`release.go.discover`)
+
+Opt-in. With `release: { go: { discover: true } }`, every `use` entry of `go.work` (or the root `go.mod` without one) is a release package named by its module path. Version source: the highest git tag for the module. Full notes in `docs/guides/release.mdx`.
+
+- Tags are `<dir>/vX.Y.Z` (the root uses `vX.Y.Z`), without a trailing `/vN` segment, relative to the git toplevel. Each package sets its own `releaseTagPattern` and `currentVersionResolver: "disk"`.
+- No baseline tag means `0.0.0`. A `/vN` module with no tag for its major fails the release with `CONFIG_INVALID`.
+- The plan refuses a major that the module path cannot carry: a major 2+ needs `/vN`, and a `/vN` module releases only at major N (`planGoWorkspace`, before any tag).
+- The publish step refuses an existing local tag by skipping the module (`alreadyPublished`). It never creates a tag itself; the orchestrator creates and pushes it after every publish succeeds. The proxy is not queried.
+- Rejects `gopkg.in/` paths, uppercase module paths, `use` entries outside the workspace or without a `go.mod`, and duplicate module paths.
+- POSIX only: publish refuses on win32 with `CONFIG_INVALID` after the dry run.
+- Go has no lockfile vis writes and `go.mod` is never rewritten. The `require` lines between modules are not moved.
+- `vis sbom` lists the module versions in `go.sum` as a flat `pkg:golang/` list with no edges.
+
+## Swift packages as release packages (`release.swift.discover`)
+
+Opt-in. With `release: { swift: { discover: true } }`, every directory under the root with a `Package.swift` is a release package named by its `Package(name: "…")` literal.
+
+- The name must be a plain string literal and a valid release name (lowercase, `[a-z0-9._-]`). Anything else fails the release with `CONFIG_INVALID`, and so does a duplicate name.
+- The version comes from Git tags (`currentVersionResolver: "git-tag"`). The root package uses the bare tag (`releaseTagPattern: "{version}"`), the form SwiftPM reads. A nested package keeps the workspace tag pattern, so two packages never share a bare tag. Until a tag exists the package starts from `0.0.0`.
+- A `.package(path:)` dependency on another discovered package orders the publish (`"*"`). Nothing is written to the manifest, and remote dependencies are not rewritten.
+- Publish uploads nothing: the tag step creates the tag. The published check is `git rev-parse` on the tag, so an existing tag is skipped. Publish refuses on Windows with `CONFIG_INVALID`, after the dry run.
+- `vis sbom` lists the `Package.resolved` pins as a flat `pkg:swift/` list with no edges. `vis audit --ecosystem swift` is refused: OSV has a SwiftURL ecosystem, but vis has no range matcher for it.
+
+## Zig packages as release packages (`release.zig.discover`)
+
+Opt-in. With `release: { zig: { discover: true } }`, the root `build.zig.zon` and each in-workspace `.path` dependency that has one is a release package named by its `.name`.
+
+- The version is a `.version = "…"` string literal, rewritten in place. Any other value, or a repeated field, fails the release with `CONFIG_INVALID`. A manifest with no `.version` is an aggregate and is skipped.
+- `.path` dependencies order the release and are recorded as `*`. `.url` dependencies are not rewritten.
+- Publishing is the git tag: the existing tag (`releaseTagPattern` or `<name>@<version>`) marks the package as already published. No command runs and nothing is uploaded. POSIX only; Windows refuses after the dry run.
+- Zig has no lockfile vis maintains, so nothing else is written.
+- `vis sbom` lists the `.dependencies` of the root `build.zig.zon` and of its in-workspace `.path` packages as a flat list with no edges. A `.url` dependency is named by its host and path, as `pkg:github/` for github.com and `pkg:generic/` elsewhere. Only a tag archive (`…/archive/refs/tags/<tag>.tar.gz`, `.tgz` or `.zip`) gets a version, which is the tag with a leading `v` removed. Any other URL, such as a commit archive or a `git+` URL, has no version, and the component's `vis:zig:version` property says so. A `.path` dependency is named by its directory and has no version. A legacy `1220…` hash is recorded as a SHA-256. The current `name-version-hash` form is kept in the `vis:zig:hash` property, because its digest is truncated and is not a full SHA-256. The hash is over the package's files as Zig filters them, not over the archive.
+
+## Dart packages as release packages (`release.dart.discover`)
+
+Opt-in. With `release: { dart: { discover: true } }`, the root `pubspec.yaml` (when it sets a `version:`) and each member of its `workspace:` list is a release package named by its `name:`.
+
+- The version is a `version:` literal, plain or quoted, on a top-level line, rewritten in place with its quotes kept. A number, an expression, or a non-semver value fails the release with `CONFIG_INVALID`. A pubspec with no `version:` or with `publish_to: none` is skipped.
+- A `publish_to` that is not pub.dev fails the release. Workspace entries are literal paths or `dir/*`; anything else fails it.
+- A dependency key that names another released package orders the publish (`"*"`). Hosted dependencies are not rewritten.
+- Publishing runs `dart pub publish --force` with the argv runner, no shell, POSIX only. `https://pub.dev/api/packages/<name>` is checked first; a listed version is skipped. Credentials come from the Dart SDK's token store or OIDC, never argv.
+- Dart has no lockfile edits: `pubspec.lock` is not rewritten. `vis sbom` lists its hosted packages as a flat `pkg:pub/` list with no edges; `vis audit --ecosystem pub` is refused (OSV has a Pub ecosystem, but vis has no range matcher for it).
+
+## Gem packages as release packages (`release.gem.discover`)
+
+Opt-in. With `release: { gem: { discover: true } }`, every `*.gemspec` under the root (skipping `vendor`, `node_modules` and `.bundle`) is a release package named by its `spec.name` literal. One gemspec per directory.
+
+- The version is `spec.version = "…"` as a string literal, or `spec.version = Name::VERSION` with `VERSION = "…"` in `lib/<name>/version.rb`. The file that holds the literal is rewritten in place. Any other form, a repeated declaration, or a name that is not a valid package name fails the release with `CONFIG_INVALID`. A gemspec with no version is an aggregate and is skipped.
+- `add_dependency` / `add_runtime_dependency` on another discovered gem orders the release and is recorded as `*`.
+- Publishing runs `gem build <gemspec> --output <name>-<version>.gem`, then `gem push <file>`, with no shell. The API key comes from `GEM_HOST_API_KEY`. A version RubyGems already lists is skipped. The built file is removed afterwards.
+- Versions must be dot-separated alphanumerics (`1.2.0`, `1.2.0.beta.1`); a semver prerelease with `-` is refused. POSIX only; Windows refuses after the dry run.
+
+## Hex packages as release packages (`release.hex.discover`)
+
+Opt-in. With `release: { hex: { discover: true } }`, the root `mix.exs` is a release package, and so is each `<apps_path>/*` app of an umbrella that holds its own `mix.exs`. The name is the `package: [name: "…"]` string, or else the `app:` atom.
+
+- The version is a `version: "…"` literal in `project/0`, or `version: @version` with a literal `@version "…"` attribute. Any other value (including concatenation or interpolation), or a repeated key, fails the release with `CONFIG_INVALID`. A `mix.exs` with no `version:` key is an aggregate and is skipped, as is an umbrella root with no `app:`; the root is otherwise released only with its own version. The new version must be semver.
+- `{:app, in_umbrella: true}` and `{:app, path: "…"}` dependencies on another discovered app order the release and are recorded as `*`. Hosted requirements are not rewritten.
+- Publish runs `mix hex.publish --yes` in the package directory. The API key comes from `HEX_API_KEY`. A version already listed at `https://hex.pm/api/packages/<name>` is skipped; a failed lookup does not skip, and the publish reports the real error.
+- POSIX only for now. Publish on Windows fails with `CONFIG_INVALID` after the dry run.
+- `mix.lock` is read for `vis sbom`: every locked Hex package is a component, with the edges between them.
+
+## NuGet packages as release packages (`release.nuget.discover`)
+
+Opt-in. With `release: { nuget: { discover: true } }`, every `*.csproj` / `*.fsproj` under the root (skipping `bin`, `obj`, `node_modules`, dot-directories and claimed JS directories) is a release package named by its lowercased `PackageId` (else `AssemblyName`, else the file name).
+
+- The version is a plain `<Version>` literal, in the project file or the nearest `Directory.Build.props`. A project's own literal wins over the props value. Projects inheriting one props declaration release in lockstep; the props file is written once. `PackageVersion`, `VersionPrefix`, `VersionSuffix`, `Import`, a `Version` in `Directory.Build.targets`, conditional or repeated declarations, and expressions fail the release with `CONFIG_INVALID`. Projects with no version, with `IsPackable` set to `false`, with `IsTestProject` set to `true`, or referencing `Microsoft.NET.Test.Sdk` are not released.
+- `ProjectReference` to another released project is recorded as `*`. `PackageReference` is not rewritten.
+- Publishing runs `dotnet pack -c Release -o <temp>` and `dotnet nuget push` to nuget.org. The key comes from `NUGET_API_KEY` and reaches the push as that environment variable, not argv (NuGet 7.6+, .NET SDK 10.0.300+; older SDKs are refused). A version the flat container already lists is skipped. The key is redacted from every error.
+- The SBOM reads `packages.lock.json` at the workspace root (see `src/sbom/nuget.ts`). POSIX only; Windows refuses after the dry run.
+
 ## Workspace + catalog: protocol resolution
 
 `workspace:^1.0.0`, `workspace:~1.0.0`, `workspace:*`, `workspace:^`, `workspace:~`, and `catalog:`/`catalog:<name>` refs are resolved at publish time. Default: trust pnpm's pack to do `workspace:`/`catalog:` rewriting; for npm/yarn/bun, rewrite in-place before pack (since only `pnpm pack` understands `catalog:`).
@@ -139,7 +285,7 @@ The placeholder ships only a `README.md` (stating it must not be used) under a d
 
 ## Replay changelogs
 
-A change file can carry `replay` conditions instead of a one-shot bump (tegami parity). Such a file is **retained** on `version` — not deleted — and its body is re-emitted into a package's changelog when a milestone fires:
+A change file can carry `replay` conditions instead of a one-shot bump. Such a file is **retained** on `version` — not deleted — and its body is re-emitted into a package's changelog when a milestone fires:
 
 ```markdown
 ---
@@ -213,7 +359,7 @@ await client.releaseVersion();
 
 ## Lifecycle plugins
 
-Beyond the single-purpose `defineVersionActions` / `defineChangelogFormatter` / `defineNotificationChannel` extension points, a **lifecycle plugin** (tegami parity) can hook arbitrary points of the version/publish flow. Register via `release.plugins`:
+Beyond the single-purpose `defineVersionActions` / `defineChangelogFormatter` / `defineNotificationChannel` extension points, a **lifecycle plugin** can hook arbitrary points of the version/publish flow. Register via `release.plugins`:
 
 ```ts
 import { defineReleasePlugin } from "@visulima/vis/release";
@@ -239,7 +385,7 @@ Hooks (all optional): `applyDraft({ plan })` after versions+changelogs are writt
 
 ## Shared group tags (`syncGitTag`)
 
-`release.fixed` / `release.linked` groups can collapse to a **single git tag + one aggregate GitHub/GitLab release** for the whole group instead of one tag + release per member (tegami parity):
+`release.fixed` / `release.linked` groups can collapse to a **single git tag + one aggregate GitHub/GitLab release** for the whole group instead of one tag + release per member:
 
 ```ts
 release: {
@@ -253,7 +399,7 @@ This tags the wave once as `acme@<version>` (the highest member version; overrid
 
 - **Idempotent re-runs**: every command uses three-layer "already published" detection (git tag → npm registry → custom `checkPublished`). Re-running `vis release publish` after a partial failure skips already-published packages.
 - **State file**: `<changesDir>/.state.json` (gitignored) persists in-progress release state. Use `vis release publish --resume` after a failure to retry only the failed subset.
-- **Git-tracked publish lock**: set `release.publish.lockInGit: true` to persist that state to a committed `<changesDir>/publish-lock.json` instead. The lock is committed + pushed when a wave opens, **after every package** (and after the tag / walk / notify checkpoints), and removed (committed) on full success — so a death anywhere in the wave can be resumed from a **fresh checkout on a different runner** with the exact published / tagged / notified set, without replaying side effects (the ephemeral-CI case where untracked `.state.json` never survives the clone). Each commit is a no-op when nothing changed, so only real progress reaches the remote. A committed lock is treated as an implicit `--resume`. Mirrors tegami's `publish-lock.yaml`-in-git model.
+- **Git-tracked publish lock**: set `release.publish.lockInGit: true` to persist that state to a committed `<changesDir>/publish-lock.json` instead. The lock is committed + pushed when a wave opens, **after every package** (and after the tag / walk / notify checkpoints), and removed (committed) on full success — so a death anywhere in the wave can be resumed from a **fresh checkout on a different runner** with the exact published / tagged / notified set, without replaying side effects (the ephemeral-CI case where untracked `.state.json` never survives the clone). Each commit is a no-op when nothing changed, so only real progress reaches the remote. A committed lock is treated as an implicit `--resume`.
 - **Concurrency**: process-level lock + GH Actions concurrency group. `vis release publish` refuses to start if an open release-PR exists (catches local-vs-CI races).
 - **Dry run**: every command supports `--dry-run` with `[dry-run]` log prefixes. No file writes, no network calls.
 - **Diagnostics**: `vis release doctor` runs preflight checks (workspace integrity, PM version, OIDC env, NAPI sidecars, etc.) and emits machine-readable `--json`.

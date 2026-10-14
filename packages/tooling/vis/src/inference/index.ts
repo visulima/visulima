@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 
 import { join } from "@visulima/path";
 
@@ -8,19 +8,28 @@ import { apiExtractorDetector } from "./detectors/api-extractor";
 import { astroDetector } from "./detectors/astro";
 import { biomeDetector } from "./detectors/biome";
 import { bunDetector } from "./detectors/bun";
+import { cargoDetector } from "./detectors/cargo";
 import { changesetDetector } from "./detectors/changeset";
+import { composerDetector } from "./detectors/composer";
 import { cypressDetector } from "./detectors/cypress";
+import { dartDetector } from "./detectors/dart";
 import { denoDetector } from "./detectors/deno";
 import { docusaurusDetector } from "./detectors/docusaurus";
 import { dprintDetector } from "./detectors/dprint";
 import { drizzleDetector } from "./detectors/drizzle";
 import { eslintDetector } from "./detectors/eslint";
 import { gatsbyDetector } from "./detectors/gatsby";
+import { gemDetector } from "./detectors/gem";
+import { goDetector } from "./detectors/go";
+import { gradleDetector } from "./detectors/gradle";
 import { graphqlCodegenDetector } from "./detectors/graphql-codegen";
+import { hexDetector } from "./detectors/hex";
 import { jestDetector } from "./detectors/jest";
 import { knipDetector } from "./detectors/knip";
+import { mavenDetector } from "./detectors/maven";
 import { nestDetector } from "./detectors/nest";
 import { nextDetector } from "./detectors/next";
+import { nugetDetector } from "./detectors/nuget";
 import { nuxtDetector } from "./detectors/nuxt";
 import { oxfmtDetector } from "./detectors/oxfmt";
 import { oxlintDetector } from "./detectors/oxlint";
@@ -28,11 +37,13 @@ import { packemDetector } from "./detectors/packem";
 import { playwrightDetector } from "./detectors/playwright";
 import { prettierDetector } from "./detectors/prettier";
 import { prismaDetector } from "./detectors/prisma";
+import { pythonDetector } from "./detectors/python";
 import { remixDetector } from "./detectors/remix";
 import { rolldownDetector } from "./detectors/rolldown";
 import { rollupDetector } from "./detectors/rollup";
 import { storybookDetector } from "./detectors/storybook";
 import { stylelintDetector } from "./detectors/stylelint";
+import { swiftDetector } from "./detectors/swift";
 import { tsdownDetector } from "./detectors/tsdown";
 import { tsupDetector } from "./detectors/tsup";
 import { typedocDetector } from "./detectors/typedoc";
@@ -41,6 +52,7 @@ import { viteDetector } from "./detectors/vite";
 import { vitepressDetector } from "./detectors/vitepress";
 import { vitestDetector } from "./detectors/vitest";
 import { webpackDetector } from "./detectors/webpack";
+import { zigDetector } from "./detectors/zig";
 import type { DetectContext, Detector } from "./types";
 
 export type { DetectContext, Detector } from "./types";
@@ -65,6 +77,9 @@ export type { DetectContext, Detector } from "./types";
  * `docs:dev` / `docs:preview` (vitepress), `db:*` (prisma > drizzle),
  * `codegen` (graphql), `api-extract`, `changeset:*`, deno's `fmt` /
  * `check`.
+ *
+ * `cargo`, `python` and `maven` never compete: `discoverWorkspace` runs each
+ * alone on its own project kind and leaves it out for every other project.
  */
 export const BUILT_IN_DETECTORS: ReadonlyArray<Detector> = [
     nuxtDetector,
@@ -104,6 +119,18 @@ export const BUILT_IN_DETECTORS: ReadonlyArray<Detector> = [
     graphqlCodegenDetector,
     apiExtractorDetector,
     changesetDetector,
+    cargoDetector,
+    composerDetector,
+    pythonDetector,
+    mavenDetector,
+    goDetector,
+    gradleDetector,
+    hexDetector,
+    gemDetector,
+    nugetDetector,
+    swiftDetector,
+    dartDetector,
+    zigDetector,
 ];
 
 const hasDependency = (pkg: Pick<PackageJson, "dependencies" | "devDependencies" | "optionalDependencies" | "peerDependencies">, name: string): boolean =>
@@ -117,9 +144,17 @@ const hasDependency = (pkg: Pick<PackageJson, "dependencies" | "devDependencies"
     || (pkg.optionalDependencies !== undefined && Object.hasOwn(pkg.optionalDependencies, name));
 const matchConfigFiles = (projectRoot: string, configFiles: ReadonlyArray<string>): string[] => {
     const matched: string[] = [];
+    let entries: string[] | undefined;
 
     for (const file of configFiles) {
-        if (existsSync(join(projectRoot, file))) {
+        // A `*.ext` entry matches any top-level file with that extension (a gem's `*.gemspec`); other entries are exact names.
+        if (file.startsWith("*.")) {
+            entries ??= existsSync(projectRoot) ? readdirSync(projectRoot) : [];
+
+            if (entries.some((entry) => entry.endsWith(file.slice(1)))) {
+                matched.push(file);
+            }
+        } else if (existsSync(join(projectRoot, file))) {
             matched.push(file);
         }
     }

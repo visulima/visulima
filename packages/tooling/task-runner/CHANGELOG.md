@@ -1,3 +1,18 @@
+## @visulima/task-runner [1.1.0](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.6...@visulima/task-runner@1.1.0) (2026-10-09)
+
+### Features
+
+* **vis:** add affectedIgnore config option ([#937](https://github.com/visulima/visulima/issues/937)) ([3576acb](https://github.com/visulima/visulima/commit/3576acbf523007b0244815f34ca7e309f69396b7))
+
+### Build System
+
+* **deps:** combine open Dependabot dependency updates ([#926](https://github.com/visulima/visulima/issues/926)) ([1f276d6](https://github.com/visulima/visulima/commit/1f276d60e2b0c08059ccccfc9b7c8e5bd61f8c7c))
+
+### Continuous Integration
+
+* **cargo-test:** gate clippy and record fat-lto evidence ([#929](https://github.com/visulima/visulima/issues/929)) ([fb6bef8](https://github.com/visulima/visulima/commit/fb6bef801299981ae74b62f531c0254d5c710112))
+* **task-runner,vis:** track native criterion benches on CodSpeed ([#866](https://github.com/visulima/visulima/issues/866)) ([846be71](https://github.com/visulima/visulima/commit/846be71ace30bc4e69b7458418dfa4a440f9f97b))
+
 ## @visulima/task-runner [1.0.6](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.5...@visulima/task-runner@1.0.6) (2026-09-03)
 
 ### Bug Fixes

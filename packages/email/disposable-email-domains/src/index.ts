@@ -1,7 +1,3 @@
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-
 /**
  * Options accepted by the lookup helpers.
  */
@@ -49,17 +45,28 @@ let listLoaded = false;
  */
 let hasWarnedOnDomainsFailure = false;
 
-const filename = fileURLToPath(import.meta.url);
-const dirnamePath = dirname(filename);
-
 /**
  * Reads and parses the generated `dist/domains.json` from disk (Node runtimes).
  * @returns Array of domain strings, or `undefined` if the file is missing/corrupt.
  */
 const readDomainsFile = (): string[] | undefined => {
     try {
-        const domainsPath = join(dirnamePath, "..", "dist", "domains.json");
-        const domainsContent = readFileSync(domainsPath, "utf8");
+        // Resolved here, never at module scope: bundled Workers-style runtimes have no
+        // `import.meta.url` and may have no `process` or `node:fs`, and importing must still work.
+        // A missing `process`/`getBuiltinModule` throws and takes the warn-once fallback below.
+        const fs = process.getBuiltinModule("node:fs");
+
+        // Read into a local so the call below is not the `new URL("…", import.meta.url)` shape that
+        // bundlers statically rewrite: Vite would emit the file as an asset and webpack warns about
+        // a non-literal request. `dist/index.js` and `src/index.ts` both sit one level below the
+        // package root, so the list is at `../dist/domains.json` from either.
+        const moduleUrl = import.meta.url;
+
+        if (typeof moduleUrl !== "string") {
+            throw new TypeError("import.meta.url is unavailable in this runtime; call setDomains() to provide the list.");
+        }
+
+        const domainsContent = fs.readFileSync(new URL("../dist/domains.json", moduleUrl), "utf8");
         const parsed: unknown = JSON.parse(domainsContent);
 
         if (!Array.isArray(parsed)) {
@@ -118,7 +125,7 @@ const getDomainSet = (): Set<string> => {
  *
  * ```ts
  * import { setDomains } from "@visulima/disposable-email-domains";
- * import domains from "@visulima/disposable-email-domains/domains" with { type: "json" };
+ * import domains from "@visulima/disposable-email-domains/domains";
  *
  * setDomains(domains);
  * ```
@@ -158,6 +165,24 @@ const preload = async (): Promise<void> => {
  * @returns True if the built-in list is loaded and non-degraded.
  */
 const isListLoaded = (): boolean => listLoaded;
+
+/**
+ * Throws unless the built-in list is loaded, reading it from disk first on Node.
+ *
+ * Without a list every lookup returns `false`, so a missing `setDomains()` (or an unreadable
+ * `dist/domains.json`) fails open silently apart from one warning. Call this once at startup
+ * where disposable detection is a security control, so that mistake fails loudly instead.
+ * @throws {Error} When the built-in list could not be loaded and no list was injected.
+ */
+const assertListLoaded = (): void => {
+    getDomainSet();
+
+    if (!listLoaded) {
+        throw new Error(
+            "[@visulima/disposable-email-domains] The built-in list is not loaded; call setDomains() with the list, or import from \"@visulima/disposable-email-domains/edge\" on runtimes without a filesystem.",
+        );
+    }
+};
 
 /**
  * Extracts and validates the domain from an email address.
@@ -286,4 +311,4 @@ const areDisposableEmails = (emails: string[], options?: Set<string> | Disposabl
 };
 
 export type { DisposableEmailOptions };
-export { areDisposableEmails, extractDomain, isDisposableDomain, isDisposableEmail, isListLoaded, preload, setDomains };
+export { areDisposableEmails, assertListLoaded, extractDomain, isDisposableDomain, isDisposableEmail, isListLoaded, preload, setDomains };

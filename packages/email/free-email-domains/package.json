@@ -1,6 +1,6 @@
 {
     "name": "@visulima/free-email-domains",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "A regularly updated list of free email service provider domains.",
     "keywords": [
         "email-domains",
@@ -12,11 +12,6 @@
     ],
     "homepage": "https://visulima.com/packages/free-email-domains",
     "bugs": "https://github.com/visulima/visulima/issues",
-    "license": "MIT",
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
-    },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/visulima/visulima.git",
@@ -32,13 +27,15 @@
             "url": "https://anolilab.com/support"
         }
     ],
-    "files": [
-        "dist",
-        "README.md",
-        "CHANGELOG.md"
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": [
+        "./dist/edge.js"
     ],
     "type": "module",
-    "sideEffects": false,
     "exports": {
         ".": {
             "types": "./dist/index.d.ts",
@@ -46,14 +43,19 @@
         },
         "./domains": {
             "types": "./dist/domains.d.ts",
-            "default": "./dist/domains.json"
+            "default": "./dist/domains.js"
+        },
+        "./edge": {
+            "types": "./dist/edge.d.ts",
+            "default": "./dist/edge.js"
         },
         "./package.json": "./package.json"
     },
-    "publishConfig": {
-        "access": "public",
-        "provenance": true
-    },
+    "files": [
+        "dist",
+        "README.md",
+        "CHANGELOG.md"
+    ],
     "scripts": {
         "build": "packem build --development && pnpm run generate:domains",
         "build:prod": "packem build --production && pnpm run generate:domains",
@@ -92,6 +94,7 @@
         "esbuild": "catalog:build",
         "eslint": "catalog:lint",
         "fallow": "catalog:lint",
+        "miniflare": "catalog:test",
         "prettier": "catalog:lint",
         "publint": "catalog:dev",
         "rimraf": "catalog:node",
@@ -102,5 +105,9 @@
     },
     "engines": {
         "node": "^22.14.0 || >=24.10.0"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
     }
 }

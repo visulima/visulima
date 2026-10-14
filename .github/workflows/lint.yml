@@ -318,17 +318,15 @@ jobs:
               uses: "anolilab/workflows/step/checkout-with-retry@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # main
 
             - name: "Lint github workflows"
-              # raven-actions/actionlint shells out to `npm install @actions/tool-cache`
-              # in the repo root, which trips on our pnpm workspace catalog: deps.
-              # Download the actionlint release tarball directly and verify it
+              # Download the jactionlint release tarball directly and verify it
               # against the published checksum before executing.
               shell: "bash"
               run: |
                   set -euo pipefail
-                  version="1.7.12"
-                  base="https://github.com/rhysd/actionlint/releases/download/v${version}"
-                  tarball="actionlint_${version}_linux_amd64.tar.gz"
-                  checksums="actionlint_${version}_checksums.txt"
+                  version="2.0.2"
+                  base="https://github.com/jdx/jactionlint/releases/download/v${version}"
+                  tarball="jactionlint_${version}_linux_amd64.tar.gz"
+                  checksums="jactionlint_${version}_checksums.txt"
 
                   # A single-shot fetch makes this job fail whenever the release CDN
                   # hiccups; it has died on both `curl: (56)` and 503. --retry alone
@@ -346,10 +344,10 @@ jobs:
 
                   grep " ${tarball}\$" "$checksums" | sha256sum --check --status
 
-                  tar -xzf "$tarball" actionlint
+                  tar -xzf "$tarball" jactionlint
                   rm -f "$tarball" "$checksums"
 
-                  ./actionlint -color -shellcheck=
+                  ./jactionlint --color --shellcheck=
 
     rust-fmt:
         if: "needs.files-changed.outputs.rust_lintable == 'true'"

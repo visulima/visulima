@@ -50,6 +50,10 @@ vis advisories sync --source https://mirror.example.com
 | `--db <path>`        | `<cache>/vis/advisories/db.sqlite` | Override the cache DB path.                                                     |
 | `--format <fmt>`     | `table`                            | `table` (default) or `json`.                                                    |
 
+### Schema upgrades
+
+A database written by an older vis schema is rebuilt by `sync`. The rebuild downloads every ecosystem the old file holds, writes a new file beside it, and swaps it in only once every download has ingested. If the rebuild fails, the old file is kept and the command exits non-zero. `vis audit --offline` refuses an outdated database and names `vis advisories sync` as the fix. It never downloads.
+
 ### Allowed sources
 
 Only HTTPS sources resolving to hosts in the built-in allowlist (or `security.audit.advisories.allowedHosts`) will be fetched. This protects you from environment-variable injection of arbitrary mirrors at runtime.

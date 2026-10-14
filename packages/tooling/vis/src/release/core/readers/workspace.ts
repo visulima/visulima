@@ -56,11 +56,17 @@ export interface VisWorkspaceReaderOptions {
 export const createVisWorkspaceReader = (options: VisWorkspaceReaderOptions): PackageJsonReader => {
     return {
         listPackages: async () => {
-            const { workspace } = discoverWorkspace(options.cwd, options.config ?? {});
+            const { packageJsons, workspace } = discoverWorkspace(options.cwd, options.config ?? {});
             const { projectType, tag } = options;
 
             const settled = await Promise.all(
-                Object.values(workspace.projects).map(async (project) => {
+                Object.entries(workspace.projects).map(async ([name, project]) => {
+                    // npm-style release only: crates and project.json-only
+                    // projects go through their own `cargo()` preset path.
+                    if (!packageJsons.has(name)) {
+                        return undefined;
+                    }
+
                     if (tag && !project.tags?.includes(tag)) {
                         return undefined;
                     }
