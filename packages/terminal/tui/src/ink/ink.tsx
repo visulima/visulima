@@ -49,6 +49,28 @@ if (!(console as any).Console) {
 
 const noop = () => {};
 
+// Terminal rows a block of text occupies once written: each newline ends a row, and unterminated text takes one more.
+const countLines = (text: string): number => {
+    if (text === "") {
+        return 0;
+    }
+
+    const lines = text.split("\n").length;
+
+    return text.endsWith("\n") ? lines - 1 : lines;
+};
+
+// The newest `rows` lines of a block of text, each newline-terminated. The alternate screen keeps no scrollback, so older lines are dropped.
+const tailLines = (text: string, rows: number): string => {
+    if (rows <= 0 || text === "") {
+        return "";
+    }
+
+    const lines = (text.endsWith("\n") ? text.slice(0, -1) : text).split("\n");
+
+    return lines.slice(-rows).map((line) => `${line}\n`).join("");
+};
+
 // React.memo cannot skip App re-render because `children` changes on every
 // rerender. The App's ~40 hooks run every time. This is architectural — the
 // only way to avoid it would be to move App's hook logic out of React.
@@ -230,7 +252,8 @@ export type Options = {
      * generating minimal ANSI escape sequences. Significantly reduces GC pressure
      * and improves rendering performance for complex UIs.
      *
-     * Falls back to the string-based path if native bindings are not available.
+     * Only applies to interactive alternate-screen output on a TTY. Inline, non-TTY, screen-reader and debug output, and
+     * setups where native bindings are not available, use the string-based path.
      * @default false
      */
     useNativeRenderer?: boolean;
@@ -283,6 +306,15 @@ export default class Ink {
     private lastTerminalRows: number;
 
     private readonly nativeLog: NativeLogUpdate | undefined;
+
+    // The last frame the native renderer drew, kept so it can be drawn again after external writes.
+    private lastNativeFrame: { buffer: Uint32Array; cursor: CursorPosition | undefined; height: number; width: number } | undefined;
+
+    // Terminal rows taken by static output and scrolled-off lines above the native frame.
+    private nativeRowOffset = 0;
+
+    // Set when something outside the frame may have changed the screen (a resize or a resume), so the next native frame redraws all of it.
+    private nativeScreenStale = false;
 
     private readonly useNativeRenderer: boolean;
 
@@ -413,8 +445,16 @@ export default class Ink {
             incremental: options.incrementalRendering,
         });
 
-        // Initialize native (Rust) renderer if requested and available
-        this.useNativeRenderer = options.useNativeRenderer ?? false;
+        // Initialize native (Rust) renderer if requested and available.
+        // The cell diff addresses absolute terminal rows from row 0, so it can only draw a frame it owns:
+        // an interactive alternate screen. Inline output (and non-TTY or screen-reader output, which are
+        // plain text) keeps using the string renderer, which positions the frame relative to the cursor.
+        this.useNativeRenderer = (options.useNativeRenderer ?? false)
+            && this.interactive
+            && Boolean(options.alternateScreen)
+            && options.stdout.isTTY
+            && !this.isScreenReaderEnabled
+            && !options.debug;
 
         if (this.useNativeRenderer) {
             this.nativeLog = createNative(options.stdout);
@@ -550,6 +590,7 @@ export default class Ink {
             // Shrinking the terminal re-wraps or scrolls the frame, so the log no longer knows where it is.
             // We clear the frame and draw it again to prevent duplicate overlapping re-renders.
             this.log.clear();
+            this.nativeScreenStale = true;
             this.lastOutput = "";
             this.lastOutputToRender = "";
             this.lastOutputHeight = 0;
@@ -607,6 +648,19 @@ export default class Ink {
     restoreLastOutput = (): void => {
         // A cleared frame stays cleared until the next render draws it again.
         if (!this.interactive || this.isFrameCleared) {
+            return;
+        }
+
+        // A native frame cannot be replayed as text: draw it again from the last buffer, so
+        // whatever the external write put on screen is overwritten.
+        if (this.nativeLog) {
+            if (this.lastNativeFrame) {
+                const { buffer, cursor, height, width } = this.lastNativeFrame;
+
+                this.nativeLog.destroy();
+                this.nativeLog.render(buffer, width, height, { cursor, rowOffset: this.nativeRowOffset });
+            }
+
             return;
         }
 
@@ -915,16 +969,30 @@ export default class Ink {
 
         // Native renderer path: write buffer directly via Rust diff engine
         if (this.useNativeRenderer && this.nativeLog && outputBuffer && outputWidth) {
-            // Handle static output through the normal string path
+            this.isFrameCleared = false;
+
+            // <Static> output and scrolled-off lines sit above the frame. The frame is drawn at absolute rows, so
+            // when they change, or the screen was disturbed, the block is redrawn from home (as the string renderer
+            // does on a full clear) and the frame starts below it. The prefix goes inside the frame's synchronized update.
             if (staticOutput) {
-                this.options.stdout.write(staticOutput);
+                this.fullStaticOutput += staticOutput;
             }
 
-            if (backbufferOutput) {
-                this.options.stdout.write(backbufferOutput);
+            let prefix: string | undefined;
+
+            if (staticOutput || backbufferOutput || this.nativeScreenStale) {
+                const { rows } = getWindowSize(this.options.stdout);
+                const above = tailLines(this.fullStaticOutput + backbufferOutput, rows - outputHeight);
+
+                this.nativeRowOffset = countLines(above);
+                this.nativeScreenStale = false;
+                prefix = clearScreenAndHomeCursor + above;
             }
 
-            this.nativeLog.render(outputBuffer, outputWidth, outputHeight);
+            const cursor = this.getActiveCursorPosition();
+
+            this.lastNativeFrame = { buffer: outputBuffer, cursor, height: outputHeight, width: outputWidth };
+            this.nativeLog.render(outputBuffer, outputWidth, outputHeight, { cursor, prefix, rowOffset: this.nativeRowOffset });
             this.lastOutputHeight = outputHeight;
 
             return;
@@ -1374,12 +1442,8 @@ export default class Ink {
         }
 
         this.log.clear();
-
-        // Only the string renderer consumes the flag; the native renderer returns before reading it, which
-        // would leave it set and suppress the final frame on unmount.
-        if (!(this.useNativeRenderer && this.nativeLog)) {
-            this.isFrameCleared = true;
-        }
+        this.nativeLog?.clear();
+        this.isFrameCleared = true;
     }
 
     patchConsole(): void {
@@ -1789,8 +1853,8 @@ export default class Ink {
             this.writeBestEffort(this.options.stdout, ALT_SCREEN_ON);
 
             // The alternate screen comes back blank, so <Static> output that was written before the
-            // suspend has to be drawn again.
-            if (this.fullStaticOutput !== "") {
+            // suspend has to be drawn again. The native frame writes it from home on its next commit instead.
+            if (this.fullStaticOutput !== "" && !this.useNativeRenderer) {
                 this.writeBestEffort(this.options.stdout, this.fullStaticOutput);
             }
         }
@@ -1806,6 +1870,7 @@ export default class Ink {
         this.lastOutputToRender = "";
         this.lastOutputHeight = 0;
         this.log.reset();
+        this.nativeScreenStale = true;
 
         try {
             this.calculateLayout();

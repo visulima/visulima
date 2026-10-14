@@ -147,7 +147,8 @@ export type RenderOptions = {
      * generating minimal ANSI escape sequences. Reduces GC pressure and
      * improves rendering performance for complex UIs.
      *
-     * Falls back to string-based rendering if native bindings are not available.
+     * Only applies to interactive alternate-screen output on a TTY. Inline, non-TTY, screen-reader and debug output, and
+     * setups where native bindings are not available, use string-based rendering.
      * @default false
      */
     useNativeRenderer?: boolean;
