@@ -92,9 +92,9 @@ import {
     createTaskSpawnContext,
     effectiveChildEnvPolicy,
     getTaskOptions,
+    resolveRetrySpawn,
     resolveTaskSpawn,
     TASK_ARG_ENV_KEY,
-    taskSpawnOptions,
 } from "./task-env";
 
 /**
@@ -2709,21 +2709,18 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
                     const command = task?.overrides["command"] as string | undefined;
 
                     if (task && command) {
-                        const resolvedCwd = resolveTaskCwd(workspaceRoot, task.projectRoot, false);
-
                         lifeCycle.startTasks?.([task]);
 
                         const retryTermBuf = new TerminalBuffer(MAX_OUTPUT_BYTES);
 
-                        // The retry spawn injects nothing, so the policy only decides
-                        // whether the child inherits the parent environment.
-                        const retrySpawn = taskSpawnOptions(childEnvPolicyFor(task), {});
+                        // Same cwd and child environment as the first attempt.
+                        const retrySpawn = resolveRetrySpawn(spawnContext, task);
 
                         const retryResult = await runConcurrently(
                             [
                                 {
                                     command,
-                                    cwd: resolvedCwd,
+                                    cwd: retrySpawn.cwd,
                                     env: retrySpawn.env,
                                     inheritEnv: retrySpawn.inheritEnv,
                                     name: task.id,

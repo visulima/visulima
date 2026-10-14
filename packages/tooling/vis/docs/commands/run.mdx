@@ -333,7 +333,7 @@ Clean mode is never a default. A traced target (`hashMode: "trace"`, or a worksp
 | User overlays                         | `envFile` values, and the env of a registered service                                                                                                               | Never filtered. Their names come from your config.                 |
 | Spawner additions                     | `PATH` with the `node_modules/.bin` chain prepended; `Path` and `PATHEXT` on Windows; `FORCE_COLOR=1` unless set; `TERM=xterm-256color` for PTY tasks               | Added by the spawner, after the policy has been applied.           |
 
-The table lists what a task receives. Persistent and traced targets receive the same injected variables as an executor task. The TUI retry of an interactive task is the one path that injects nothing; it only decides whether the child inherits the parent environment.
+The table lists what a task receives. Persistent, traced and retried targets receive the same injected variables and clean-env policy as an executor task. A TUI retry runs in the same working directory as the first attempt.
 
 Under `clean`, a variable that is not allow-listed is dropped, including the ones you usually expect to inherit such as `NODE_OPTIONS` and `npm_config_*`. Add them to `allow` if the task needs them.
 

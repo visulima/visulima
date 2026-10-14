@@ -221,3 +221,14 @@ export const resolveTaskSpawn = (context: TaskSpawnContext, task: Task, options:
 
     return taskSpawnOptions(context.childEnvPolicy(task), injected);
 };
+
+/**
+ * The working directory and spawn environment of a TUI retry. A retry runs the
+ * command outside the executor, so it asks for its spawn here the way the executor
+ * does: the same cwd, injected variables and clean-env policy as the first attempt.
+ */
+export const resolveRetrySpawn = (context: TaskSpawnContext, task: Task): ChildSpawnEnv & { cwd: string } => {
+    const cwd = resolveTaskCwd(context.workspaceRoot, task.projectRoot, getTaskOptions(task)?.runFromWorkspaceRoot === true);
+
+    return { cwd, ...resolveTaskSpawn(context, task, { cwd }) };
+};
