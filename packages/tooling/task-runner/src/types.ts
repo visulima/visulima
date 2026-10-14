@@ -1208,6 +1208,12 @@ export interface TaskRunnerContext {
     /** Lifecycle hooks */
     lifeCycle: LifeCycleInterface;
 
+    /**
+     * Fails a traced task before its command runs (checked on a cache miss).
+     * Returns the failure message, or `undefined` to let the command run.
+     */
+    preTraceCheck?: (task: Task, options: { cwd: string }) => string | undefined;
+
     /** The project graph */
     projectGraph: ProjectGraph;
 
@@ -1218,6 +1224,12 @@ export interface TaskRunnerContext {
      * the child inherits the parent environment with nothing added.
      */
     resolveChildEnv?: (task: Task, options: { cwd: string }) => ChildSpawnEnv;
+
+    /**
+     * The shell command a traced task spawns, after any caller-side argument
+     * and shell handling. Absent, the project's target command is spawned.
+     */
+    resolveCommand?: (task: Task) => string | undefined;
     /** The task executor */
     taskExecutor: TaskExecutor;
     /** The task graph */

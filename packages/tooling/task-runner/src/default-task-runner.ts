@@ -391,9 +391,10 @@ const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, con
         // through the same callback the wire-level backend uses, so a user
         // observes upload failures regardless of where they originate.
         onRemoteUploadError: options.remoteCache?.onUploadError,
+        preTraceCheck: context.preTraceCheck,
         remoteCache,
         resolveChildEnv,
-        resolveCommand,
+        resolveCommand: context.resolveCommand ?? resolveCommand,
         scheduler,
         skipCache: options.skipNxCache,
         summarize: options.summarize,
