@@ -1,6 +1,7 @@
 /* eslint-disable @stylistic/multiline-ternary, react/function-component-definition */
 import { existsSync, readFileSync } from "node:fs";
 import { cwd } from "node:process";
+import { fileURLToPath } from "node:url";
 
 import { parseStacktrace } from "@visulima/error/stacktrace";
 import type { CodeExcerpt } from "code-excerpt";
@@ -11,17 +12,31 @@ import Box from "./box";
 import Text from "./text";
 
 // Error's source file is reported as file:///home/user/file.js
-// or an absolute path. Strip both the `file://` scheme and a leading cwd
-// so paths render relative to the working directory.
+// or an absolute path. Convert file URLs to filesystem paths (so names with
+// spaces resolve) and strip a leading cwd so paths render relative to the
+// working directory.
 const cleanupPath = (path: string | undefined): string | undefined => {
     if (!path) {
         return path;
     }
 
     const workingDirectory = cwd();
+    let fsPath = path;
 
-    return path.replace(`file://${workingDirectory}/`, "").replace(`${workingDirectory}/`, "");
+    if (path.startsWith("file://")) {
+        try {
+            fsPath = fileURLToPath(path);
+        } catch {
+            // A file URL this platform cannot map to a path (e.g. one with a remote host) stays visible as written.
+        }
+    }
+
+    return fsPath.replace(`${workingDirectory}/`, "");
 };
+
+// A frame is only usable as an origin or a structured row when it names a file and a position.
+const isLocatedFrame = (trace: { readonly column?: number; readonly file?: string; readonly line?: number } | undefined): boolean =>
+    Boolean(trace?.file && trace.line && trace.column);
 
 type Props = {
     readonly error: Error;
@@ -36,7 +51,7 @@ export default function ErrorOverview({ error }: Props): ReactElement {
     const traceKeyCounts = new Map<string, number>();
     const tracesWithKeys = traces.map((trace) => {
         const base
-            = !trace.methodName && !trace.file ? `raw:${trace.raw}` : `${cleanupPath(trace.file) ?? ""}:${trace.line}:${trace.column}:${trace.methodName ?? ""}`;
+            = isLocatedFrame(trace) ? `${cleanupPath(trace.file) ?? ""}:${trace.line}:${trace.column}:${trace.methodName ?? ""}` : `raw:${trace.raw}`;
         const occurrence = traceKeyCounts.get(base) ?? 0;
 
         traceKeyCounts.set(base, occurrence + 1);
@@ -44,15 +59,17 @@ export default function ErrorOverview({ error }: Props): ReactElement {
         return { key: `${base}#${occurrence}`, trace };
     });
 
-    const origin = traces[0];
+    const origin = isLocatedFrame(traces[0]) ? traces[0] : undefined;
     const filePath = cleanupPath(origin?.file);
     let excerpt: CodeExcerpt[] | undefined;
     let lineWidth = 0;
 
     if (filePath && origin?.line && existsSync(filePath)) {
-        const sourceCode = readFileSync(filePath, "utf8");
-
-        excerpt = codeExcerpt(sourceCode, origin.line);
+        try {
+            excerpt = codeExcerpt(readFileSync(filePath, "utf8"), origin.line);
+        } catch {
+            // Excerpts are best-effort: a directory or unreadable file must not hide the original error.
+        }
 
         if (excerpt) {
             for (const { line } of excerpt) {
@@ -117,9 +134,9 @@ export default function ErrorOverview({ error }: Props): ReactElement {
                     {tracesWithKeys.map(({ key, trace }) => {
                         const fileLabel = cleanupPath(trace.file) ?? "";
 
-                        // Fall back to the raw stack line when none of the
-                        // structured fields could be extracted.
-                        if (!trace.methodName && !trace.file) {
+                        // Fall back to the raw stack line when the frame lacks a file or position
+                        // (for example `at native`), so no `undefined` or partial location is shown.
+                        if (!isLocatedFrame(trace)) {
                             return (
                                 <Box key={key}>
                                     <Text dimColor>- </Text>

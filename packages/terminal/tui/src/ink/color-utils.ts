@@ -34,7 +34,7 @@ export const BRIGHT_COLORS: Readonly<Record<string, number>> = {
 };
 
 const ansi256Regex = /^ansi256\(\s?(\d+)\s?\)$/;
-const rgbRegex = /^rgb\(\s?(\d+),\s?(\d+),\s?(\d+)\s?\)$/;
+const rgbRegex = /^rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/;
 
 /**
  * Parse a color string into an ANSI 256-color index (0-255).

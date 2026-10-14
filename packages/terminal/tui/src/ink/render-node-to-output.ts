@@ -1,6 +1,7 @@
 import { getStringWidth, indent as indentString, isFullwidthCodePoint } from "@visulima/string";
 import Yoga from "yoga-layout";
 
+import { toCellOffset } from "../core/cell-offset";
 import { getAbsoluteContentPosition } from "./absolute-position";
 import type { CursorShape } from "./cursor-helpers";
 import type { DOMElement, DOMNode } from "./dom";
@@ -15,6 +16,27 @@ import { getStickyDescendants, identifyActiveStickyNodes, renderActiveStickyNode
 import { getScrollTop } from "./scroll";
 import squashTextNodes from "./squash-text-nodes";
 import wrapText from "./wrap-text";
+
+const unboundedClip = 1_000_000;
+
+/**
+ * Clip region (start, size) along one axis. A clipping axis is limited to this node's content box; an axis
+ * that is not clipped keeps the bounds of the enclosing clip, so `overflow="hidden"` with
+ * `overflowX="visible"` still lets content spill horizontally.
+ */
+const axisRegion = (
+    clips: boolean,
+    contentStart: number,
+    contentSize: number,
+    enclosingStart = -unboundedClip,
+    enclosingEnd = unboundedClip,
+): [start: number, size: number] => {
+    if (clips) {
+        return [contentStart, contentSize];
+    }
+
+    return [enclosingStart, enclosingEnd - enclosingStart];
+};
 
 // If parent container is `<Box>`, text nodes will be treated as separate nodes in
 // the tree and will have their own coordinates in the layout.
@@ -337,7 +359,12 @@ const renderNodeToOutput = (
                     if (currentWidth > maxWidth) {
                         const textWrap = node.style.textWrap ?? "wrap";
 
-                        text = wrapText(text, Math.floor(maxWidth), textWrap);
+                        // A parent narrower than a column leaves no visible width, but layout still gave the text
+                        // the one column Yoga rounds it up to, and sized the rows for text wrapped into it.
+                        const ownWidth = Math.round(yogaNode.getComputedWidth());
+                        const wrapWidth = maxWidth <= 0 && ownWidth >= 1 && ownWidth < currentWidth ? ownWidth : maxWidth;
+
+                        text = wrapText(text, wrapWidth, textWrap);
                     }
                 }
 
@@ -380,10 +407,21 @@ const renderNodeToOutput = (
                 const nodeW = Math.round(yogaNode.getComputedWidth());
                 const nodeH = Math.round(yogaNode.getComputedHeight());
 
-                const regionX = clipHorizontally ? x + yogaNode.getComputedBorder(Yoga.EDGE_LEFT) : x;
-                const regionW = clipHorizontally ? nodeW - yogaNode.getComputedBorder(Yoga.EDGE_LEFT) - yogaNode.getComputedBorder(Yoga.EDGE_RIGHT) : nodeW;
-                const regionY = clipVertically ? y + yogaNode.getComputedBorder(Yoga.EDGE_TOP) : y;
-                const regionH = clipVertically ? nodeH - yogaNode.getComputedBorder(Yoga.EDGE_TOP) - yogaNode.getComputedBorder(Yoga.EDGE_BOTTOM) : nodeH;
+                const enclosingClip = output.getCurrentClip();
+                const [regionX, regionW] = axisRegion(
+                    clipHorizontally,
+                    x + yogaNode.getComputedBorder(Yoga.EDGE_LEFT),
+                    nodeW - yogaNode.getComputedBorder(Yoga.EDGE_LEFT) - yogaNode.getComputedBorder(Yoga.EDGE_RIGHT),
+                    enclosingClip?.x1,
+                    enclosingClip?.x2,
+                );
+                const [regionY, regionH] = axisRegion(
+                    clipVertically,
+                    y + yogaNode.getComputedBorder(Yoga.EDGE_TOP),
+                    nodeH - yogaNode.getComputedBorder(Yoga.EDGE_TOP) - yogaNode.getComputedBorder(Yoga.EDGE_BOTTOM),
+                    enclosingClip?.y1,
+                    enclosingClip?.y2,
+                );
 
                 output.startChildRegion(regionX, regionY, Math.max(0, regionW), Math.max(0, regionH));
                 clipped = true;
@@ -397,6 +435,11 @@ const renderNodeToOutput = (
                     scrollOffsetX = -node.internal_scrollState.scrollLeft;
                 }
             }
+        }
+
+        if (node.nodeName === "ink-box") {
+            scrollOffsetX -= toCellOffset(node.style.contentOffsetX);
+            scrollOffsetY -= toCellOffset(node.style.contentOffsetY);
         }
 
         if (node.nodeName === "ink-root" || node.nodeName === "ink-box" || node.nodeName === "ink-static-render") {

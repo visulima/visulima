@@ -35,20 +35,23 @@ const parseCsiSequence = (input: string, startIndex: number, prefixLength: numbe
             return "pending";
         }
 
-        if (isCsiParameterByte(byte) || isCsiIntermediateByte(byte)) {
-            continue;
-        }
-
         // Preserve legacy terminal function-key sequences like ESC[[A and ESC[[5~.
         if (byte === 0x5b && index === csiPayloadStart) {
             continue;
         }
 
-        if (isCsiFinalByte(byte)) {
+        // Shifted editing keys in rxvt end in $, which is normally a CSI intermediate byte.
+        const isRxvtShiftKey = byte === 0x24 && index === csiPayloadStart + 1 && "235678".includes(input[csiPayloadStart]!);
+
+        if (isCsiFinalByte(byte) || isRxvtShiftKey) {
             return {
                 nextIndex: index + 1,
                 sequence: input.slice(startIndex, index + 1),
             };
+        }
+
+        if (isCsiParameterByte(byte) || isCsiIntermediateByte(byte)) {
+            continue;
         }
 
         return undefined;
@@ -58,22 +61,23 @@ const parseCsiSequence = (input: string, startIndex: number, prefixLength: numbe
 };
 
 const parseSs3Sequence = (input: string, startIndex: number, prefixLength: number): ParsedSequence => {
-    const nextIndex = startIndex + prefixLength + 2;
+    for (let index = startIndex + prefixLength + 1; index < input.length; index++) {
+        const byte = input.codePointAt(index)!;
 
-    if (nextIndex > input.length) {
-        return "pending";
+        if (isCsiFinalByte(byte)) {
+            return {
+                nextIndex: index + 1,
+                sequence: input.slice(startIndex, index + 1),
+            };
+        }
+
+        // Modified SS3 keys (e.g. ESC O 1;5 A) carry numeric parameters separated by semicolons.
+        if ((byte < 0x30 || byte > 0x39) && byte !== 0x3b) {
+            return undefined;
+        }
     }
 
-    const finalByte = input.codePointAt(nextIndex - 1);
-
-    if (finalByte === undefined || !isCsiFinalByte(finalByte)) {
-        return undefined;
-    }
-
-    return {
-        nextIndex,
-        sequence: input.slice(startIndex, nextIndex),
-    };
+    return "pending";
 };
 
 const parseControlSequence = (input: string, startIndex: number, prefixLength: number): ParsedSequence => {
@@ -160,17 +164,17 @@ const parseEscapeSequence = (input: string, escapeIndex: number): ParsedEscapeSe
 };
 
 /**
- * Split a chunk of non-escape text so that delete (0x7F) and backspace (0x08) characters become individual events. When a user holds the delete or backspace key, the terminal sends repeated bytes in a single stdin chunk. Without splitting, `parseKeypress` receives the multi-byte string and fails to recognize it as a key event, corrupting the input state.
+ * Split a chunk of non-escape text so that delete (0x7F), backspace (0x08) and Ctrl+C (0x03) characters become individual events. Ctrl+C must be recognised even when it is buffered with ordinary text. When a user holds the delete or backspace key, the terminal sends repeated bytes in a single stdin chunk. Without splitting, `parseKeypress` receives the multi-byte string and fails to recognize it as a key event, corrupting the input state.
  *
  * Other control characters like `\r` and `\t` are NOT split because they can legitimately appear inside pasted text.
  */
-const splitDeleteAndBackspace = (text: string, events: InputEvent[]): void => {
+const splitControlBytes = (text: string, events: InputEvent[]): void => {
     let textSegmentStart = 0;
 
     for (let index = 0; index < text.length; index++) {
         const character = text[index]!;
 
-        if (character === "\u007F" || character === "\u0008") {
+        if (character === "\u007F" || character === "\u0008" || character === "\u0003") {
             if (index > textSegmentStart) {
                 events.push(text.slice(textSegmentStart, index));
             }
@@ -199,7 +203,7 @@ const parseKeypresses = (input: string): ParsedInput => {
         const escapeIndex = input.indexOf(escape, index);
 
         if (escapeIndex === -1) {
-            splitDeleteAndBackspace(input.slice(index), events);
+            splitControlBytes(input.slice(index), events);
 
             return {
                 events,
@@ -208,7 +212,7 @@ const parseKeypresses = (input: string): ParsedInput => {
         }
 
         if (escapeIndex > index) {
-            splitDeleteAndBackspace(input.slice(index, escapeIndex), events);
+            splitControlBytes(input.slice(index, escapeIndex), events);
         }
 
         const parsedEscapeSequence = parseEscapeSequence(input, escapeIndex);

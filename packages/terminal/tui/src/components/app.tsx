@@ -9,6 +9,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { createInputParser } from "../ink/input-parser";
 import type { CursorPosition } from "../ink/log-update";
+import parseKeypress from "../ink/parse-keypress";
 import AnimationContext from "./animation-context";
 import type { Props as AppContextProps } from "./app-context";
 import AppContext from "./app-context";
@@ -19,9 +20,16 @@ import StderrContext from "./stderr-context";
 import StdinContext from "./stdin-context";
 import StdoutContext from "./stdout-context";
 
-const tab = "\t";
-const shiftTab = "\u001B[Z";
-const escape = "\u001B";
+// Kitty keyboard query reply: CSI ? <flags> u.
+// eslint-disable-next-line no-control-regex
+const kittyQueryReplyRe = /^\u001B\[\?\d+u$/;
+
+// Ctrl+C in any keyboard encoding (legacy 0x03 or kitty CSI u), excluding key release events.
+const isCtrlC = (input: string): boolean => {
+    const key = parseKeypress(input);
+
+    return key.name === "c" && key.ctrl && key.eventType !== "release";
+};
 
 // Precomputed once at module load — `BracketedPasteMode` is a DEC private mode
 // (code 2004) exported by @visulima/ansi; setMode/resetMode emit `CSI ?2004h/l`.
@@ -45,6 +53,7 @@ type Props = {
      * Registers the App's input pause/resume callbacks with the Ink instance so
      * `suspendTerminal()` can hand raw mode + bracketed paste to a child process.
      */
+    readonly onKittyQueryResponse?: () => void;
     readonly onRegisterInputControl: (pauseInput: () => void, resumeInput: () => void) => void;
     readonly onSuspendTerminal: AppContextProps["suspendTerminal"];
     readonly onWaitUntilRenderFlush: () => Promise<void>;
@@ -58,8 +67,40 @@ type Props = {
 };
 
 type Focusable = {
+    /** Number of mounted components registered under this ID. They share one Tab stop. */
+    readonly count: number;
     readonly id: string;
+    /** Holders (one per mounted component) that switched themselves to inactive. */
+    readonly inactive: ReadonlySet<string>;
+    /** The Tab stop is active while at least one of its holders is. */
     readonly isActive: boolean;
+};
+
+const updateHolders = (focusable: Focusable, change: { count?: number; inactive?: ReadonlySet<string> }): Focusable => {
+    const count = change.count ?? focusable.count;
+    const inactive = change.inactive ?? focusable.inactive;
+
+    return { ...focusable, count, inactive, isActive: inactive.size < count };
+};
+
+const replaceEntry = (focusable: Focusable, id: string, replace: (entry: Focusable) => Focusable): Focusable => {
+    if (focusable.id !== id) {
+        return focusable;
+    }
+
+    return replace(focusable);
+};
+
+const withHolder = (inactive: ReadonlySet<string>, holder: string, isInactive: boolean): ReadonlySet<string> => {
+    const next = new Set(inactive);
+
+    if (isInactive) {
+        next.add(holder);
+    } else {
+        next.delete(holder);
+    }
+
+    return next;
 };
 
 // Root component for all Ink apps
@@ -70,6 +111,7 @@ const App = ({
     exitOnCtrlC,
     interactive,
     onExit,
+    onKittyQueryResponse,
     onRegisterInputControl,
     onSuspendTerminal,
     onWaitUntilRenderFlush,
@@ -82,6 +124,8 @@ const App = ({
     writeToStdout,
 }: Props): React.ReactNode => {
     const [isFocusEnabled, setIsFocusEnabled] = useState(true);
+    // Mirrors `isFocusEnabled` for callbacks that must not close over stale state.
+    const isFocusEnabledRef = useRef(true);
     const [activeFocusId, setActiveFocusId] = useState<string | undefined>(undefined);
     // The state value is intentionally discarded: `focusablesRef` below is the
     // source of truth, and this setter exists only to schedule a re-render.
@@ -102,6 +146,9 @@ const App = ({
     // Tracks a deferred terminal raw-mode teardown queued via queueMicrotask.
     // Lets a same-render useInput swap keep the terminal in raw mode without a disable/enable cycle.
     const pendingDisableRawModeRef = useRef(false);
+    // Set while suspendTerminal() has handed the terminal to a child process. Input hooks that
+    // change while it is set only update the counts; resumeInput restores the modes that still have an owner.
+    const isInputPausedRef = useRef(false);
     // Count how many components enabled bracketed paste mode
     const bracketedPasteModeEnabledCount = useRef(0);
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -230,7 +277,9 @@ const App = ({
     );
 
     // Determines if TTY is supported on the provided stdin
-    const isRawModeSupported = stdin.isTTY;
+    // Raw mode needs a TTY that actually exposes `setRawMode()`; other streams (e.g. a `PassThrough`) are not raw-capable.
+    // `isTTY` is absent (undefined) on non-TTY streams, so the result must be coerced to a real boolean.
+    const isRawModeSupported = stdin.isTTY ? typeof stdin.setRawMode === "function" : false;
 
     const detachReadableListener = useCallback((): void => {
         if (!readableListenerRef.current) {
@@ -249,11 +298,16 @@ const App = ({
 
     const disableRawMode = useCallback((): void => {
         pendingDisableRawModeRef.current = false;
-        stdin.setRawMode(false);
-        stdin.unref();
+
+        if (isRawModeSupported) {
+            stdin.setRawMode(false);
+        }
+
+        // ref()/unref() only exist on socket-backed streams; a custom stream (e.g. a `PassThrough`) has neither.
+        stdin.unref?.();
         rawModeEnabledCount.current = 0;
         clearInputState();
-    }, [stdin, clearInputState]);
+    }, [stdin, isRawModeSupported, clearInputState]);
 
     const handleExit = useCallback(
         (errorOrResult?: unknown): void => {
@@ -268,21 +322,27 @@ const App = ({
 
     const handleInput = useCallback(
         (input: string): void => {
-            // eslint-disable-next-line unicorn/no-hex-escape
-            if (input.includes("\x03") && exitOnCtrlC) {
+            if (exitOnCtrlC && isCtrlC(input)) {
                 handleExit();
 
                 return;
             }
 
-            if (input === escape && isFocusEnabled) {
-                setActiveFocusId((currentActiveFocusId) => {
-                    if (currentActiveFocusId) {
-                        return undefined;
-                    }
+            // Escape without modifiers resets focus; kitty release and modified escape keys do not.
+            const key = parseKeypress(input);
 
-                    return currentActiveFocusId;
-                });
+            if (
+                isFocusEnabled
+                && key.name === "escape"
+                && key.eventType !== "release"
+                && !key.shift
+                && !key.ctrl
+                && !key.meta
+                && !key.option
+                && key.super !== true
+                && key.hyper !== true
+            ) {
+                setActiveFocusId(undefined);
             }
         },
         [exitOnCtrlC, handleExit, isFocusEnabled],
@@ -319,7 +379,19 @@ const App = ({
 
             for (const event of inputEvents) {
                 if (typeof event === "string") {
+                    // Kitty keyboard query replies (CSI ? <flags> u) are protocol traffic, not input.
+                    if (kittyQueryReplyRe.test(event)) {
+                        onKittyQueryResponse?.();
+
+                        continue;
+                    }
+
                     emitInput(event);
+
+                    // The app is exiting: input that rode in the same chunk after Ctrl+C must not be dispatched.
+                    if (exitOnCtrlC && isCtrlC(event)) {
+                        return;
+                    }
                 } else {
                     if (internal_eventEmitter.listenerCount("paste") === 0) {
                         if (!didWarnAboutDeprecatedPasteFallbackRef.current) {
@@ -343,7 +415,7 @@ const App = ({
         if (inputParserRef.current!.hasPendingEscape()) {
             schedulePendingInputFlush();
         }
-    }, [stdin, emitInput, clearPendingInputFlush, schedulePendingInputFlush, writeToStderr, internal_eventEmitter]);
+    }, [stdin, emitInput, exitOnCtrlC, clearPendingInputFlush, schedulePendingInputFlush, writeToStderr, internal_eventEmitter, onKittyQueryResponse]);
 
     const attachReadableListener = useCallback((): void => {
         if (readableListenerRef.current) {
@@ -379,12 +451,17 @@ const App = ({
 
                     pendingDisableRawModeRef.current = false;
 
-                    if (!isRawModeAlreadyEnabled) {
-                        stdin.ref();
-                        stdin.setRawMode(true);
-                    }
+                    if (!isInputPausedRef.current) {
+                        if (!isRawModeAlreadyEnabled) {
+                            stdin.ref?.();
 
-                    attachReadableListener();
+                            if (isRawModeSupported) {
+                                stdin.setRawMode(true);
+                            }
+                        }
+
+                        attachReadableListener();
+                    }
                 }
 
                 rawModeEnabledCount.current++;
@@ -397,6 +474,11 @@ const App = ({
             }
 
             if (--rawModeEnabledCount.current === 0) {
+                // Nothing to release while suspended: pauseInput already did.
+                if (isInputPausedRef.current) {
+                    return;
+                }
+
                 // Stop owning input immediately so pending parser state cannot leak into
                 // a replacement useInput component mounted in the same React update.
                 clearInputState();
@@ -423,7 +505,7 @@ const App = ({
             }
 
             if (isEnabled) {
-                if (bracketedPasteModeEnabledCount.current === 0) {
+                if (bracketedPasteModeEnabledCount.current === 0 && !isInputPausedRef.current) {
                     stdout.write(enableBracketedPaste);
                 }
 
@@ -436,52 +518,45 @@ const App = ({
                 return;
             }
 
-            if (--bracketedPasteModeEnabledCount.current === 0) {
+            if (--bracketedPasteModeEnabledCount.current === 0 && !isInputPausedRef.current) {
                 stdout.write(disableBracketedPaste);
             }
         },
         [stdout],
     );
 
-    // Remembers which input modes were active so resumeInput can reinstate exactly
-    // what was on — the ownership counts are left untouched so components still
-    // "own" raw mode / bracketed paste across the suspension.
-    const suspendedInputStateRef = useRef({ bracketedPaste: false, rawMode: false });
-
+    // Pausing and resuming leave the ownership counts untouched: the components still "own"
+    // raw mode / bracketed paste across the suspension, and resumeInput restores whatever still has an owner.
     const pauseInput = useCallback((): void => {
-        const wasRawMode = isRawModeSupported && (rawModeEnabledCount.current > 0 || pendingDisableRawModeRef.current);
-        const wasBracketedPaste = bracketedPasteModeEnabledCount.current > 0;
+        isInputPausedRef.current = true;
 
-        suspendedInputStateRef.current = { bracketedPaste: wasBracketedPaste, rawMode: wasRawMode };
-
-        if (wasBracketedPaste && stdout.isTTY) {
+        if (bracketedPasteModeEnabledCount.current > 0 && stdout.isTTY) {
             stdout.write(disableBracketedPaste);
         }
 
-        if (wasRawMode) {
-            // Hand raw mode + input listeners back to the terminal without resetting
-            // the counts. Cancel any queued deferred disable so it can't fire mid-suspension.
+        if (isRawModeSupported && (rawModeEnabledCount.current > 0 || pendingDisableRawModeRef.current)) {
+            // Hand raw mode + input listeners back to the terminal. Cancel any queued deferred disable so it can't fire mid-suspension.
             pendingDisableRawModeRef.current = false;
             clearInputState();
             stdin.setRawMode(false);
-            stdin.unref();
+            stdin.unref?.();
         }
     }, [isRawModeSupported, stdout, stdin, clearInputState]);
 
     const resumeInput = useCallback((): void => {
-        const { bracketedPaste, rawMode } = suspendedInputStateRef.current;
+        isInputPausedRef.current = false;
 
-        if (rawMode) {
-            stdin.ref();
+        if (isRawModeSupported && rawModeEnabledCount.current > 0) {
+            stdin.ref?.();
             stdin.setRawMode(true);
             stdin.setEncoding("utf8");
             attachReadableListener();
         }
 
-        if (bracketedPaste && stdout.isTTY) {
+        if (bracketedPasteModeEnabledCount.current > 0 && stdout.isTTY) {
             stdout.write(enableBracketedPaste);
         }
-    }, [stdin, stdout, attachReadableListener]);
+    }, [isRawModeSupported, stdin, stdout, attachReadableListener]);
 
     // Register on every commit so a child component that calls suspendTerminal()
     // reaches the current pause/resume closures.
@@ -546,12 +621,25 @@ const App = ({
                 return;
             }
 
-            if (input === tab) {
-                focusNext();
+            const key = parseKeypress(input);
+
+            // Only plain Tab (or Shift+Tab) moves focus; releases and other modified Tabs do not.
+            if (
+                key.name !== "tab"
+                || key.eventType === "release"
+                || key.ctrl
+                || key.meta
+                || key.option
+                || key.super === true
+                || key.hyper === true
+            ) {
+                return;
             }
 
-            if (input === shiftTab) {
+            if (key.shift) {
                 focusPrevious();
+            } else {
+                focusNext();
             }
         };
 
@@ -564,11 +652,14 @@ const App = ({
     }, [isFocusEnabled, focusNext, focusPrevious, internal_eventEmitter]);
 
     const enableFocus = useCallback((): void => {
+        isFocusEnabledRef.current = true;
         setIsFocusEnabled(true);
     }, []);
 
     const disableFocus = useCallback((): void => {
+        isFocusEnabledRef.current = false;
         setIsFocusEnabled(false);
+        setActiveFocusId(undefined);
     }, []);
 
     const focus = useCallback((id: string): void => {
@@ -580,22 +671,27 @@ const App = ({
     }, []);
 
     const addFocusable = useCallback((id: string, { autoFocus }: { autoFocus: boolean }): void => {
-        const next = [
-            ...focusablesRef.current,
-            {
-                id,
-                isActive: true,
-            },
-        ];
+        const existing = focusablesRef.current.find((focusable) => focusable.id === id);
+        const next = existing
+            ? focusablesRef.current.map((focusable) => replaceEntry(focusable, id, (entry) => updateHolders(entry, { count: entry.count + 1 })))
+            : [
+                ...focusablesRef.current,
+                {
+                    count: 1,
+                    id,
+                    inactive: new Set<string>(),
+                    isActive: true,
+                },
+            ];
 
         focusablesCountRef.current = next.length;
         focusablesRef.current = next;
 
         setFocusables(next);
 
-        if (autoFocus) {
+        if (autoFocus && isFocusEnabledRef.current) {
             setActiveFocusId((currentActiveFocusId) => {
-                if (!currentActiveFocusId) {
+                if (currentActiveFocusId === undefined) {
                     return id;
                 }
 
@@ -604,7 +700,12 @@ const App = ({
         }
     }, []);
 
-    const removeFocusable = useCallback((id: string): void => {
+    // Blurs the focused component when its Tab stop has no active holder left.
+    const blurIfInactive = useCallback((id: string, isActive: boolean): void => {
+        if (isActive) {
+            return;
+        }
+
         setActiveFocusId((currentActiveFocusId) => {
             if (currentActiveFocusId === id) {
                 return undefined;
@@ -612,56 +713,74 @@ const App = ({
 
             return currentActiveFocusId;
         });
-
-        const filtered = focusablesRef.current.filter((focusable) => focusable.id !== id);
-
-        focusablesCountRef.current = filtered.length;
-        focusablesRef.current = filtered;
-
-        setFocusables(filtered);
     }, []);
 
-    const activateFocusable = useCallback((id: string): void => {
-        const next = focusablesRef.current.map((focusable) => {
-            if (focusable.id !== id) {
-                return focusable;
+    const removeFocusable = useCallback(
+        (id: string, holder = ""): void => {
+            const entry = focusablesRef.current.find((focusable) => focusable.id === id);
+
+            // Another mounted component still holds this ID: keep the shared Tab stop.
+            if (entry && entry.count > 1) {
+                const updated = updateHolders(entry, { count: entry.count - 1, inactive: withHolder(entry.inactive, holder, false) });
+                const decremented = focusablesRef.current.map((focusable) => replaceEntry(focusable, id, () => updated));
+
+                focusablesRef.current = decremented;
+
+                blurIfInactive(id, updated.isActive);
+                setFocusables(decremented);
+
+                return;
             }
 
-            return {
-                id,
-                isActive: true,
-            };
-        });
+            blurIfInactive(id, false);
 
-        focusablesRef.current = next;
+            const filtered = focusablesRef.current.filter((focusable) => focusable.id !== id);
 
-        setFocusables(next);
-    }, []);
+            focusablesCountRef.current = filtered.length;
+            focusablesRef.current = filtered;
 
-    const deactivateFocusable = useCallback((id: string): void => {
-        setActiveFocusId((currentActiveFocusId) => {
-            if (currentActiveFocusId === id) {
-                return undefined;
-            }
+            setFocusables(filtered);
+        },
+        [blurIfInactive],
+    );
 
-            return currentActiveFocusId;
-        });
+    const setHolderActive = useCallback(
+        (id: string, holder: string, isActive: boolean): void => {
+            let isStopActive = true;
 
-        const next = focusablesRef.current.map((focusable) => {
-            if (focusable.id !== id) {
-                return focusable;
-            }
+            const next = focusablesRef.current.map((focusable) => {
+                if (focusable.id !== id) {
+                    return focusable;
+                }
 
-            return {
-                id,
-                isActive: false,
-            };
-        });
+                const updated = updateHolders(focusable, { inactive: withHolder(focusable.inactive, holder, !isActive) });
 
-        focusablesRef.current = next;
+                isStopActive = updated.isActive;
 
-        setFocusables(next);
-    }, []);
+                return updated;
+            });
+
+            focusablesRef.current = next;
+
+            blurIfInactive(id, isStopActive);
+            setFocusables(next);
+        },
+        [blurIfInactive],
+    );
+
+    const activateFocusable = useCallback(
+        (id: string, holder = ""): void => {
+            setHolderActive(id, holder, true);
+        },
+        [setHolderActive],
+    );
+
+    const deactivateFocusable = useCallback(
+        (id: string, holder = ""): void => {
+            setHolderActive(id, holder, false);
+        },
+        [setHolderActive],
+    );
 
     // Handle cursor visibility, raw mode, and bracketed paste mode cleanup on unmount
     useEffect(

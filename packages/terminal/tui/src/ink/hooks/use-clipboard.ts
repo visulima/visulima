@@ -3,6 +3,8 @@
 /**
  * React hook for clipboard operations via OSC 52 terminal escape sequences.
  */
+import type { Writable } from "node:stream";
+
 import { useCallback, useMemo } from "react";
 
 import type { ClipboardTarget } from "../clipboard";
@@ -50,7 +52,7 @@ const useClipboard = (options: UseClipboardOptions = {}): UseClipboardResult => 
                 return;
             }
 
-            writeOsc52(stdout, text, target);
+            writeOsc52(stdout as Writable, text, target);
         },
         [isSupported, stdout, target],
     );

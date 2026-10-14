@@ -180,7 +180,7 @@ describe("kitty-keyboard", () => {
     it("kitty protocol - backspace key", () => {
         expect.assertions(2);
 
-        const result = parseKeypress(kittyKey(8));
+        const result = parseKeypress(kittyKey(127));
 
         expect(result.name).toBe("backspace");
         expect(result.eventType).toBe("press");
@@ -249,10 +249,10 @@ describe("kitty-keyboard", () => {
         expect(result.eventType).toBe("press");
     });
 
-    it("kitty protocol - ctrl+letter produces codepoint 1-26", () => {
+    it("kitty protocol - ctrl+letter uses the unshifted key code", () => {
         expect.assertions(2);
 
-        const result = parseKeypress(kittyKey(1, 5));
+        const result = parseKeypress(kittyKey(97, 5));
 
         expect(result.name).toBe("a");
         expect(result.ctrl).toBe(true);
@@ -356,17 +356,18 @@ describe("kitty-keyboard", () => {
     it("kitty protocol - isPrintable is false for backspace", () => {
         expect.assertions(1);
 
-        const result = parseKeypress(kittyKey(8));
+        const result = parseKeypress(kittyKey(127));
 
         expect(result.isPrintable).toBe(false);
     });
 
-    it("kitty protocol - isPrintable is false for ctrl+letter", () => {
-        expect.assertions(1);
+    it("kitty protocol - isPrintable is true for ctrl+letter with its text", () => {
+        expect.assertions(2);
 
-        const result = parseKeypress(kittyKey(1, 5));
+        const result = parseKeypress(kittyKey(97, 5));
 
-        expect(result.isPrintable).toBe(false);
+        expect(result.isPrintable).toBe(true);
+        expect(result.text).toBe("a");
     });
 
     it("kitty protocol - capslock (57358) is non-printable", () => {

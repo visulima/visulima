@@ -1,8 +1,10 @@
+/* eslint-disable react-x/no-use-context, react-x/no-context-provider */
 /* eslint-disable react-x/set-state-in-effect, react/function-component-definition */
 import type { ReactElement, ReactNode } from "react";
-import { useLayoutEffect, useMemo, useState } from "react";
+import { useContext, useLayoutEffect, useMemo, useState } from "react";
 
 import type { Styles } from "../ink/styles";
+import { backgroundContext } from "./background-context";
 
 export type Props<T> = {
     /**
@@ -30,6 +32,10 @@ export type Props<T> = {
  */
 export default function Static<T>(props: Props<T>): ReactElement {
     const { children: render, items, style: customStyle } = props;
+    const inheritedBackgroundColor = useContext(backgroundContext);
+    // Empty background colors inherit from the parent as well.
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+    const effectiveBackgroundColor = customStyle?.backgroundColor || inheritedBackgroundColor;
     const [index, setIndex] = useState(0);
 
     const itemsToRender: T[] = useMemo(() => items.slice(index), [items, index]);
@@ -49,9 +55,11 @@ export default function Static<T>(props: Props<T>): ReactElement {
     }, [customStyle]);
 
     return (
-        <ink-box internal_static style={style}>
-            {children}
-        </ink-box>
+        <backgroundContext.Provider value={effectiveBackgroundColor}>
+            <ink-box internal_static style={style}>
+                {children}
+            </ink-box>
+        </backgroundContext.Provider>
     );
 }
 

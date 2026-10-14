@@ -9295,6 +9295,9 @@ importers:
       '@vitest/ui':
         specifier: catalog:test
         version: 4.1.11(vitest@4.1.11)
+      '@xterm/headless':
+        specifier: catalog:dev
+        version: 6.0.0
       cli-boxes:
         specifier: catalog:prod
         version: 4.0.1
@@ -21070,6 +21073,9 @@ packages:
     engines: {node: '>=14'}
     cpu: [x64]
     os: [win32]
+
+  '@xterm/headless@6.0.0':
+    resolution: {integrity: sha512-5Yj1QINYCyzrZtf8OFIHi47iQtI+0qYFPHmouEfG8dHNxbZ9Tb9YGSuLcsEwj9Z+OL75GJqPyJbyoFer80a2Hw==}
 
   '@xtuc/ieee754@1.2.0':
     resolution: {integrity: sha512-DX8nKgqcGwsc0eJSqYt5lwP4DH5FlHnmuWWBRy7X0NcaGR0ZtuyeESgMwTYVEtxmsNGY+qit4QYT/MIYTOTPeA==}
@@ -48661,6 +48667,8 @@ snapshots:
 
   '@xn-sakina/rml-win32-x64-msvc@2.8.0':
     optional: true
+
+  '@xterm/headless@6.0.0': {}
 
   '@xtuc/ieee754@1.2.0': {}
 

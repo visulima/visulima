@@ -1,4 +1,5 @@
-/* eslint-disable @stylistic/no-tabs, @stylistic/no-trailing-spaces, @typescript-eslint/no-base-to-string, @typescript-eslint/no-unsafe-assignment, jsdoc/require-asterisk-prefix, jsdoc/tag-lines, jsdoc/text-escaping, sonarjs/no-tab, unicorn/no-null */
+/* eslint-disable @stylistic/no-tabs, @stylistic/no-trailing-spaces, @typescript-eslint/no-unsafe-assignment, jsdoc/require-asterisk-prefix, jsdoc/tag-lines, jsdoc/text-escaping, sonarjs/no-tab, unicorn/no-null */
+
 import type { ReactNode } from "react";
 import { LegacyRoot } from "react-reconciler/constants";
 import Yoga from "yoga-layout";
@@ -8,6 +9,7 @@ import { createNode } from "./dom";
 import reconciler from "./reconciler";
 import renderer from "./renderer";
 import { calculateScroll } from "./scroll";
+import { toError } from "./to-error";
 
 export type RenderToStringOptions = {
     /**
@@ -90,7 +92,7 @@ const renderToString = (node: ReactNode, options?: RenderToStringOptions): strin
     rootNode.onImmediateRender = () => {
         const { staticOutput } = renderer(rootNode, false);
 
-        if (staticOutput && staticOutput !== "\n") {
+        if (staticOutput) {
             capturedStaticOutput += staticOutput;
         }
     };
@@ -99,7 +101,7 @@ const renderToString = (node: ReactNode, options?: RenderToStringOptions): strin
     // React's reconciler catches component errors internally and reports them
     // via onUncaughtError rather than letting them propagate. For a synchronous
     // utility like renderToString, callers expect errors to throw.
-    let uncaughtError: unknown;
+    const uncaught: { error?: unknown; has: boolean } = { has: false };
 
     // Create a reconciler container in legacy (synchronous) mode.
     // The four trailing callbacks are: onUncaughtError, onCaughtError,
@@ -113,7 +115,10 @@ const renderToString = (node: ReactNode, options?: RenderToStringOptions): strin
         null,
         "render-to-string",
         (error: unknown) => {
-            uncaughtError ??= error;
+            if (!uncaught.has) {
+                uncaught.has = true;
+                uncaught.error = error;
+            }
         },
         () => {},
         () => {},
@@ -123,27 +128,32 @@ const renderToString = (node: ReactNode, options?: RenderToStringOptions): strin
     let teardownSucceeded = false;
 
     try {
-        // Synchronously render the React tree into the container
-        reconciler.updateContainerSync(node, container, null, () => {});
-        reconciler.flushSyncWork();
+        let output = "";
 
-        // Yoga layout has already been calculated by onComputeLayout during commit.
-        // Render the DOM tree to a string — this captures the dynamic (non-static) output.
-        const { output } = renderer(rootNode, false);
+        try {
+            // Synchronously render the React tree into the container
+            reconciler.updateContainerSync(node, container, null, () => {});
+            reconciler.flushSyncWork();
 
-        // Tear down: unmount the tree so the reconciler cleans up child nodes
-        // and runs effect cleanup functions. Child Yoga nodes are freed by the
-        // reconciler's removeChildFromContainer → cleanupYogaNode → freeRecursive.
-        reconciler.updateContainerSync(null, container, null, () => {});
-        reconciler.flushSyncWork();
-        teardownSucceeded = true;
+            // Yoga layout has already been calculated by onComputeLayout during commit.
+            // Render the DOM tree to a string — this captures the dynamic (non-static) output.
+            ({ output } = renderer(rootNode, false));
+        } finally {
+            // Tear down: unmount the tree so the reconciler cleans up child nodes
+            // and runs effect cleanup functions. Child Yoga nodes are freed by the
+            // reconciler's removeChildFromContainer → cleanupYogaNode → freeRecursive.
+            // This runs even when producing the output throws, so effects still clean up.
+            reconciler.updateContainerSync(null, container, null, () => {});
+            reconciler.flushSyncWork();
+            teardownSucceeded = true;
 
-        // Free the root yoga node itself (children already freed by reconciler)
-        rootNode.yogaNode!.free();
+            // Free the root yoga node itself (children already freed by reconciler)
+            rootNode.yogaNode!.free();
+        }
 
         // Re-throw after full cleanup so callers see the original error.
-        if (uncaughtError !== undefined) {
-            throw uncaughtError instanceof Error ? uncaughtError : new Error(String(uncaughtError));
+        if (uncaught.has) {
+            throw toError(uncaught.error);
         }
 
         // The renderer appends a trailing newline to static output for terminal

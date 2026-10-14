@@ -81,6 +81,48 @@ const diff = (before: AnyObject, after: AnyObject): AnyObject | undefined => {
 };
 
 /**
+ * Returns the &lt;Static> node that is part of `root`'s tree. A render can create a &lt;Static> and then be
+ * abandoned before it commits, and a removed &lt;Static> leaves the tree too; in both cases `root.staticNode`
+ * points at a node that is no longer attached. The committed &lt;Static>, if there is one, is found by
+ * searching the tree instead.
+ */
+const resolveCommittedStaticNode = (root: DOMElement): DOMElement | undefined => {
+    const isAttached = (node: DOMElement): boolean => {
+        let current = node;
+
+        while (current.parentNode) {
+            current = current.parentNode;
+        }
+
+        return current === root;
+    };
+
+    if (!root.staticNode || isAttached(root.staticNode)) {
+        return root.staticNode;
+    }
+
+    const search = (node: DOMElement): DOMElement | undefined => {
+        for (const child of node.childNodes) {
+            if ("childNodes" in child) {
+                if (child.internal_static) {
+                    return child;
+                }
+
+                const found = search(child);
+
+                if (found) {
+                    return found;
+                }
+            }
+        }
+
+        return undefined;
+    };
+
+    return search(root);
+};
+
+/**
  * Recursively clean up a node tree, freeing Yoga nodes, clearing
  * resize observers, and resetting references to prevent memory leaks.
  *
@@ -463,6 +505,8 @@ const reconcilerInstance: ReturnType<typeof createReconciler> = createReconciler
         before the new instance emits. Without this, items from a replaced/removed <Static> stay
         in `fullStaticOutput` and get replayed on rewrites.
         */
+        rootNode.staticNode = resolveCommittedStaticNode(rootNode);
+
         if (rootNode.staticNode !== rootNode.previousStaticNode) {
             rootNode.previousStaticNode = rootNode.staticNode;
 
@@ -524,7 +568,8 @@ const reconcilerInstance: ReturnType<typeof createReconciler> = createReconciler
     trackSchedulerEvent() {},
     unhideInstance(node) {
         node.internal_hidden = false;
-        node.yogaNode?.setDisplay(Yoga.DISPLAY_FLEX);
+        // Resuming a Suspense boundary must not show a node that its own style hides.
+        node.yogaNode?.setDisplay(node.style.display === "none" ? Yoga.DISPLAY_NONE : Yoga.DISPLAY_FLEX);
         markNodeAsDirty(node);
     },
     unhideTextInstance(node, text) {

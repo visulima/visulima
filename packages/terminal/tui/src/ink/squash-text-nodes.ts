@@ -25,21 +25,33 @@ const squashTextNodes = (node: DOMElement): string => {
         if (childNode.nodeName === "#text") {
             nodeText = childNode.nodeValue;
         } else {
+            // A node hidden by a pending Suspense boundary keeps its text out of the parent's output.
+            if (childNode.internal_hidden) {
+                continue;
+            }
+
             if (childNode.nodeName === "ink-text" || childNode.nodeName === "ink-virtual-text") {
                 nodeText = squashTextNodes(childNode);
             }
 
             // Since these text nodes are being concatenated, `Output` instance won't be able to
             // apply children transform, so we have to do it manually here for each text node
+            // Each line gets its own index, so line-based transforms do not depend on preceding siblings.
             if (nodeText.length > 0 && typeof childNode.internal_transform === "function") {
-                nodeText = childNode.internal_transform(nodeText, index);
+                const { internal_transform: transform } = childNode;
+
+                nodeText = nodeText
+                    .split("\n")
+                    .map((line, lineIndex) => transform(line, lineIndex))
+                    .join("\n");
             }
         }
 
         text += nodeText;
     }
 
-    return sanitizeAnsi(text);
+    // Expand tabs here, before measurement and rendering both read this text, so they agree on columns.
+    return sanitizeAnsi(text).replaceAll("\t", "    ");
 };
 
 export default squashTextNodes;
@@ -98,8 +110,14 @@ export const squashTextNodesWithMap = (node: DOMElement, map: CharOffsetMap, off
                 });
             }
 
+            // Each line gets its own index, so line-based transforms do not depend on preceding siblings.
             if (nodeText.length > 0 && typeof childNode.internal_transform === "function") {
-                nodeText = childNode.internal_transform(nodeText, index);
+                const { internal_transform: transform } = childNode;
+
+                nodeText = nodeText
+                    .split("\n")
+                    .map((line, lineIndex) => transform(line, lineIndex))
+                    .join("\n");
             }
         }
 

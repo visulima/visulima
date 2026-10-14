@@ -20,6 +20,12 @@ export function resolveFlags(flags: KittyFlagName[]): number {
         result |= kittyFlags[flag];
     }
 
+    // Associated text is only reported when all keys are sent as escape codes.
+    if (flags.includes("reportAssociatedText")) {
+        // eslint-disable-next-line no-bitwise
+        result |= kittyFlags.reportAllKeysAsEscapeCodes;
+    }
+
     return result;
 }
 

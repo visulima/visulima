@@ -4,8 +4,9 @@ import colorizeDefault from "@visulima/colorize";
 
 type ColorType = "foreground" | "background";
 
-const rgbRegex = /^rgb\(\s?(\d+),\s?(\d+),\s?(\d+)\s?\)$/;
-const ansiRegex = /^ansi256\(\s?(\d+)\s?\)$/;
+const rgbRegex = /^rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/;
+const ansiRegex = /^ansi256\(\s*(\d+)\s*\)$/;
+const hexRegex = /^#(?:[\da-f]{3}|[\da-f]{6})$/i;
 
 const isNamedColor = (color: string): color is AnsiColors => color in colorizeDefault;
 
@@ -25,6 +26,11 @@ const colorize = (string_: string, color: string | undefined, type: ColorType): 
     }
 
     if (color.startsWith("#")) {
+        // A malformed hex would otherwise be read as black; leave the text uncolored instead.
+        if (!hexRegex.test(color)) {
+            return string_;
+        }
+
         return type === "foreground" ? colorizeDefault.hex(color as `#${string}`)(string_) : colorizeDefault.bgHex(color as `#${string}`)(string_);
     }
 

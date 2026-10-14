@@ -6,6 +6,11 @@ import parseKeypress, { nonAlphanumericKeys } from "../parse-keypress";
 import reconciler from "../reconciler";
 import { useStdinContext } from "./use-stdin";
 
+// A CSI (`ESC [`) or SS3 (`ESC O`) introducer followed by at least one more
+// character. A bare `ESC [` / `ESC O` is Alt+[ / Alt+Shift+O and stays input.
+// eslint-disable-next-line no-control-regex, sonarjs/no-control-regex
+const controlSequenceRe = /^\u001B{1,2}[O[][\s\S]/;
+
 /**
  * Handy information about a key that was pressed.
  */
@@ -296,7 +301,7 @@ const useInput = (inputHandler: Handler, options: Options = {}): void => {
                 numLock: keypress.numLock ?? false,
                 pageDown: keypress.name === "pagedown",
                 pageUp: keypress.name === "pageup",
-                return: keypress.name === "return",
+                return: keypress.name === "return" || keypress.name === "kpenter",
                 rightArrow: keypress.name === "right",
                 shift: keypress.shift,
                 // Kitty keyboard protocol modifiers
@@ -309,19 +314,11 @@ const useInput = (inputHandler: Handler, options: Options = {}): void => {
 
             if (keypress.isKittyProtocol) {
                 // Use text-as-codepoints field for printable keys (needed when
-                // reportAllKeysAsEscapeCodes flag is enabled), suppress non-printable
-                if (keypress.isPrintable) {
-                    input = keypress.text ?? keypress.name;
-                } else if (keypress.ctrl && keypress.name.length === 1) {
-                    // Ctrl+letter via codepoint 1-26 form: not printable text, but
-                    // the letter name must flow through so handlers (e.g. exitOnCtrlC
-                    // checking `input === 'c' && key.ctrl`) still work.
-                    input = keypress.name;
-                } else {
-                    input = "";
-                }
+                // reportAllKeysAsEscapeCodes flag is enabled); functional and modifier keys produce no text.
+                input = keypress.isPrintable ? keypress.text ?? keypress.name : "";
             } else if (keypress.ctrl) {
-                input = keypress.name;
+                // Legacy Ctrl+Space arrives as the name "space"; its input is the space character.
+                input = keypress.name === "space" ? " " : keypress.name;
             } else {
                 input = keypress.sequence;
             }
@@ -336,12 +333,20 @@ const useInput = (inputHandler: Handler, options: Options = {}): void => {
                 input = input.slice(1);
             }
 
-            if (input.length === 1 && typeof input[0] === "string" && /[A-Z]/.test(input[0])) {
+            // Kitty reports shift through its modifier bits; uppercase text (e.g. from Caps Lock) does not imply shift.
+            if (!keypress.isKittyProtocol && input.length === 1 && typeof input[0] === "string" && /[A-Z]/.test(input[0])) {
                 key.shift = true;
             }
 
-            // If app is supposed to exit on Ctrl+C, skip input listeners.
-            if (input === "c" && key.ctrl && internal_exitOnCtrlC) {
+            // If app is supposed to exit on Ctrl+C, skip input listeners. Releases do not trigger the exit.
+            if (keypress.name === "c" && key.ctrl && keypress.eventType !== "release" && internal_exitOnCtrlC) {
+                return;
+            }
+
+            // Terminal replies and reports (focus in/out, cursor position, mouse)
+            // are CSI/SS3 sequences without a key name. They are not typed
+            // input, so do not leak them into handlers as stray characters.
+            if (!keypress.name && !keypress.isKittyProtocol && controlSequenceRe.test(keypress.sequence)) {
                 return;
             }
 

@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-use-before-define, @typescript-eslint/unbound-method, class-methods-use-this, e18e/prefer-static-regex, import/no-namespace, jsdoc/no-undefined-types, jsdoc/tag-lines, no-empty, no-void, react-x/no-context-provider, sonarjs/different-types-comparison, sonarjs/no-async-constructor */
-import { Buffer } from "node:buffer";
 import { Console as NodeConsole } from "node:console";
 import process from "node:process";
 
-import { ALT_SCREEN_OFF, ALT_SCREEN_ON, clearScreenAndHomeCursor, cursorHide, cursorShow, eraseLines } from "@visulima/ansi";
+import { ALT_SCREEN_OFF, ALT_SCREEN_ON, clearScreenAndHomeCursor, cursorHide, cursorShow, cursorTo, eraseDown, eraseLines, scrollUp } from "@visulima/ansi";
 import { wordWrap } from "@visulima/string";
 import isInCi from "is-in-ci";
 import patchConsole from "patch-console";
@@ -50,6 +49,28 @@ if (!(console as any).Console) {
 
 const noop = () => {};
 
+// Terminal rows a block of text occupies once written: each newline ends a row, and unterminated text takes one more.
+const countLines = (text: string): number => {
+    if (text === "") {
+        return 0;
+    }
+
+    const lines = text.split("\n").length;
+
+    return text.endsWith("\n") ? lines - 1 : lines;
+};
+
+// The newest `rows` lines of a block of text, each newline-terminated. The alternate screen keeps no scrollback, so older lines are dropped.
+const tailLines = (text: string, rows: number): string => {
+    if (rows <= 0 || text === "") {
+        return "";
+    }
+
+    const lines = (text.endsWith("\n") ? text.slice(0, -1) : text).split("\n");
+
+    return lines.slice(-rows).map((line) => `${line}\n`).join("");
+};
+
 // React.memo cannot skip App re-render because `children` changes on every
 // rerender. The App's ~40 hooks run every time. This is architectural — the
 // only way to avoid it would be to move App's hook logic out of React.
@@ -58,83 +79,6 @@ const yieldImmediate = async () =>
     new Promise<void>((resolve) => {
         setImmediate(resolve);
     });
-
-const kittyQueryEscapeByte = 0x1b;
-const kittyQueryOpenBracketByte = 0x5b;
-const kittyQueryQuestionMarkByte = 0x3f;
-const kittyQueryLetterByte = 0x75;
-const zeroByte = 0x30;
-const nineByte = 0x39;
-
-type KittyQueryResponseMatch = { endIndex: number; state: "complete" } | { state: "partial" };
-
-const isDigitByte = (byte: number): boolean => byte >= zeroByte && byte <= nineByte;
-
-const matchKittyQueryResponse = (buffer: number[], startIndex: number): KittyQueryResponseMatch | undefined => {
-    if (
-        buffer[startIndex] !== kittyQueryEscapeByte
-        || buffer[startIndex + 1] !== kittyQueryOpenBracketByte
-        || buffer[startIndex + 2] !== kittyQueryQuestionMarkByte
-    ) {
-        return undefined;
-    }
-
-    let index = startIndex + 3;
-    const digitsStartIndex = index;
-
-    while (index < buffer.length && isDigitByte(buffer[index]!)) {
-        index++;
-    }
-
-    if (index === digitsStartIndex) {
-        return undefined;
-    }
-
-    if (index === buffer.length) {
-        return { state: "partial" };
-    }
-
-    if (buffer[index] === kittyQueryLetterByte) {
-        return { endIndex: index, state: "complete" };
-    }
-
-    return undefined;
-};
-
-const hasCompleteKittyQueryResponse = (buffer: number[]): boolean => {
-    for (let index = 0; index < buffer.length; index++) {
-        const match = matchKittyQueryResponse(buffer, index);
-
-        if (match?.state === "complete") {
-            return true;
-        }
-    }
-
-    return false;
-};
-
-const stripKittyQueryResponsesAndTrailingPartial = (buffer: number[]): number[] => {
-    const keptBytes: number[] = [];
-    let index = 0;
-
-    while (index < buffer.length) {
-        const match = matchKittyQueryResponse(buffer, index);
-
-        if (match?.state === "complete") {
-            index = match.endIndex + 1;
-            continue;
-        }
-
-        if (match?.state === "partial") {
-            break;
-        }
-
-        keptBytes.push(buffer[index]!);
-        index++;
-    }
-
-    return keptBytes;
-};
 
 const shouldClearTerminalForFrame = ({
     isTty,
@@ -308,7 +252,8 @@ export type Options = {
      * generating minimal ANSI escape sequences. Significantly reduces GC pressure
      * and improves rendering performance for complex UIs.
      *
-     * Falls back to the string-based path if native bindings are not available.
+     * Applies to interactive output on a TTY, on the alternate screen or inline. Non-TTY, screen-reader and debug output,
+     * and setups where native bindings are not available, use the string-based path.
      * @default false
      */
     useNativeRenderer?: boolean;
@@ -353,9 +298,23 @@ export default class Ink {
 
     private lastOutputHeight: number;
 
+    /** Set by clear(): the frame has been erased and must be drawn again by the next render. */
+    private isFrameCleared: boolean;
+
     private lastTerminalWidth: number;
 
+    private lastTerminalRows: number;
+
     private readonly nativeLog: NativeLogUpdate | undefined;
+
+    // The last frame the native renderer drew, kept so it can be drawn again after external writes.
+    private lastNativeFrame: { buffer: Uint32Array; cursor: CursorPosition | undefined; height: number; width: number } | undefined;
+
+    // Terminal rows taken by static output and scrolled-off lines above the native frame.
+    private nativeRowOffset = 0;
+
+    // Set when something outside the frame may have changed the screen (a resize or a resume), so the next native frame redraws all of it.
+    private nativeScreenStale = false;
 
     private readonly useNativeRenderer: boolean;
 
@@ -366,6 +325,9 @@ export default class Ink {
     // This variable is used only in debug mode to store full static output
     // so that it's rerendered every time, not just new static parts, like in non-debug mode
     private fullStaticOutput: string;
+
+    // Whether <Static> output has been written since the last identity change, on any render path.
+    private staticOutputWritten = false;
 
     // The single scrollable node with `overflowToBackbuffer` enabled, detected
     // during the layout/scroll walk. Only one such region is supported.
@@ -395,8 +357,8 @@ export default class Ink {
     // can reinstate the exact same protocol on resume.
     private kittyFlags?: KittyFlagName[];
 
-    // Set while suspendTerminal() has handed the terminal to a child process.
-    private isSuspended = false;
+    // The suspension that currently owns the terminal, set while suspendTerminal() has handed it to a child process.
+    private activeSuspension?: object;
 
     // Input pause/resume hooks registered by the App component, which owns raw
     // mode and bracketed paste state.
@@ -404,7 +366,7 @@ export default class Ink {
 
     private resumeInput?: () => void;
 
-    private cancelKittyDetection?: () => void;
+    private finishKittyDetection?: (supported: boolean) => void;
 
     private nextRenderCommit?: { promise: Promise<void>; resolve: () => void };
 
@@ -483,11 +445,16 @@ export default class Ink {
             incremental: options.incrementalRendering,
         });
 
-        // Initialize native (Rust) renderer if requested and available
-        this.useNativeRenderer = options.useNativeRenderer ?? false;
+        // Initialize native (Rust) renderer if requested and available. Non-TTY and screen-reader output are plain
+        // text, so they keep the string renderer. Inline frames are drawn from the cursor's row (see log-update-native).
+        this.useNativeRenderer = (options.useNativeRenderer ?? false)
+            && this.interactive
+            && options.stdout.isTTY
+            && !this.isScreenReaderEnabled
+            && !options.debug;
 
         if (this.useNativeRenderer) {
-            this.nativeLog = createNative(options.stdout);
+            this.nativeLog = createNative(options.stdout, { inline: !options.alternateScreen });
 
             if (!this.nativeLog) {
                 // Fall back to string path if native binding unavailable
@@ -533,7 +500,11 @@ export default class Ink {
         this.lastOutput = "";
         this.lastOutputToRender = "";
         this.lastOutputHeight = 0;
-        this.lastTerminalWidth = getWindowSize(this.options.stdout).columns;
+        this.isFrameCleared = false;
+        const initialSize = getWindowSize(this.options.stdout);
+
+        this.lastTerminalWidth = initialSize.columns;
+        this.lastTerminalRows = initialSize.rows;
 
         // This variable is used only in debug mode to store full static output
         // so that it's rerendered every time, not just new static parts, like in non-debug mode
@@ -610,13 +581,16 @@ export default class Ink {
     }
 
     resized = (): void => {
-        const currentWidth = getWindowSize(this.options.stdout).columns;
+        const { columns: currentWidth, rows: currentRows } = getWindowSize(this.options.stdout);
 
-        if (currentWidth < this.lastTerminalWidth) {
-            // We clear the screen when decreasing terminal width to prevent duplicate overlapping re-renders.
-            this.log.clear();
+        if (currentWidth < this.lastTerminalWidth || currentRows < this.lastTerminalRows) {
+            // Shrinking the terminal re-wraps or scrolls the frame, so the log no longer knows where it is.
+            // We clear the frame and draw it again to prevent duplicate overlapping re-renders.
+            this.eraseFrame();
+            this.nativeScreenStale = true;
             this.lastOutput = "";
             this.lastOutputToRender = "";
+            this.lastOutputHeight = 0;
         }
 
         // Clear styled line cache on resize — cached measurements may be
@@ -631,6 +605,7 @@ export default class Ink {
         this.onRender();
 
         this.lastTerminalWidth = currentWidth;
+        this.lastTerminalRows = currentRows;
     };
 
     resolveExitPromise: (result?: unknown) => void = () => {};
@@ -668,7 +643,31 @@ export default class Ink {
     };
 
     restoreLastOutput = (): void => {
-        if (!this.interactive) {
+        // A cleared frame stays cleared until the next render draws it again.
+        if (!this.interactive || this.isFrameCleared) {
+            return;
+        }
+
+        // A native frame cannot be replayed as text: draw it again from the last buffer, so
+        // whatever the external write put on screen is overwritten.
+        if (this.nativeLog) {
+            if (this.lastNativeFrame) {
+                const { buffer, cursor, height, width } = this.lastNativeFrame;
+
+                this.nativeLog.destroy();
+                this.nativeLog.render(buffer, width, height, { cursor, rowOffset: this.nativeRowOffset });
+            }
+
+            return;
+        }
+
+        // Screen-reader frames are written as plain text, so restore them the same way and
+        // only sync log-update's bookkeeping: no cursor hide or placement.
+        if (this.isScreenReaderEnabled) {
+            this.options.stdout.write(this.lastOutputToRender);
+            this.log.setCursorPosition(undefined);
+            this.log.sync(this.lastOutputToRender);
+
             return;
         }
 
@@ -679,6 +678,11 @@ export default class Ink {
     };
 
     calculateLayout = (): void => {
+        // The root Yoga node is freed on unmount; a commit that lands afterwards has nothing to lay out.
+        if (!this.rootNode.yogaNode) {
+            return;
+        }
+
         const flushLayoutObservers = (node: dom.DOMElement): void => {
             const observerEntries = new Map<ResizeObserver, ResizeObserverEntry[]>();
 
@@ -697,9 +701,9 @@ export default class Ink {
 
         const terminalWidth = getWindowSize(this.options.stdout).columns;
 
-        this.rootNode.yogaNode!.setWidth(terminalWidth);
+        this.rootNode.yogaNode.setWidth(terminalWidth);
 
-        this.rootNode.yogaNode!.calculateLayout(undefined, undefined, Yoga.DIRECTION_LTR);
+        this.rootNode.yogaNode.calculateLayout(undefined, undefined, Yoga.DIRECTION_LTR);
 
         flushLayoutObservers(this.rootNode);
     };
@@ -839,6 +843,7 @@ export default class Ink {
     // Resets `fullStaticOutput` when the <Static> identity changes so stale items from a previous instance are not replayed on future rewrites.
     handleStaticChange = (): void => {
         this.fullStaticOutput = "";
+        this.staticOutputWritten = false;
     };
 
     /**
@@ -924,10 +929,19 @@ export default class Ink {
             this.nextRenderCommit = undefined;
         }
 
+        const renderStart = performance.now();
         const renderResult = render(this.rootNode, this.isScreenReaderEnabled, {
             useNativeRenderer: this.useNativeRenderer,
         });
+        const renderTime = performance.now() - renderStart;
 
+        this.commitFrame(renderResult);
+
+        // Reported after the frame is written, so the callback can rely on what it observes on stdout.
+        this.options.onRender?.({ renderTime });
+    };
+
+    private commitFrame(renderResult: ReturnType<typeof render>): void {
         const { cursorPosition, cursorRequested, cursorShape, output, outputBuffer, outputHeight, outputWidth, staticOutput } = renderResult;
 
         this.renderedCursorRequested = cursorRequested;
@@ -945,18 +959,50 @@ export default class Ink {
         // (they live in the terminal's own history; replay would duplicate).
         const backbufferOutput = this.computeBackbufferOutput();
 
+        // Remembered on every path, so the exit path knows <Static> output was already written.
+        if (staticOutput !== "") {
+            this.staticOutputWritten = true;
+        }
+
         // Native renderer path: write buffer directly via Rust diff engine
         if (this.useNativeRenderer && this.nativeLog && outputBuffer && outputWidth) {
-            // Handle static output through the normal string path
-            if (staticOutput && staticOutput !== "\n") {
-                this.options.stdout.write(staticOutput);
+            this.isFrameCleared = false;
+
+            if (staticOutput) {
+                this.fullStaticOutput += staticOutput;
             }
 
-            if (backbufferOutput) {
-                this.options.stdout.write(backbufferOutput);
+            const cursor = this.getActiveCursorPosition();
+
+            this.nativeLog.setCursorShape(cursorRequested ? cursorShape : undefined);
+            this.lastNativeFrame = { buffer: outputBuffer, cursor, height: outputHeight, width: outputWidth };
+
+            if (this.alternateScreen) {
+                // <Static> output and scrolled-off lines sit above the frame. The frame is drawn at absolute rows, so
+                // new rows are added with appendNativeAbove, which leaves the block already on screen alone. A disturbed
+                // screen (resize, resume) has nothing reliable to build on, so the whole block is drawn again from home.
+                // The prefix goes inside the frame's synchronized update.
+                let prefix: string | undefined;
+
+                if (this.nativeScreenStale) {
+                    const { rows } = getWindowSize(this.options.stdout);
+                    const above = tailLines(this.fullStaticOutput + backbufferOutput, rows - outputHeight);
+
+                    this.nativeRowOffset = countLines(above);
+                    this.nativeScreenStale = false;
+                    prefix = clearScreenAndHomeCursor + above;
+                } else if (staticOutput || backbufferOutput) {
+                    prefix = this.appendNativeAbove(staticOutput + backbufferOutput, outputHeight);
+                }
+
+                this.nativeLog.render(outputBuffer, outputWidth, outputHeight, { cursor, prefix, rowOffset: this.nativeRowOffset });
+            } else {
+                // Inline frames are anchored at the cursor, so nothing is redrawn from home. New <Static> output and
+                // scrolled-off lines are written above the frame; the renderer erases the old frame first.
+                this.nativeScreenStale = false;
+                this.nativeLog.render(outputBuffer, outputWidth, outputHeight, { cursor, prefix: staticOutput + backbufferOutput });
             }
 
-            this.nativeLog.render(outputBuffer, outputWidth, outputHeight);
             this.lastOutputHeight = outputHeight;
 
             return;
@@ -970,7 +1016,7 @@ export default class Ink {
         }
 
         // If <Static> output isn't empty, it means new children have been added to it
-        const hasStaticOutput = staticOutput && staticOutput !== "\n";
+        const hasStaticOutput = staticOutput !== "";
 
         if (this.options.debug) {
             if (hasStaticOutput) {
@@ -1004,6 +1050,15 @@ export default class Ink {
                 this.options.stdout.write(bsu);
             }
 
+            // Wrap before comparing so a terminal that changed width gets its output rewrapped.
+            const terminalWidth = getWindowSize(this.options.stdout).columns;
+
+            const wrappedOutput = wordWrap(output, {
+                trim: false,
+                width: terminalWidth,
+                wrapMode: "BREAK_WORDS",
+            }).replace(/\n$/, "");
+
             if (hasStaticOutput) {
                 // We need to erase the main output before writing new static output
                 const erase = this.lastOutputHeight > 0 ? eraseLines(this.lastOutputHeight) : "";
@@ -1013,21 +1068,13 @@ export default class Ink {
                 this.lastOutputHeight = 0;
             }
 
-            if (output === this.lastOutput && !hasStaticOutput) {
+            if (wrappedOutput === this.lastOutputToRender && !hasStaticOutput) {
                 if (isSync) {
                     this.options.stdout.write(esu);
                 }
 
                 return;
             }
-
-            const terminalWidth = getWindowSize(this.options.stdout).columns;
-
-            const wrappedOutput = wordWrap(output, {
-                trim: false,
-                width: terminalWidth,
-                wrapMode: "BREAK_WORDS",
-            }).replace(/\n$/, "");
 
             // If we haven't erased yet, do it now.
             if (hasStaticOutput) {
@@ -1042,6 +1089,15 @@ export default class Ink {
             this.lastOutputToRender = wrappedOutput;
             this.lastOutputHeight = wrappedOutput === "" ? 0 : wrappedOutput.split("\n").length;
 
+            // Keep log-update in step with the frame just written, so clear() and external-write
+            // restoration can erase it. An empty frame has nothing on screen to track.
+            if (wrappedOutput === "") {
+                this.log.reset();
+            } else {
+                this.log.setCursorPosition(undefined);
+                this.log.sync(wrappedOutput);
+            }
+
             if (isSync) {
                 this.options.stdout.write(esu);
             }
@@ -1054,7 +1110,7 @@ export default class Ink {
         }
 
         this.renderInteractiveFrame(output, outputHeight, hasStaticOutput ? staticOutput : "", backbufferOutput);
-    };
+    }
 
     // Cache AccessibilityContext value to avoid creating a new object
     // on every render() call, which would force all consumers to re-render.
@@ -1069,6 +1125,7 @@ export default class Ink {
                     exitOnCtrlC={this.options.exitOnCtrlC}
                     interactive={this.interactive}
                     onExit={this.handleAppExit}
+                    onKittyQueryResponse={this.handleKittyQueryResponse}
                     onRegisterInputControl={this.registerInputControl}
                     onSuspendTerminal={this.suspendTerminal}
                     onWaitUntilRenderFlush={this.waitUntilRenderFlush}
@@ -1091,6 +1148,55 @@ export default class Ink {
             reconciler.updateContainerSync(tree, this.container, null, noop);
             reconciler.flushSyncWork();
         }
+
+        // A commit with no host changes skips the layout hook, so a cleared frame would stay
+        // hidden. Draw it again.
+        if (this.isFrameCleared) {
+            this.onRender();
+        }
+    }
+
+    /**
+     * Adds text rows above the native frame and returns the prefix that writes them. Only the new rows are
+     * written: the frame's old rows are erased, the text goes where the frame started, and the frame moves below it.
+     * When the block outgrows the viewport, its top rows are scrolled off, so the newest rows are kept.
+     */
+    private appendNativeAbove(text: string, frameHeight: number): string {
+        const { rows } = getWindowSize(this.options.stdout);
+        const capacity = Math.max(0, rows - frameHeight);
+        const added = tailLines(text, capacity);
+        const addedRows = countLines(added);
+        const keep = Math.max(0, Math.min(this.nativeRowOffset, capacity - addedRows));
+        const scrolled = this.nativeRowOffset - keep;
+
+        this.nativeRowOffset = keep + addedRows;
+
+        // The reset keeps the erase from painting with a background left over from the last frame.
+        return `${scrolled > 0 ? scrollUp(scrolled) : ""}\u001B[0m${cursorTo(0, keep)}${eraseDown}${added}`;
+    }
+
+    /**
+     * Writes console text above the native frame and draws the frame again below it. The text is never written
+     * over the frame, so nothing is left behind when the frame moves.
+     */
+    private writeNativeAbove(text: string): void {
+        if (text === "") {
+            return;
+        }
+
+        const frame = this.lastNativeFrame;
+        const prefix = this.appendNativeAbove(text, frame?.height ?? 0);
+
+        // Whatever the text overwrote is gone, so the next native frame diffs against nothing.
+        this.nativeLog?.destroy();
+
+        if (frame && !this.isFrameCleared && this.nativeLog) {
+            this.nativeLog.render(frame.buffer, frame.width, frame.height, { cursor: frame.cursor, prefix, rowOffset: this.nativeRowOffset });
+
+            return;
+        }
+
+        this.options.stdout.write(bsu + prefix + esu);
     }
 
     writeToStdout = (data: string): void => {
@@ -1110,13 +1216,20 @@ export default class Ink {
             return;
         }
 
+        // Inline native frames are anchored at the cursor and handled by the shared path below.
+        if (this.nativeLog && this.alternateScreen) {
+            this.writeNativeAbove(data);
+
+            return;
+        }
+
         const isSync = this.shouldSync();
 
         if (isSync) {
             this.options.stdout.write(bsu);
         }
 
-        this.log.clear();
+        this.eraseFrame();
         this.options.stdout.write(data);
         this.restoreLastOutput();
 
@@ -1143,13 +1256,24 @@ export default class Ink {
             return;
         }
 
+        if (this.nativeLog && this.alternateScreen) {
+            // A terminal on stderr is the frame's terminal, so the text joins the frame's output above it.
+            if (this.options.stderr.isTTY) {
+                this.writeNativeAbove(data);
+            } else {
+                this.options.stderr.write(data);
+            }
+
+            return;
+        }
+
         const isSync = this.shouldSync();
 
         if (isSync) {
             this.options.stdout.write(bsu);
         }
 
-        this.log.clear();
+        this.eraseFrame();
         this.options.stderr.write(data);
         this.restoreLastOutput();
 
@@ -1186,7 +1310,7 @@ export default class Ink {
             // primary screen buffer.
             && !this.alternateScreen
         ) {
-            const shouldRenderFinalFrame = !this.throttledOnRender || (!this.hasPendingThrottledRender && this.fullStaticOutput === "");
+            const shouldRenderFinalFrame = (!this.throttledOnRender || (!this.hasPendingThrottledRender && !this.staticOutputWritten)) && !this.isFrameCleared;
 
             if (shouldRenderFinalFrame) {
                 this.calculateLayout();
@@ -1218,13 +1342,12 @@ export default class Ink {
             }
 
             // Cancel any in-progress auto-detection before checking protocol state
-            if (this.cancelKittyDetection) {
-                this.cancelKittyDetection();
-            }
+            this.finishKittyDetection?.(false);
 
             if (canWriteToStdout) {
                 if (this.kittyProtocolEnabled) {
                     this.writeBestEffort(this.options.stdout, "\u{1B}[<u");
+                    this.kittyProtocolEnabled = false;
                 }
 
                 // Alternate-screen content is disposable by design. We intentionally
@@ -1238,6 +1361,7 @@ export default class Ink {
                     // any buffered content from leaking onto the primary screen.
                     this.log.clear();
                     this.log.done();
+                    this.nativeLog?.done();
                     this.lastOutput = "";
                     this.lastOutputToRender = "";
                     this.lastOutputHeight = 0;
@@ -1254,6 +1378,7 @@ export default class Ink {
                     // deferred during rendering).
                     this.options.stdout.write(this.options.debug ? "\n" : `${this.lastOutput}\n`);
                 } else if (!this.options.debug) {
+                    this.nativeLog?.done();
                     this.log.done();
                 }
             }
@@ -1261,6 +1386,10 @@ export default class Ink {
             this.kittyProtocolEnabled = false;
 
             instances.delete(this.options.stdout);
+
+            // Children are freed by the reconciler; the root node is WASM memory the GC never reclaims.
+            this.rootNode.yogaNode?.free();
+            this.rootNode.yogaNode = undefined;
 
             // Ensure all queued writes have been processed before resolving the
             // exit promise. For real writable streams, queue an empty write as a
@@ -1316,7 +1445,8 @@ export default class Ink {
         // won't fire. When no raw mode is active (e.g. a static render in a
         // PTY), the event loop drains naturally and beforeExit triggers a
         // clean unmount.
-        if (!this.beforeExitHandler) {
+        // After (or during) unmount nothing would ever remove the listener again.
+        if (!this.beforeExitHandler && !this.isUnmounted && !this.isUnmounting) {
             this.beforeExitHandler = () => {
                 this.unmount();
             };
@@ -1379,15 +1509,24 @@ export default class Ink {
         await yieldImmediate();
     }
 
+    // Erases the frame before output is written above it. Inline native frames are erased here too; the alternate-screen
+    // frame is redrawn from home instead, so it is left alone.
+    private eraseFrame(): void {
+        this.log.clear();
+
+        if (!this.alternateScreen) {
+            this.nativeLog?.clear();
+        }
+    }
+
     clear(): void {
         if (!this.interactive || this.options.debug) {
             return;
         }
 
         this.log.clear();
-        // Sync lastOutput so that unmount's final onRender
-        // sees it as unchanged and log-update skips it
-        this.log.sync(this.lastOutputToRender || `${this.lastOutput}\n`);
+        this.nativeLog?.clear();
+        this.isFrameCleared = true;
     }
 
     patchConsole(): void {
@@ -1469,6 +1608,10 @@ export default class Ink {
     }
 
     private renderInteractiveFrame(output: string, outputHeight: number, staticOutput: string, backbufferOutput = ""): void {
+        const { isFrameCleared } = this;
+
+        this.isFrameCleared = false;
+
         // Both <Static> output and scrolled-off backbuffer lines ride the same
         // "above the live region" channel. backbufferOutput is intentionally
         // NOT accumulated into this.fullStaticOutput by the caller: those lines
@@ -1524,6 +1667,12 @@ export default class Ink {
                 return;
             }
 
+            // A throttled trailing render can arrive with the frame already on screen. Clearing again would push
+            // that copy into scrollback, so skip it unless something changed. The final frame on unmount is still drawn.
+            if (output === this.lastOutput && !hasPrepend && !isFrameCleared && !this.log.isCursorDirty() && !this.isUnmounting) {
+                return;
+            }
+
             const isSync = this.shouldSync();
 
             if (isSync) {
@@ -1544,7 +1693,15 @@ export default class Ink {
             // `output` here would leave the log believing the live region is one
             // row taller than it is, and the next clear() would erase the bottom
             // line of the static block above it. See vadimdemedes/ink#974.
-            this.options.stdout.write(clearScreenAndHomeCursor + this.fullStaticOutput + backbufferOutput + outputToRender);
+            // <Static> output the previous frame already pushed off-screen is not replayed: it lives in the
+            // terminal's scrollback, and replaying it on every full clear would stack another copy there.
+            // When the previous live region did not fill the viewport, the static block is still on screen
+            // and the clear would erase it, so the whole static history is written again. Static output new
+            // in this frame has not been written anywhere yet, so it is always written.
+            const isStaticOnScreen = this.lastOutputHeight < viewportRows;
+            const staticToWrite = isStaticOnScreen ? this.fullStaticOutput : staticOutput;
+
+            this.options.stdout.write(clearScreenAndHomeCursor + staticToWrite + backbufferOutput + outputToRender);
             this.lastOutput = output;
             this.lastOutputToRender = outputToRender;
             this.lastOutputHeight = outputHeight;
@@ -1573,7 +1730,7 @@ export default class Ink {
             if (isSync) {
                 this.options.stdout.write(esu);
             }
-        } else if (output !== this.lastOutput || this.log.isCursorDirty()) {
+        } else if (output !== this.lastOutput || this.log.isCursorDirty() || isFrameCleared) {
             // ThrottledLog manages its own bsu/esu at actual write time
             this.throttledLog(outputToRender);
         }
@@ -1645,73 +1802,39 @@ export default class Ink {
     }
 
     private async runKittySupportQuery(flags: KittyFlagName[]): Promise<void> {
-        const { stdin, stdout } = this.options;
+        const { stdout } = this.options;
 
-        let responseBuffer: number[] = [];
+        // The reply reaches us through App's input pipeline (see onKittyQueryResponse), so it is never read twice.
+        // Resolves when the reply arrives, when the window closes, or when suspension cancels the probe.
+        return new Promise<void>((resolve) => {
+            const timer = setTimeout(() => {
+                finish(false);
+            }, 200);
 
-        let timer: NodeJS.Timeout | undefined;
-        let settle: (() => void) | undefined;
-
-        const cleanup = (): void => {
-            this.cancelKittyDetection = undefined;
-
-            if (timer) {
+            const finish = (supported: boolean): void => {
                 clearTimeout(timer);
-            }
+                this.finishKittyDetection = undefined;
 
-            stdin.removeListener("data", onData);
-
-            // Re-emit any buffered data that wasn't the protocol response,
-            // so it isn't lost from Ink's normal input pipeline.
-            // Clear responseBuffer afterwards to make cleanup idempotent.
-            const remaining = stripKittyQueryResponsesAndTrailingPartial(responseBuffer);
-
-            responseBuffer = [];
-
-            if (remaining.length > 0) {
-                stdin.unshift(Buffer.from(remaining));
-            }
-        };
-
-        const onData = (data: Uint8Array | string): void => {
-            const chunk = typeof data === "string" ? Buffer.from(data) : data;
-
-            for (const byte of chunk) {
-                responseBuffer.push(byte);
-            }
-
-            if (hasCompleteKittyQueryResponse(responseBuffer)) {
-                cleanup();
-
-                if (!this.isUnmounted) {
+                if (supported && !this.isUnmounted) {
                     this.enableKittyProtocol(flags);
                 }
 
-                settle?.();
-            }
-        };
-
-        // Attach listener before writing the query so that synchronous
-        // or immediate responses are not missed.
-        stdin.on("data", onData);
-
-        stdout.write("\u{1B}[?u");
-
-        // Resolve when the answer lands or the window closes, so the next probe in the queue does
-        // not start while this listener is still attached.
-        return new Promise<void>((resolve) => {
-            settle = resolve;
-            timer = setTimeout(() => {
-                cleanup();
-                resolve();
-            }, 200);
-
-            this.cancelKittyDetection = () => {
-                cleanup();
                 resolve();
             };
+
+            // Register before writing the query so an immediate reply is not missed.
+            this.finishKittyDetection = finish;
+            stdout.write("\u001B[?u");
         });
     }
+
+    // Must stay referentially stable across `render()` calls: it feeds into App's
+    // `setRawMode` identity, so a new function per `rerender()` would make every
+    // `useInput`/`usePaste` re-run its raw-mode effect and reset the input parser,
+    // dropping keys and pastes that were still in flight.
+    handleKittyQueryResponse = (): void => {
+        this.finishKittyDetection?.(true);
+    };
 
     // Called by the App component to register how input is paused/resumed. Kept
     // as an arrow field so it can be passed as a prop without binding.
@@ -1727,20 +1850,20 @@ export default class Ink {
      * restores.
      */
     suspendTerminal = (async (callback?: () => Promise<void> | void): Promise<TerminalSuspension | undefined> => {
-        this.beginSuspend();
+        const suspension = this.beginSuspend();
 
         if (callback) {
             try {
                 await callback();
             } finally {
-                await this.endSuspend();
+                await this.endSuspend(suspension);
             }
 
             return undefined;
         }
 
         const resume = async (): Promise<void> => {
-            await this.endSuspend();
+            await this.endSuspend(suspension);
         };
 
         return { resume, [Symbol.asyncDispose]: resume };
@@ -1749,24 +1872,32 @@ export default class Ink {
         (): Promise<TerminalSuspension>;
     };
 
-    private beginSuspend(): void {
-        if (this.isSuspended) {
+    private beginSuspend(): object {
+        if (this.activeSuspension) {
             throw new Error("The terminal is already suspended. Resume the current suspension before suspending again.");
         }
 
-        this.isSuspended = true;
+        // Identifies this suspension, so a handle from an earlier one cannot resume a later one.
+        const suspension = {};
+
+        this.activeSuspension = suspension;
+
+        // A reply that arrives while the child owns the terminal must not enable the protocol.
+        this.finishKittyDetection?.(false);
 
         if (!this.interactive || this.isUnmounted || this.isUnmounting) {
-            return;
+            return suspension;
         }
 
         try {
-            // Erase Ink's current frame so the child starts from a settled screen.
-            this.log.clear();
+            // Erase Ink's current frame (the string renderer's or an inline native one) so the child starts from a settled screen.
+            this.eraseFrame();
             this.log.done();
+            this.nativeLog?.done();
 
             if (this.kittyProtocolEnabled) {
                 this.writeBestEffort(this.options.stdout, "[<u");
+                this.kittyProtocolEnabled = false;
             }
 
             if (this.alternateScreen) {
@@ -1779,7 +1910,7 @@ export default class Ink {
         } catch (error) {
             // If handing over the terminal fails partway, don't strand the app
             // suspended with no way back: reclaim input, clear the flag, rethrow.
-            this.isSuspended = false;
+            this.activeSuspension = undefined;
 
             try {
                 this.resumeInput?.();
@@ -1789,28 +1920,38 @@ export default class Ink {
 
             throw error;
         }
+
+        return suspension;
     }
 
-    private async endSuspend(): Promise<void> {
-        if (!this.isSuspended) {
+    private async endSuspend(suspension: object): Promise<void> {
+        // Already resumed, or superseded by a later suspension.
+        if (this.activeSuspension !== suspension) {
             return;
         }
 
-        this.isSuspended = false;
-
-        // Reclaim input even mid-unmount; pauseInput already ran, so this is symmetric.
-        this.resumeInput?.();
+        this.activeSuspension = undefined;
 
         if (!this.interactive || this.isUnmounted || this.isUnmounting) {
             return;
         }
 
+        // Reclaim input only while the app still owns the terminal. After unmount, App cleanup has already released it.
+        this.resumeInput?.();
+
         if (this.alternateScreen) {
             this.writeBestEffort(this.options.stdout, ALT_SCREEN_ON);
+
+            // The alternate screen comes back blank, so <Static> output that was written before the
+            // suspend has to be drawn again. The native frame writes it from home on its next commit instead.
+            if (this.fullStaticOutput !== "" && !this.useNativeRenderer) {
+                this.writeBestEffort(this.options.stdout, this.fullStaticOutput);
+            }
         }
 
-        if (this.kittyProtocolEnabled && this.kittyFlags) {
+        if (this.kittyFlags) {
             this.writeBestEffort(this.options.stdout, `\u{1B}[>${resolveFlags(this.kittyFlags)}u`);
+            this.kittyProtocolEnabled = true;
         }
 
         // Force a full redraw instead of diffing against the stale pre-suspension
@@ -1819,6 +1960,9 @@ export default class Ink {
         this.lastOutputToRender = "";
         this.lastOutputHeight = 0;
         this.log.reset();
+        // Whatever the child left on screen is not ours to erase, so the frame is forgotten and drawn again at the cursor.
+        this.nativeLog?.destroy();
+        this.nativeScreenStale = true;
 
         try {
             this.calculateLayout();
