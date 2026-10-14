@@ -252,8 +252,8 @@ export type Options = {
      * generating minimal ANSI escape sequences. Significantly reduces GC pressure
      * and improves rendering performance for complex UIs.
      *
-     * Only applies to interactive alternate-screen output on a TTY. Inline, non-TTY, screen-reader and debug output, and
-     * setups where native bindings are not available, use the string-based path.
+     * Applies to interactive output on a TTY, on the alternate screen or inline. Non-TTY, screen-reader and debug output,
+     * and setups where native bindings are not available, use the string-based path.
      * @default false
      */
     useNativeRenderer?: boolean;
@@ -445,19 +445,16 @@ export default class Ink {
             incremental: options.incrementalRendering,
         });
 
-        // Initialize native (Rust) renderer if requested and available.
-        // The cell diff addresses absolute terminal rows from row 0, so it can only draw a frame it owns:
-        // an interactive alternate screen. Inline output (and non-TTY or screen-reader output, which are
-        // plain text) keeps using the string renderer, which positions the frame relative to the cursor.
+        // Initialize native (Rust) renderer if requested and available. Non-TTY and screen-reader output are plain
+        // text, so they keep the string renderer. Inline frames are drawn from the cursor's row (see log-update-native).
         this.useNativeRenderer = (options.useNativeRenderer ?? false)
             && this.interactive
-            && Boolean(options.alternateScreen)
             && options.stdout.isTTY
             && !this.isScreenReaderEnabled
             && !options.debug;
 
         if (this.useNativeRenderer) {
-            this.nativeLog = createNative(options.stdout);
+            this.nativeLog = createNative(options.stdout, { inline: !options.alternateScreen });
 
             if (!this.nativeLog) {
                 // Fall back to string path if native binding unavailable
@@ -589,7 +586,7 @@ export default class Ink {
         if (currentWidth < this.lastTerminalWidth || currentRows < this.lastTerminalRows) {
             // Shrinking the terminal re-wraps or scrolls the frame, so the log no longer knows where it is.
             // We clear the frame and draw it again to prevent duplicate overlapping re-renders.
-            this.log.clear();
+            this.eraseFrame();
             this.nativeScreenStale = true;
             this.lastOutput = "";
             this.lastOutputToRender = "";
@@ -971,28 +968,37 @@ export default class Ink {
         if (this.useNativeRenderer && this.nativeLog && outputBuffer && outputWidth) {
             this.isFrameCleared = false;
 
-            // <Static> output and scrolled-off lines sit above the frame. The frame is drawn at absolute rows, so
-            // when they change, or the screen was disturbed, the block is redrawn from home (as the string renderer
-            // does on a full clear) and the frame starts below it. The prefix goes inside the frame's synchronized update.
             if (staticOutput) {
                 this.fullStaticOutput += staticOutput;
-            }
-
-            let prefix: string | undefined;
-
-            if (staticOutput || backbufferOutput || this.nativeScreenStale) {
-                const { rows } = getWindowSize(this.options.stdout);
-                const above = tailLines(this.fullStaticOutput + backbufferOutput, rows - outputHeight);
-
-                this.nativeRowOffset = countLines(above);
-                this.nativeScreenStale = false;
-                prefix = clearScreenAndHomeCursor + above;
             }
 
             const cursor = this.getActiveCursorPosition();
 
             this.lastNativeFrame = { buffer: outputBuffer, cursor, height: outputHeight, width: outputWidth };
-            this.nativeLog.render(outputBuffer, outputWidth, outputHeight, { cursor, prefix, rowOffset: this.nativeRowOffset });
+
+            if (this.alternateScreen) {
+                // <Static> output and scrolled-off lines sit above the frame. The frame is drawn at absolute rows, so
+                // when they change, or the screen was disturbed, the block is redrawn from home (as the string renderer
+                // does on a full clear) and the frame starts below it. The prefix goes inside the frame's synchronized update.
+                let prefix: string | undefined;
+
+                if (staticOutput || backbufferOutput || this.nativeScreenStale) {
+                    const { rows } = getWindowSize(this.options.stdout);
+                    const above = tailLines(this.fullStaticOutput + backbufferOutput, rows - outputHeight);
+
+                    this.nativeRowOffset = countLines(above);
+                    this.nativeScreenStale = false;
+                    prefix = clearScreenAndHomeCursor + above;
+                }
+
+                this.nativeLog.render(outputBuffer, outputWidth, outputHeight, { cursor, prefix, rowOffset: this.nativeRowOffset });
+            } else {
+                // Inline frames are anchored at the cursor, so nothing is redrawn from home. New <Static> output and
+                // scrolled-off lines are written above the frame; the renderer erases the old frame first.
+                this.nativeScreenStale = false;
+                this.nativeLog.render(outputBuffer, outputWidth, outputHeight, { cursor, prefix: staticOutput + backbufferOutput });
+            }
+
             this.lastOutputHeight = outputHeight;
 
             return;
@@ -1169,7 +1175,7 @@ export default class Ink {
             this.options.stdout.write(bsu);
         }
 
-        this.log.clear();
+        this.eraseFrame();
         this.options.stdout.write(data);
         this.restoreLastOutput();
 
@@ -1202,7 +1208,7 @@ export default class Ink {
             this.options.stdout.write(bsu);
         }
 
-        this.log.clear();
+        this.eraseFrame();
         this.options.stderr.write(data);
         this.restoreLastOutput();
 
@@ -1306,6 +1312,7 @@ export default class Ink {
                     // deferred during rendering).
                     this.options.stdout.write(this.options.debug ? "\n" : `${this.lastOutput}\n`);
                 } else if (!this.options.debug) {
+                    this.nativeLog?.done();
                     this.log.done();
                 }
             }
@@ -1434,6 +1441,16 @@ export default class Ink {
         }
 
         await yieldImmediate();
+    }
+
+    // Erases the frame before output is written above it. Inline native frames are erased here too; the alternate-screen
+    // frame is redrawn from home instead, so it is left alone.
+    private eraseFrame(): void {
+        this.log.clear();
+
+        if (!this.alternateScreen) {
+            this.nativeLog?.clear();
+        }
     }
 
     clear(): void {
@@ -1876,6 +1893,8 @@ export default class Ink {
         this.lastOutputToRender = "";
         this.lastOutputHeight = 0;
         this.log.reset();
+        // Whatever the child left on screen is not ours to erase, so the frame is forgotten and drawn again at the cursor.
+        this.nativeLog?.destroy();
         this.nativeScreenStale = true;
 
         try {
