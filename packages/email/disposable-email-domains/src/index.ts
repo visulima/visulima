@@ -46,13 +46,6 @@ let listLoaded = false;
 let hasWarnedOnDomainsFailure = false;
 
 /**
- * Location of the generated list relative to this module (`dist/index.js` and `src/index.ts`
- * both sit one level below the package root). Kept in a variable so bundlers that detect
- * `new URL("…", import.meta.url)` (e.g. Vite) do not turn it into an asset reference.
- */
-const DOMAINS_FILE_PATH = "../dist/domains.json";
-
-/**
  * Reads and parses the generated `dist/domains.json` from disk (Node runtimes).
  * @returns Array of domain strings, or `undefined` if the file is missing/corrupt.
  */
@@ -63,11 +56,17 @@ const readDomainsFile = (): string[] | undefined => {
         // A missing `process`/`getBuiltinModule` throws and takes the warn-once fallback below.
         const fs = process.getBuiltinModule("node:fs");
 
-        if (typeof import.meta.url !== "string") {
+        // Read into a local so the call below is not the `new URL("…", import.meta.url)` shape that
+        // bundlers statically rewrite: Vite would emit the file as an asset and webpack warns about
+        // a non-literal request. `dist/index.js` and `src/index.ts` both sit one level below the
+        // package root, so the list is at `../dist/domains.json` from either.
+        const moduleUrl = import.meta.url;
+
+        if (typeof moduleUrl !== "string") {
             throw new TypeError("import.meta.url is unavailable in this runtime; call setDomains() to provide the list.");
         }
 
-        const domainsContent = fs.readFileSync(new URL(DOMAINS_FILE_PATH, import.meta.url), "utf8");
+        const domainsContent = fs.readFileSync(new URL("../dist/domains.json", moduleUrl), "utf8");
         const parsed: unknown = JSON.parse(domainsContent);
 
         if (!Array.isArray(parsed)) {
