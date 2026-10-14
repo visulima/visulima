@@ -1,6 +1,5 @@
 import type { CerebroFs, CommandExecute, Toolbox } from "@visulima/cerebro";
 import { bold, cyan, dim, green, red, yellow } from "@visulima/colorize";
-import { findPackageManagerSync } from "@visulima/package";
 import { join, resolve } from "@visulima/path";
 import { render } from "@visulima/tui";
 import isInCi from "is-in-ci";
@@ -151,7 +150,8 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
         filterFindingsByPattern(buildSectionFindings(section, payload), filterPatterns);
 
     const pm = detectPm(workspaceRoot);
-    const { packageManager } = findPackageManagerSync(workspaceRoot);
+    // `detectPm` is tolerant; the strict lookup throws in a workspace that has no lockfile yet.
+    const packageManager = pm.name;
 
     // Collect deps across workspaces (shared by outdated + optimize scans)
     const rootDeps = collectDepsFromPkgJson(join(workspaceRoot, "package.json"), false);
@@ -919,7 +919,8 @@ const execute = async ({ fs, logger, options, visConfig, visConfigError, workspa
     // Pre-scan: cheap surveys we need before deciding which scan rows
     // to draw. Lockfile parse is ~80ms even on large monorepos.
 
-    const catalogs = readCatalogs(wsRoot, findPackageManagerSync(wsRoot).packageManager);
+    // `pm` is already detected above; a second strict lookup throws in a workspace that has no lockfile yet.
+    const catalogs = readCatalogs(wsRoot, pm.name);
     const installed = lockedPackages(wsRoot, pm.name);
     const installedCount = installed.length;
     const socketEnabled = buildEnabledProviders(visConfig?.security).length > 0;
