@@ -941,10 +941,19 @@ export default class Ink {
             this.nextRenderCommit = undefined;
         }
 
+        const renderStart = performance.now();
         const renderResult = render(this.rootNode, this.isScreenReaderEnabled, {
             useNativeRenderer: this.useNativeRenderer,
         });
+        const renderTime = performance.now() - renderStart;
 
+        this.commitFrame(renderResult);
+
+        // Reported after the frame is written, so the callback can rely on what it observes on stdout.
+        this.options.onRender?.({ renderTime });
+    };
+
+    private commitFrame(renderResult: ReturnType<typeof render>): void {
         const { cursorPosition, cursorRequested, cursorShape, output, outputBuffer, outputHeight, outputWidth, staticOutput } = renderResult;
 
         this.renderedCursorRequested = cursorRequested;
@@ -1071,7 +1080,7 @@ export default class Ink {
         }
 
         this.renderInteractiveFrame(output, outputHeight, hasStaticOutput ? staticOutput : "", backbufferOutput);
-    };
+    }
 
     // Cache AccessibilityContext value to avoid creating a new object
     // on every render() call, which would force all consumers to re-render.
