@@ -40,13 +40,13 @@ describe("hooks", () => {
         expect(ps.output).toContain("exited");
     });
 
-    it.skipIf(!ptyAvailable)("useInput - handle Ctrl+C via kitty codepoint-3 form when `exitOnCtrlC` is `false`", async () => {
+    it.skipIf(!ptyAvailable)("useInput - handle Ctrl+C via kitty protocol when `exitOnCtrlC` is `false`", async () => {
         expect.assertions(1);
 
         const ps = term("use-input-ctrl-c");
 
-        // Ctrl+C via kitty codepoint 3 form (modifier 5 = ctrl(4) + 1)
-        ps.write("\u001B[3;5u");
+        // Ctrl+C uses the unshifted letter codepoint (modifier 5 = ctrl(4) + 1)
+        ps.write("\u001B[99;5u");
         await ps.waitForExit();
 
         expect(ps.output).toContain("exited");

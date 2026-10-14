@@ -175,7 +175,6 @@ const kittySpecialNumberKeys: Record<number, string> = {
 
 // Map of special codepoints to key names in kitty protocol
 const kittyCodepointNames: Record<number, string> = {
-    8: "backspace",
     // 13 (return) and 32 (space) are handled before this lookup
     // in parseKittyKeypress so they can be marked as printable.
     9: "tab",
@@ -341,9 +340,10 @@ const parseKittyKeypress = (s: string): ParsedKey | null => {
     } else if (kittyCodepointNames[codepoint]) {
         name = kittyCodepointNames[codepoint]!;
         isPrintable = false;
-    } else if (codepoint >= 1 && codepoint <= 26) {
-        // Ctrl+letter comes as codepoint 1-26
-        name = String.fromCodePoint(codepoint + 96); // 'a' is 97
+    } else if (codepoint < 32 || (codepoint >= 127 && codepoint <= 159) || (codepoint >= 57_344 && codepoint <= 63_743)) {
+        // Control codes and reserved functional keys do not identify printable characters.
+        // Ctrl+letter arrives as the letter's own codepoint (97 for 'a') with the ctrl modifier.
+        name = "";
         isPrintable = false;
     } else {
         name = safeFromCodePoint(codepoint).toLowerCase();
