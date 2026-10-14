@@ -1,4 +1,5 @@
 /* eslint-disable react/destructuring-assignment, sonarjs/function-return-type, sonarjs/public-static-readonly */
+
 import type { ReactNode } from "react";
 import { PureComponent } from "react";
 
@@ -19,16 +20,21 @@ export default class ErrorBoundary extends PureComponent<Props, State> {
     // fallow-ignore-next-line unused-class-member -- consumed by React DevTools / the runtime, not called in-repo.
     static displayName = "InternalErrorBoundary";
 
-    static getDerivedStateFromError(error: Error): State {
-        return { error };
+    // Any thrown value (a string, `undefined`, an error from another realm) becomes an Error,
+    // so the fallback always renders and the exit promise rejects with a real error.
+    static getDerivedStateFromError(error: unknown): State {
+        // Matches errors from other realms by tag, since `instanceof` misses them.
+        const isError = error instanceof Error || Object.prototype.toString.call(error) === "[object Error]";
+
+        return { error: isError ? (error as Error) : new Error(String(error)) };
     }
 
     override state: State = {
         error: undefined,
     };
 
-    override componentDidCatch(error: Error): void {
-        this.props.onError(error);
+    override componentDidCatch(): void {
+        this.props.onError(this.state.error!);
     }
 
     override render(): ReactNode {

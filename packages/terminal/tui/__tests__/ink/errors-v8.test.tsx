@@ -2,11 +2,14 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
+import vm from "node:vm";
 
 import { strip as stripAnsi } from "@visulima/ansi";
-import { afterAll, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ErrorOverview } from "../../src/components/index";
+import { render } from "../../src/ink/index";
+import createStdout from "../helpers/ink-create-stdout";
 import { renderToString as renderToStringHelper } from "../helpers/ink-render";
 
 const sourceDirectory = mkdtempSync(join(tmpdir(), "tui-error-source-"));
@@ -106,5 +109,78 @@ describe("error overview", () => {
         } finally {
             consoleErrors.mockRestore();
         }
+    });
+});
+
+describe("error reporting", () => {
+    beforeEach(() => {
+        vi.spyOn(console, "error").mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it("displays thrown strings and rejects waitUntilExit with the original message", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+        const Test = (): never => {
+            // eslint-disable-next-line @typescript-eslint/only-throw-error
+            throw "Unable to load configuration";
+        };
+
+        const app = render(<Test />, { stdout });
+
+        await expect(app.waitUntilExit()).rejects.toThrow("Unable to load configuration");
+
+        const output = stripAnsi(stdout.getWrites().join(""));
+
+        expect(output).toContain("ERROR");
+        expect(output).toContain("Unable to load configuration");
+    });
+
+    it("displays thrown undefined and rejects waitUntilExit", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+        const Test = (): never => {
+            // eslint-disable-next-line @typescript-eslint/only-throw-error
+            throw undefined;
+        };
+
+        const app = render(<Test />, { stdout });
+
+        await expect(app.waitUntilExit()).rejects.toThrow("undefined");
+
+        expect(stripAnsi(stdout.getWrites().join(""))).toContain("ERROR  undefined");
+    });
+
+    it("waitUntilExit preserves the original component error", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+        const error = new Error("Original component error");
+        const Test = (): never => {
+            throw error;
+        };
+
+        const app = render(<Test />, { stdout });
+
+        await expect(app.waitUntilExit()).rejects.toBe(error);
+    });
+
+    it("waitUntilExit preserves a component error from another realm", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+        const error = vm.runInNewContext("new Error(\"Cross-realm component error\")") as Error;
+        const Test = (): never => {
+            throw error;
+        };
+
+        const app = render(<Test />, { stdout });
+
+        await expect(app.waitUntilExit()).rejects.toBe(error);
     });
 });
