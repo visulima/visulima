@@ -225,7 +225,7 @@ const readManifest = async (scope: string, cwd: string): Promise<OrgManifest | u
 
     try {
         // npm clients encode only the scope separator: `@scope%2Fname`.
-        const response = await fetch(`${registry.url.replace(/\/+$/, "")}/${packageName.replace("/", "%2F")}/latest`, {
+        const response = await fetch(`${registry.url.replace(/\/+$/, "")}/${packageName.replaceAll("/", "%2F")}/latest`, {
             headers: {
                 accept: "application/json",
                 ...(registry.token ? { authorization: `Bearer ${registry.token}` } : {}),

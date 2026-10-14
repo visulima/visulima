@@ -119,7 +119,7 @@ describe("vis run injected and parent environment", () => {
 
         const keep = cleanChildNameFilter([]);
 
-        expect(VIS_PARENT_ENV_NAMES.map((pattern) => keep(pattern.replace("*", "SUFFIX")))).toStrictEqual(VIS_PARENT_ENV_NAMES.map(() => true));
+        expect(VIS_PARENT_ENV_NAMES.map((pattern) => keep(pattern.replaceAll("*", "SUFFIX")))).toStrictEqual(VIS_PARENT_ENV_NAMES.map(() => true));
     });
 
     it("keeps every injected name, and a clean env is a superset of the injected set", () => {
