@@ -1,10 +1,11 @@
-/* eslint-disable @stylistic/no-extra-parens, @typescript-eslint/restrict-plus-operands */
+/* eslint-disable @stylistic/no-extra-parens */
 import type { Writable } from "node:stream";
 
-import { cursorHide, cursorNextLine, cursorShow, cursorTo, cursorUp, eraseLineEnd, eraseLines } from "@visulima/ansi";
+import { cursorHide, cursorNextLine, cursorShow, cursorUp, eraseLineEnd, eraseLines } from "@visulima/ansi";
 
 import type { CursorPosition, CursorShape } from "./cursor-helpers";
 import { buildCursorOnlySequence, buildCursorShapeSequence, buildCursorSuffix, buildReturnToBottom, buildReturnToBottomPrefix, cursorPositionChanged } from "./cursor-helpers";
+import { changedLineUpdate } from "./line-update";
 
 export type { CursorPosition, CursorShape } from "./cursor-helpers";
 
@@ -81,6 +82,8 @@ const cursorRowAfterWrite = (lines: string[]): number => lines.length - 1;
 // non-TTY streams don't, so we fall back to Infinity (no clamping).
 const getViewportRows = (stream: Writable): number => (stream as NodeJS.WriteStream).rows || Infinity;
 
+const getColumns = (stream: Writable): number | undefined => (stream as NodeJS.WriteStream).columns;
+
 // Clamp a line count so that eraseLines / cursorUp never move the cursor
 // above the visible viewport. Lines beyond the viewport have already
 // scrolled into terminal scrollback and cannot be erased.
@@ -95,6 +98,9 @@ const clampToViewport = (lineCount: number, stream: Writable): number => Math.mi
 type Frame = {
     /** Cursor position to restore after the frame, or undefined when no &lt;Cursor> is mounted. */
     activeCursor: CursorPosition | undefined;
+
+    /** Terminal width when it has not changed since the previous frame was written, otherwise undefined. */
+    columns: number | undefined;
 
     content: string;
 
@@ -139,7 +145,7 @@ const writeFullFrame: WriteFrame = (frame, stream) => {
  */
 
 const writeIncrementalFrame: WriteFrame = (frame, stream) => {
-    const { activeCursor, content, contentLines, previous, previousLines, returnPrefix, shapeDelta } = frame;
+    const { activeCursor, columns, content, contentLines, previous, previousLines, returnPrefix, shapeDelta } = frame;
     const visibleCount = visibleLineCount(contentLines, content);
 
     // Nothing to diff against, or a bare newline: fall back to a full redraw.
@@ -187,8 +193,7 @@ const writeIncrementalFrame: WriteFrame = (frame, stream) => {
         }
 
         buffer.push(
-            cursorTo(0)
-            + contentLines[index]
+            changedLineUpdate(previousLines[index] ?? "", contentLines[index]!, columns)
             + eraseLineEnd
             // Don't append newline after the last line when the input
             // has no trailing newline (fullscreen mode).
@@ -216,6 +221,8 @@ const writeIncrementalFrame: WriteFrame = (frame, stream) => {
 const createLogUpdate = (stream: Writable, { showCursor = false }: { showCursor?: boolean }, writeFrame: WriteFrame): LogUpdate => {
     let previousLines: string[] = [];
     let previousOutput = "";
+    // Width the previous frame was laid out at. Terminal reflow on resize changes how its rows wrap.
+    let previousColumns: number | undefined;
     let hasHiddenCursor = false;
     let cursorPosition: CursorPosition | undefined;
     let isCursorDirty = false;
@@ -262,6 +269,8 @@ const createLogUpdate = (stream: Writable, { showCursor = false }: { showCursor?
         const shapeDelta = shapeTracker.consumeDelta();
 
         const nextLines = string_.split("\n");
+        const columns = getColumns(stream);
+        const areColumnsUnchanged = previousColumns === columns;
 
         if (string_ === previousOutput && isCursorChanged) {
             stream.write(
@@ -291,6 +300,7 @@ const createLogUpdate = (stream: Writable, { showCursor = false }: { showCursor?
         writeFrame(
             {
                 activeCursor,
+                columns: areColumnsUnchanged ? columns : undefined,
                 content: string_,
                 contentLines: nextLines,
                 previous: previousOutput,
@@ -303,6 +313,7 @@ const createLogUpdate = (stream: Writable, { showCursor = false }: { showCursor?
 
         previousOutput = string_;
         previousLines = nextLines;
+        previousColumns = columns;
         commitCursor(activeCursor);
 
         return true;
@@ -353,6 +364,7 @@ const createLogUpdate = (stream: Writable, { showCursor = false }: { showCursor?
 
         previousOutput = string_;
         previousLines = lines;
+        previousColumns = getColumns(stream);
 
         const shapeDelta = shapeTracker.consumeDelta();
 
