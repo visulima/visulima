@@ -1,7 +1,8 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
+import { strip } from "@visulima/colorize";
 import { join } from "@visulima/path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import runExecute from "../../../src/commands/run/handler";
 import { cleanupTemporaryDirectory, createTemporaryDirectory } from "../../test-helpers";
@@ -102,6 +103,28 @@ describe("vis run splitCompound", () => {
 
         expect(runs("a")).toStrictEqual(["[]"]);
         expect(runs("b")).toStrictEqual(["[\"--flag\"]"]);
+    });
+
+    it("does not report the unsplit parent as skipped in the run summary", async () => {
+        expect.assertions(2);
+
+        const writes: string[] = [];
+        const stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => {
+            writes.push(String(chunk));
+
+            return true;
+        });
+
+        try {
+            await run();
+        } finally {
+            stdoutSpy.mockRestore();
+        }
+
+        const output = strip(writes.join(""));
+
+        expect(output).toContain("2 tasks completed");
+        expect(output).not.toContain("skipped");
     });
 
     it("lists each segment in the dry-run plan", async () => {
