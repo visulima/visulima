@@ -811,3 +811,134 @@ describe("keyboard v8: kitty auto detection", () => {
         }
     });
 });
+
+describe("keyboard v8: hook-level key routing", () => {
+    const cases = [
+        { expected: { capsLock: true, input: "A", shift: false }, input: "\u001B[97;65;65u", name: "kitty Caps Lock uppercase text" },
+        { expected: { ctrl: true, input: "a" }, input: "\u001B[97;5u", name: "kitty ctrl+a" },
+        { expected: { ctrl: true, input: " " }, input: "\u0000", name: "legacy ctrl+space" },
+        { expected: { input: "å" }, input: "\u001B[0;;229u", name: "kitty associated text" },
+        { expected: { input: "\r", return: true }, input: "\u001B[57414u", name: "kitty keypad enter" },
+    ] as const;
+
+    for (const { expected, input, name } of cases) {
+        it(`useInput receives ${name}`, async () => {
+            expect.hasAssertions();
+
+            const received: { input: string; key: Record<string, unknown> }[] = [];
+            const Example = () => {
+                useInput((value, key) => {
+                    received.push({ input: value, key: { ...key } });
+                });
+
+                return null;
+            };
+
+            const stdin = createStdin();
+            const stdout = createStdout();
+            const instance = render(<Example />, { stdin, stdout });
+
+            emitReadable(stdin, input);
+            await delay(10);
+
+            expect(received).toHaveLength(1);
+            expect(received[0]!.input).toBe(expected.input);
+
+            for (const [field, value] of Object.entries(expected)) {
+                if (field !== "input") {
+                    expect(received[0]!.key[field]).toBe(value);
+                }
+            }
+
+            instance.unmount();
+        });
+    }
+
+    it("kitty Escape clears focus, and its release does not", async () => {
+        expect.hasAssertions();
+
+        const Item = ({ autoFocus = false, label }: { readonly autoFocus?: boolean; readonly label: string }) => {
+            const { isFocused } = useFocus({ autoFocus });
+
+            return <Text>{isFocused ? `${label} *` : label}</Text>;
+        };
+
+        const stdin = createStdin();
+        const stdout = createStdout();
+        const instance = render(<Item autoFocus label="First" />, { debug: true, stdin, stdout });
+
+        await delay(10);
+
+        expect(stdout.get()).toContain("First *");
+
+        emitReadable(stdin, "\u001B[27;1:3u");
+        await delay(10);
+
+        expect(stdout.get()).toContain("First *");
+
+        emitReadable(stdin, "\u001B[27u");
+        await delay(10);
+
+        expect(stdout.get()).not.toContain("First *");
+
+        instance.unmount();
+    });
+
+    it("kitty Ctrl+C with exitOnCtrlC drops text that follows it in the same chunk", async () => {
+        expect.hasAssertions();
+
+        const received: string[] = [];
+        const Example = () => {
+            useInput((value) => {
+                received.push(value);
+            });
+
+            return null;
+        };
+
+        const stdin = createStdin();
+        const stdout = createStdout();
+        const instance = render(<Example />, { exitOnCtrlC: true, stdin, stdout });
+        const exited = instance.waitUntilExit();
+
+        emitReadable(stdin, "\u001B[99;5ux");
+        await delay(10);
+
+        expect(received).not.toContain("x");
+
+        await exited;
+    });
+});
+
+describe("keyboard v8: suspension and unmount", () => {
+    it("unmount while suspended does not re-enable the protocol", async () => {
+        expect.assertions(2);
+
+        const stdin = createTtyStdin();
+        const stdout = createStdout();
+        let suspendTerminal!: ReturnType<typeof useApp>["suspendTerminal"];
+
+        const Example = () => {
+            suspendTerminal = useApp().suspendTerminal;
+            useInput(() => {});
+
+            return null;
+        };
+
+        const app = render(<Example />, {
+            alternateScreen: true,
+            interactive: true,
+            kittyKeyboard: { mode: "enabled" },
+            stdin,
+            stdout,
+        });
+
+        const suspension = await suspendTerminal();
+
+        app.unmount();
+        await suspension?.resume();
+
+        expect(stdout.getWrites().filter((value) => value === "\u001B[>1u")).toHaveLength(1);
+        expect(stdout.getWrites().filter((value) => value === "\u001B[<u")).toHaveLength(1);
+    });
+});
