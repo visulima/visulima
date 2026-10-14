@@ -1,7 +1,7 @@
 /* eslint-disable @stylistic/no-extra-parens */
 import type { Writable } from "node:stream";
 
-import { cursorHide, cursorNextLine, cursorShow, cursorUp, eraseLineEnd, eraseLines } from "@visulima/ansi";
+import { cursorHide, cursorNextLine, cursorShow, cursorTo, cursorUp, eraseDown, eraseLineEnd, eraseLines } from "@visulima/ansi";
 
 import type { CursorPosition, CursorShape } from "./cursor-helpers";
 import { buildCursorOnlySequence, buildCursorShapeSequence, buildCursorSuffix, buildReturnToBottom, buildReturnToBottomPrefix, cursorPositionChanged } from "./cursor-helpers";
@@ -320,9 +320,16 @@ const createLogUpdate = (stream: Writable, { showCursor = false }: { showCursor?
     };
 
     render.clear = () => {
-        const prefix = buildReturnToBottomPrefix(isCursorWasShown, previousLines.length, previousCursorPosition);
+        if (isCursorWasShown && previousCursorPosition) {
+            // A parked cursor marks a row inside the frame, so erase up from that row. Returning to the row below
+            // the frame first can clamp at the viewport bottom once the terminal has trimmed that row on resize.
+            const { y } = previousCursorPosition;
 
-        stream.write(prefix + eraseLines(clampToViewport(previousLines.length, stream)));
+            stream.write(cursorHide + (y > 0 ? cursorUp(y) : "") + cursorTo(0) + eraseDown);
+        } else {
+            stream.write(eraseLines(clampToViewport(previousLines.length, stream)));
+        }
+
         forgetFrame();
     };
 

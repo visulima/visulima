@@ -1,4 +1,4 @@
-import { cursorDown, cursorNextLine, cursorTo, cursorUp, eraseLines } from "@visulima/ansi";
+import { cursorDown, cursorNextLine, cursorTo, cursorUp, eraseDown, eraseLines } from "@visulima/ansi";
 import { describe, expect, it } from "vitest";
 
 import logUpdate from "../../src/ink/log-update";
@@ -316,12 +316,12 @@ describe("log-update", () => {
         expect(written.endsWith(cursorUp(1) + cursorTo(3) + showCursorEscape)).toBe(true);
     });
 
-    it.each(renderingModes)("$name - clear() returns cursor to bottom before erasing", ({ incremental }) => {
+    it.each(renderingModes)("$name - clear() erases a parked cursor's frame up from the cursor row", ({ incremental }) => {
         expect.assertions(3);
 
         const { render, stdout } = createRenderForMode(incremental);
 
-        render.setCursorPosition({ x: 5, y: 0 });
+        render.setCursorPosition({ x: 5, y: 1 });
         render("Line 1\nLine 2\nLine 3\n");
 
         render.clear();
@@ -329,8 +329,8 @@ describe("log-update", () => {
         const clearCall = (stdout.write as any).mock.calls[1][0] as string;
 
         expect(clearCall).toContain(hideCursorEscape);
-        expect(clearCall).toContain(cursorDown(3));
-        expect(clearCall).toContain(eraseLines(4));
+        expect(clearCall).toContain(cursorUp(1));
+        expect(clearCall).toContain(eraseDown);
     });
 
     it("standard rendering - clearing cursor position stops cursor positioning", () => {

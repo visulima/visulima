@@ -91,11 +91,7 @@ describe("terminal emulator: rows shrinking", () => {
         TIMEOUT,
     );
 
-    // Known defect: with <Cursor> parked inside the frame at the bottom of the viewport, xterm.js drops the
-    // blank row under the cursor when the viewport shrinks. The renderer then moves down into a row that no
-    // longer exists and erases one row too many, so the last history line above the frame is lost.
-    // Remove `.fails` once the renderer no longer assumes that row is there.
-    it.skipIf(!ptyAvailable).fails(
+    it.skipIf(!ptyAvailable)(
         "keeps the history above a frame with a parked cursor when rows shrink",
         async () => {
             expect.assertions(1);
