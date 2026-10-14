@@ -226,7 +226,8 @@ Staged:
     pins two keys from before this change). On lookup, `validateChain` compares
     the stored key with the current predecessor's, after the command and tracker
     checks and before any file is hashed. A moved predecessor misses with
-    `chain-changed`, and the miss names the segment that moved in `vis cache why`.
+    `chain-changed`, which `vis cache why` prints as `Previous segment changed`.
+    The reason does not name the predecessor.
 
     The predecessor's key is its `hash`. A traced segment sets `hash` on a hit as
     well as on a store, so the segment after it can fold it. The orchestrator
