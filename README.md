@@ -203,6 +203,7 @@ Packages are grouped into eight categories. Jump to the section you need:
 
 | Package | Version | Description |
 | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [@visulima/cron-parser](packages/workflow/cron-parser/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fcron-parser?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fcron-parser) | Fast, zero-dependency cron expression parser with time zone and DST support, for Node.js, Deno, Bun and Workers |
 | [@visulima/workflow](packages/workflow/workflow/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fworkflow?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fworkflow) | A reusable, ESM-only, edge-ready durable workflow engine: code-first workflows with resumable steps, delays and external-event waits, backed by a pluggable store |
 <!-- END_TABLE_PLACEHOLDER -->
 

@@ -19,6 +19,9 @@
 "package: content-safety":
     - changed-files:
           - any-glob-to-any-file: "packages/data-manipulation/content-safety/**/*"
+"package: cron-parser":
+    - changed-files:
+          - any-glob-to-any-file: "packages/workflow/cron-parser/**/*"
 "package: dashboard":
     - changed-files:
           - any-glob-to-any-file: "packages/tooling/vis/dashboard/**/*"
