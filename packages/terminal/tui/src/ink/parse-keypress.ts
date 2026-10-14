@@ -131,10 +131,10 @@ type ParsedKey = {
 // The modifiers field may be empty when only the text field is sent (e.g. CSI 0 ; ; 229 u).
 const kittyKeyRe = /^\u001B\[(\d+)(?::[\d:]*)?(?:;(\d*)(?::(\d+))?(?:;([\d:]+))?)?u$/;
 
-// Kitty-enhanced special keys: CSI number ; modifiers : eventType {letter|~}
-// These are legacy CSI sequences enhanced with the :eventType field.
-// Examples: \x1b[1;1:1A (up arrow press), \x1b[3;1:3~ (delete release)
-const kittySpecialKeyRe = /^\u001B\[(\d+);(\d+):(\d+)([A-Z~])$/i;
+// Functional keys: CSI number [; modifiers [: eventType]] {letter|~}
+// These legacy CSI sequences use kitty modifier bits, with the :eventType field optional.
+// Examples: \x1b[1;5A (ctrl+up), \x1b[1;1:1A (up arrow press), \x1b[3;1:3~ (delete release)
+const kittySpecialKeyRe = /^\u001B\[(\d+)(?:;(\d+)(?::(\d+))?)?([A-Z~])$/i;
 
 // Letter-terminated special key names (CSI 1 ; mods letter)
 const kittySpecialLetterKeys: Record<string, string> = {
@@ -147,7 +147,6 @@ const kittySpecialLetterKeys: Record<string, string> = {
     H: "home",
     P: "f1",
     Q: "f2",
-    R: "f3",
     S: "f4",
 };
 
@@ -171,6 +170,7 @@ const kittySpecialNumberKeys: Record<number, string> = {
     21: "f10",
     23: "f11",
     24: "f12",
+    57_427: "clear",
 };
 
 // Map of special codepoints to key names in kitty protocol
@@ -386,9 +386,15 @@ const parseKittySpecialKey = (s: string): ParsedKey | null => {
     }
 
     const number = Number.parseInt(match[1]!, 10);
-    const modifiers = Math.max(0, Number.parseInt(match[2]!, 10) - 1);
-    const eventType = Number.parseInt(match[3]!, 10);
+    const modifiers = match[2] ? Math.max(0, Number.parseInt(match[2], 10) - 1) : 0;
+    const eventType = match[3] ? Number.parseInt(match[3], 10) : 1;
     const terminator = match[4]!;
+
+    // Letter-terminated keys are only named with the CSI 1 ; modifiers form. Other numbers such as
+    // CSI 1 ; 5 R are cursor position reports, not keys.
+    if (terminator !== "~" && number !== 1) {
+        return null;
+    }
 
     const name = terminator === "~" ? kittySpecialNumberKeys[number] : kittySpecialLetterKeys[terminator];
 
