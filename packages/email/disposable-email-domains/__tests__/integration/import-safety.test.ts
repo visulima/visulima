@@ -12,6 +12,8 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 // covers the same defect in a real Workers runtime; these cover what only Node can: the disk
 // loader, and runtimes that have `import.meta.url` but no `process.getBuiltinModule`.
 
+const NEW_URL_WITH_IMPORT_META_URL = /new URL\([^)]*import\.meta\.url\s*\)/u;
+
 const here = dirname(fileURLToPath(import.meta.url));
 const packageRoot = join(here, "..", "..");
 const distEntry = join(packageRoot, "dist", "index.js");
@@ -93,5 +95,14 @@ describe("import safety of the built entry", () => {
         const imports = Object.values(metafile.outputs).flatMap((output) => output.imports.map((entry) => entry.path));
 
         expect(imports.filter((path) => path.startsWith("node:"))).toStrictEqual([]);
+    });
+
+    // Bundlers statically rewrite `new URL("…", import.meta.url)`: Vite emits the target as an
+    // asset and webpack warns about a non-literal request (which fails builds that treat warnings
+    // as errors). The loader reads `import.meta.url` into a local to stay out of that pattern.
+    it("keeps the list path out of the new URL(…, import.meta.url) shape bundlers rewrite", () => {
+        expect.assertions(1);
+
+        expect(readFileSync(distEntry, "utf8")).not.toMatch(NEW_URL_WITH_IMPORT_META_URL);
     });
 });
