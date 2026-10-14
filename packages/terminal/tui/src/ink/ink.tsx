@@ -1175,6 +1175,30 @@ export default class Ink {
         return `${scrolled > 0 ? scrollUp(scrolled) : ""}\u001B[0m${cursorTo(0, keep)}${eraseDown}${added}`;
     }
 
+    /**
+     * Writes console text above the native frame and draws the frame again below it. The text is never written
+     * over the frame, so nothing is left behind when the frame moves.
+     */
+    private writeNativeAbove(text: string): void {
+        if (text === "") {
+            return;
+        }
+
+        const frame = this.lastNativeFrame;
+        const prefix = this.appendNativeAbove(text, frame?.height ?? 0);
+
+        // Whatever the text overwrote is gone, so the next native frame diffs against nothing.
+        this.nativeLog?.destroy();
+
+        if (frame && !this.isFrameCleared && this.nativeLog) {
+            this.nativeLog.render(frame.buffer, frame.width, frame.height, { cursor: frame.cursor, prefix, rowOffset: this.nativeRowOffset });
+
+            return;
+        }
+
+        this.options.stdout.write(bsu + prefix + esu);
+    }
+
     writeToStdout = (data: string): void => {
         if (this.isUnmounted) {
             return;
@@ -1188,6 +1212,12 @@ export default class Ink {
 
         if (!this.interactive) {
             this.options.stdout.write(data);
+
+            return;
+        }
+
+        if (this.nativeLog) {
+            this.writeNativeAbove(data);
 
             return;
         }
@@ -1221,6 +1251,17 @@ export default class Ink {
 
         if (!this.interactive) {
             this.options.stderr.write(data);
+
+            return;
+        }
+
+        if (this.nativeLog) {
+            // A terminal on stderr is the frame's terminal, so the text joins the frame's output above it.
+            if (this.options.stderr.isTTY) {
+                this.writeNativeAbove(data);
+            } else {
+                this.options.stderr.write(data);
+            }
 
             return;
         }

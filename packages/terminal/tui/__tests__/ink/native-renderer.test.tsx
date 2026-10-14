@@ -625,4 +625,55 @@ describe("native renderer", () => {
 
         unmount();
     });
+
+    it.skipIf(!nativeAvailable)("draws multi-line console output above the native frame without leftovers", async () => {
+        expect.assertions(1);
+
+        const stdout = ttyStdout();
+
+        const { unmount, waitUntilRenderFlush } = render(<Text>hello native</Text>, {
+            alternateScreen: true,
+            interactive: true,
+            stdout,
+            useNativeRenderer: true,
+        });
+
+        await waitUntilRenderFlush();
+
+        // eslint-disable-next-line no-console -- console output is what the renderer must survive
+        console.log("log line\nsecond line");
+
+        await waitUntilRenderFlush();
+
+        // The text lands above the frame and the frame moves below it; no row of the old frame position keeps a stray line.
+        expect(visibleRows(replay(stdout.getWrites(), ROWS, COLS))).toEqual(["log line", "second line", "hello native", "", "", ""]);
+
+        unmount();
+    });
+
+    it.skipIf(!nativeAvailable)("draws console.error output above the native frame", async () => {
+        expect.assertions(1);
+
+        const stdout = ttyStdout();
+        const stderr = ttyStdout();
+
+        const { unmount, waitUntilRenderFlush } = render(<Text>hello native</Text>, {
+            alternateScreen: true,
+            interactive: true,
+            stderr,
+            stdout,
+            useNativeRenderer: true,
+        });
+
+        await waitUntilRenderFlush();
+
+        // eslint-disable-next-line no-console -- console output is what the renderer must survive
+        console.error("error line");
+
+        await waitUntilRenderFlush();
+
+        expect(visibleRows(replay(stdout.getWrites(), ROWS, COLS))).toEqual(["error line", "hello native", "", "", "", ""]);
+
+        unmount();
+    });
 });
