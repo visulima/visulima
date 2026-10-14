@@ -165,3 +165,82 @@ describe(buildChildEnv, () => {
         expect(env).toStrictEqual({ G2_UNRELATED: "u", PATH: "/bin" });
     });
 });
+
+// The Windows branch is selected by the platform argument, so it is covered on
+// any OS: Windows environment names are case-insensitive, and the clean policy
+// keeps the Windows essentials.
+describe("windows child environment", () => {
+    const clean = { allow: [], mode: "clean" as const };
+
+    it("keeps a parent name that differs only in case from an allow-listed name", () => {
+        expect.assertions(1);
+
+        const keep = childEnvNameFilter({ allow: ["node_env"], mode: "clean" }, "win32");
+
+        expect(keep("NODE_ENV")).toBe(true);
+    });
+
+    it("keeps the Windows essentials whatever their case, and drops the POSIX ones", () => {
+        expect.assertions(4);
+
+        const picked = pickChildParentEnv(
+            { COMSPEC: "cmd.exe", Path: String.raw`C:\bin`, PATHEXT: ".EXE", SystemRoot: String.raw`C:\Windows`, systemroot: String.raw`C:\Windows`, TMPDIR: "/tmp" },
+            clean,
+            "win32",
+        );
+
+        expect(picked).toHaveProperty("Path", String.raw`C:\bin`);
+        expect(picked).toHaveProperty("PATHEXT", ".EXE");
+        expect(picked).toHaveProperty("systemroot", String.raw`C:\Windows`);
+        expect(picked).not.toHaveProperty("TMPDIR");
+    });
+
+    it("keeps each required Windows variable name", () => {
+        expect.hasAssertions();
+
+        const parent = Object.fromEntries(CLEAN_ENV_WIN32_NAMES.map((name) => [name, `v-${name}`]));
+        const picked = pickChildParentEnv(parent, clean, "win32");
+
+        for (const name of CLEAN_ENV_WIN32_NAMES) {
+            expect(picked[name], name).toBe(`v-${name}`);
+        }
+    });
+
+    it("drops the POSIX essentials on Windows and the Windows essentials on POSIX", () => {
+        expect.assertions(2);
+
+        const parent = { PATHEXT: ".EXE", SystemRoot: String.raw`C:\Windows`, TMPDIR: "/tmp" };
+
+        expect(pickChildParentEnv(parent, clean, "win32")).not.toHaveProperty("TMPDIR");
+        expect(pickChildParentEnv(parent, clean, "linux")).not.toHaveProperty("SystemRoot");
+    });
+
+    it("lets an injected PATH replace a kept parent Path, leaving one variable", () => {
+        expect.assertions(2);
+
+        const env = buildChildEnv({
+            injected: { PATH: String.raw`C:\injected` },
+            parentEnv: { Path: String.raw`C:\parent` },
+            platform: "win32",
+            // Allow-listed by its exact spelling, so the parent name survives on every
+            // platform and only the Windows fold can make the result single-valued.
+            policy: { allow: ["Path"], mode: "clean" },
+        });
+
+        expect(env).toStrictEqual({ PATH: String.raw`C:\injected` });
+        expect(Object.keys(env).filter((name) => name.toUpperCase() === "PATH")).toHaveLength(1);
+    });
+
+    it("keeps Path and PATH as separate names on POSIX", () => {
+        expect.assertions(1);
+
+        const env = buildChildEnv({
+            injected: { PATH: "/injected" },
+            parentEnv: { Path: "/parent" },
+            platform: "linux",
+            policy: { allow: ["Path"], mode: "clean" },
+        });
+
+        expect(env).toStrictEqual({ PATH: "/injected", Path: "/parent" });
+    });
+});

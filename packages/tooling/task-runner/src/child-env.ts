@@ -129,6 +129,10 @@ export const pickChildParentEnv = (
  * parent variables the policy keeps, with the executor's `injected` entries
  * laid on top. Injected entries are never filtered, because the executor
  * sets them on purpose.
+ *
+ * On Windows names are case-insensitive, so an injected name replaces a kept
+ * parent name that differs only in case (`PATH` over `Path`). Keeping both
+ * would hand the child two values for one variable.
  */
 export const buildChildEnv = (options: {
     injected: Record<string, string | undefined>;
@@ -136,6 +140,7 @@ export const buildChildEnv = (options: {
     platform?: NodeJS.Platform;
     policy: ChildEnvOptions;
 }): Record<string, string> => {
+    const platform = options.platform ?? process.platform;
     const injected: Record<string, string> = {};
 
     for (const [name, value] of Object.entries(options.injected)) {
@@ -144,5 +149,9 @@ export const buildChildEnv = (options: {
         }
     }
 
-    return { ...pickChildParentEnv(options.parentEnv, options.policy, options.platform), ...injected };
+    const picked = pickChildParentEnv(options.parentEnv, options.policy, platform);
+    const injectedNames = new Set(Object.keys(injected).map((name) => (platform === "win32" ? name.toUpperCase() : name)));
+    const kept = Object.entries(picked).filter(([name]) => !injectedNames.has(platform === "win32" ? name.toUpperCase() : name));
+
+    return { ...Object.fromEntries(kept), ...injected };
 };
