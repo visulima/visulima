@@ -1605,6 +1605,10 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
 
         return {
             cache: visTarget.cache,
+            // Mirrors the task-runner graph builder. Without it a traced target
+            // that declares inputs is treated as declaring none, so the declared
+            // fallback never runs for the directly-run target.
+            declaresInputs: visTarget.inputs !== undefined,
             fingerprintEnv: visTarget.fingerprintEnv,
             hashMode: hashModeOverride ?? visTarget.hashMode,
             id: taskId,
