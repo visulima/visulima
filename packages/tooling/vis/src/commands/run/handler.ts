@@ -2248,7 +2248,9 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
             const task = taskGraph.tasks[id];
             const indent = "  ".repeat(depth + 1);
             const segmentNote = task?.segment ? ` (segment ${String(task.segment.index)}/${String(task.segment.count)}: ${String(task.overrides["command"])})` : "";
-            const annotations = `${task?.cache === false ? " (no-cache)" : ""}${task?.hashMode === "trace" ? " (trace)" : ""}${segmentNote}`;
+            // The engine traces every task under the workspace switch, so it is annotated like a per-target trace.
+            const traced = task?.hashMode === "trace" || config.taskRunner?.autoFingerprint === true;
+            const annotations = `${task?.cache === false ? " (no-cache)" : ""}${traced ? " (trace)" : ""}${segmentNote}`;
 
             logger.info(`${indent}${id}${annotations}`);
         };

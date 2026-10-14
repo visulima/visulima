@@ -4,6 +4,7 @@ import { strip } from "@visulima/colorize";
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { runWhy } from "../../../src/commands/cache/handler";
 import runExecute from "../../../src/commands/run/handler";
 import { cleanupTemporaryDirectory, createTemporaryDirectory } from "../../test-helpers";
 
@@ -61,13 +62,13 @@ describe("vis run splitCompound on a traced target", () => {
         }
     };
 
-    const run = async (argument: string[] = ["build"], options: Record<string, unknown> = {}, logger = silentLogger): Promise<void> => {
+    const run = async (argument: string[] = ["build"], options: Record<string, unknown> = {}, logger = silentLogger, visConfig?: Record<string, unknown>): Promise<void> => {
         await runExecute({
             argument,
             logger,
             options: { cache: true, cacheDir: join(workspaceRoot, ".cache"), parallel: 1, preflight: false, skipToolchain: true, ...options },
             runtime: {} as never,
-            visConfig: undefined,
+            visConfig,
             workspaceRoot,
         } as never);
     };
@@ -137,5 +138,46 @@ describe("vis run splitCompound on a traced target", () => {
 
         expect(lines.some((line) => line.includes("@my/app:build#1") && line.includes("(trace)") && line.includes("segment 1/2"))).toBe(true);
         expect(lines.some((line) => line.includes("@my/app:build#2") && line.includes("(trace)") && line.includes("segment 2/2"))).toBe(true);
+    });
+
+    it("cache why explains a segment that missed because the segment before it moved", async () => {
+        expect.assertions(2);
+
+        await run();
+
+        // Only segment one's input changes. Segment two reads its own file, which did not change.
+        writeFileSync(join(workspaceRoot, "packages", "app", "input-a.txt"), "a-changed\n");
+
+        await run();
+
+        const logger = { error: () => undefined, info: () => undefined, log: () => undefined, warn: () => undefined };
+        const lines: string[] = [];
+        const capturing = { ...logger, info: (message: unknown) => lines.push(strip(String(message))), log: (message: unknown) => lines.push(strip(String(message))) };
+
+        await runWhy("@my/app:build#2", { format: "table", runId: undefined, workspaceRoot }, capturing as unknown as Console);
+
+        const text = lines.join("\n");
+
+        expect(text).toContain("Previous segment changed");
+        expect(text).not.toContain("File modified");
+    });
+
+    it("annotates every segment as traced when the workspace enables auto-fingerprinting", async () => {
+        expect.assertions(2);
+
+        // A target without `hashMode`: only the workspace switch traces it.
+        const projectFile = join(workspaceRoot, "packages", "app", "project.json");
+        const project = JSON.parse(readFileSync(projectFile, "utf8")) as { targets: { build: { hashMode?: string } } };
+
+        delete project.targets.build.hashMode;
+        writeFileSync(projectFile, JSON.stringify(project));
+
+        const lines: string[] = [];
+        const capturing = { ...silentLogger, info: (message: unknown) => lines.push(strip(String(message))) };
+
+        await run(["build"], { dryRun: true }, capturing as never, { taskRunner: { autoFingerprint: true } });
+
+        expect(lines.some((line) => line.includes("@my/app:build#1") && line.includes("(trace)"))).toBe(true);
+        expect(lines.some((line) => line.includes("@my/app:build#2") && line.includes("(trace)"))).toBe(true);
     });
 });
