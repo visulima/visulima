@@ -385,14 +385,8 @@ const measureTextNode = function (node: DOMNode, width: number): { height: numbe
         return dimensions;
     }
 
-    // This is happening when <Box> is shrinking child nodes and Yoga asks
-    // if we can fit this text node in a <1px space, so we just tell Yoga "no"
-    if (dimensions.width >= 1 && width > 0 && width < 1) {
-        return dimensions;
-    }
-
     const textWrap = node.style?.textWrap ?? "wrap";
-    const wrappedText = wrapText(text, Math.floor(width), textWrap);
+    const wrappedText = wrapText(text, width, textWrap);
     const wrappedDimensions = measureText(wrappedText);
 
     // Truncated text reserves the whole available width. Measuring only the cut text lets the next render

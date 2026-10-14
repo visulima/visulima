@@ -128,8 +128,7 @@ describe("text width edge cases", () => {
         expect(output).toBe("|");
     });
 
-    // Known gap: Yoga rounds the computed width of a 0.25-column box to 0, so the render path wraps at natural width.
-    it.fails("set width to a fraction of a column", () => {
+    it("set width to a fraction of a column", () => {
         expect.hasAssertions();
 
         const output = renderToString(

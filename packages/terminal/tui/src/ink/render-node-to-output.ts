@@ -359,7 +359,12 @@ const renderNodeToOutput = (
                     if (currentWidth > maxWidth) {
                         const textWrap = node.style.textWrap ?? "wrap";
 
-                        text = wrapText(text, Math.floor(maxWidth), textWrap);
+                        // A parent narrower than a column leaves no visible width, but layout still gave the text
+                        // the one column Yoga rounds it up to, and sized the rows for text wrapped into it.
+                        const ownWidth = Math.round(yogaNode.getComputedWidth());
+                        const wrapWidth = maxWidth <= 0 && ownWidth >= 1 && ownWidth < currentWidth ? ownWidth : maxWidth;
+
+                        text = wrapText(text, wrapWidth, textWrap);
                     }
                 }
 
