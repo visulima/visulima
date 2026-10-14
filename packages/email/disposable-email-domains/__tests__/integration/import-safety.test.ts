@@ -18,13 +18,13 @@ const distEntry = join(packageRoot, "dist", "index.js");
 const scenarioScript = join(packageRoot, "__fixtures__", "import-safety", "scenario.mjs");
 
 interface ScenarioResult {
-    disposable: boolean;
     listLoaded: boolean;
-    notDisposable: boolean;
+    matched: boolean;
+    otherMatched: boolean;
     warnings: number;
 }
 
-const run = (entry: string, scenario: "empty" | "inject" | "preload", flags: string[] = []): ScenarioResult =>
+const run = (entry: string, scenario: "inject" | "lazy", flags: string[] = []): ScenarioResult =>
     JSON.parse(execFileSync(process.execPath, [scenarioScript, pathToFileURL(entry).href, scenario, ...flags], { encoding: "utf8" })) as ScenarioResult;
 
 describe("import safety of the built entry", () => {
@@ -50,8 +50,8 @@ describe("import safety of the built entry", () => {
 
         const result = run(urllessEntry, "inject", ["--no-builtins"]);
 
-        expect(result.disposable).toBe(true);
-        expect(result.notDisposable).toBe(true);
+        expect(result.matched).toBe(true);
+        expect(result.otherMatched).toBe(false);
         expect(result.listLoaded).toBe(true);
         expect(result.warnings).toBe(0);
     });
@@ -59,9 +59,9 @@ describe("import safety of the built entry", () => {
     it("falls back to the empty list with a single warning when there is no URL and no injected list", () => {
         expect.assertions(3);
 
-        const result = run(urllessEntry, "empty");
+        const result = run(urllessEntry, "lazy");
 
-        expect(result.disposable).toBe(false);
+        expect(result.matched).toBe(false);
         expect(result.listLoaded).toBe(false);
         expect(result.warnings).toBe(1);
     });
@@ -69,9 +69,9 @@ describe("import safety of the built entry", () => {
     it("falls back to the empty list with a single warning when the URL exists but process.getBuiltinModule does not", () => {
         expect.assertions(3);
 
-        const result = run(distEntry, "empty", ["--no-builtins"]);
+        const result = run(distEntry, "lazy", ["--no-builtins"]);
 
-        expect(result.disposable).toBe(false);
+        expect(result.matched).toBe(false);
         expect(result.listLoaded).toBe(false);
         expect(result.warnings).toBe(1);
     });
@@ -79,10 +79,10 @@ describe("import safety of the built entry", () => {
     it("loads dist/domains.json from disk on first use when import.meta.url is available", () => {
         expect.assertions(3);
 
-        const result = run(distEntry, "preload");
+        const result = run(distEntry, "lazy");
 
         expect(result.listLoaded).toBe(true);
-        expect(result.disposable).toBe(true);
+        expect(result.matched).toBe(true);
         expect(result.warnings).toBe(0);
     });
 
