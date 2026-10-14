@@ -276,6 +276,17 @@ export const feed = (screen: Screen, data: string): void => {
 
                 break;
             }
+            case "S": {
+                // SU scrolls the whole screen up and discards the top rows: the alternate screen keeps no scrollback.
+                for (let step = 0; step < count; step += 1) {
+                    screen.rows.shift();
+                    screen.rows.push(Array.from({ length: screen.cols }).fill(" ") as string[]);
+                    screen.styles.shift();
+                    screen.styles.push(Array.from({ length: screen.cols }).fill(defaultPen) as Pen[]);
+                }
+
+                break;
+            }
             default:
                 // Cursor visibility, cursor shape and synchronized output do not move text.
         }

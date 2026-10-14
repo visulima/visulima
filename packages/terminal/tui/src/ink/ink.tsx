@@ -2,7 +2,7 @@
 import { Console as NodeConsole } from "node:console";
 import process from "node:process";
 
-import { ALT_SCREEN_OFF, ALT_SCREEN_ON, clearScreenAndHomeCursor, cursorHide, cursorShow, eraseLines } from "@visulima/ansi";
+import { ALT_SCREEN_OFF, ALT_SCREEN_ON, clearScreenAndHomeCursor, cursorHide, cursorShow, cursorTo, eraseDown, eraseLines, scrollUp } from "@visulima/ansi";
 import { wordWrap } from "@visulima/string";
 import isInCi from "is-in-ci";
 import patchConsole from "patch-console";
@@ -979,17 +979,20 @@ export default class Ink {
 
             if (this.alternateScreen) {
                 // <Static> output and scrolled-off lines sit above the frame. The frame is drawn at absolute rows, so
-                // when they change, or the screen was disturbed, the block is redrawn from home (as the string renderer
-                // does on a full clear) and the frame starts below it. The prefix goes inside the frame's synchronized update.
+                // new rows are added with appendNativeAbove, which leaves the block already on screen alone. A disturbed
+                // screen (resize, resume) has nothing reliable to build on, so the whole block is drawn again from home.
+                // The prefix goes inside the frame's synchronized update.
                 let prefix: string | undefined;
 
-                if (staticOutput || backbufferOutput || this.nativeScreenStale) {
+                if (this.nativeScreenStale) {
                     const { rows } = getWindowSize(this.options.stdout);
                     const above = tailLines(this.fullStaticOutput + backbufferOutput, rows - outputHeight);
 
                     this.nativeRowOffset = countLines(above);
                     this.nativeScreenStale = false;
                     prefix = clearScreenAndHomeCursor + above;
+                } else if (staticOutput || backbufferOutput) {
+                    prefix = this.appendNativeAbove(staticOutput + backbufferOutput, outputHeight);
                 }
 
                 this.nativeLog.render(outputBuffer, outputWidth, outputHeight, { cursor, prefix, rowOffset: this.nativeRowOffset });
@@ -1151,6 +1154,25 @@ export default class Ink {
         if (this.isFrameCleared) {
             this.onRender();
         }
+    }
+
+    /**
+     * Adds text rows above the native frame and returns the prefix that writes them. Only the new rows are
+     * written: the frame's old rows are erased, the text goes where the frame started, and the frame moves below it.
+     * When the block outgrows the viewport, its top rows are scrolled off, so the newest rows are kept.
+     */
+    private appendNativeAbove(text: string, frameHeight: number): string {
+        const { rows } = getWindowSize(this.options.stdout);
+        const capacity = Math.max(0, rows - frameHeight);
+        const added = tailLines(text, capacity);
+        const addedRows = countLines(added);
+        const keep = Math.max(0, Math.min(this.nativeRowOffset, capacity - addedRows));
+        const scrolled = this.nativeRowOffset - keep;
+
+        this.nativeRowOffset = keep + addedRows;
+
+        // The reset keeps the erase from painting with a background left over from the last frame.
+        return `${scrolled > 0 ? scrollUp(scrolled) : ""}\u001B[0m${cursorTo(0, keep)}${eraseDown}${added}`;
     }
 
     writeToStdout = (data: string): void => {

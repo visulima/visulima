@@ -573,4 +573,56 @@ describe("native renderer", () => {
 
         expect(output.lastIndexOf(DEFAULT_CURSOR)).toBeGreaterThan(output.lastIndexOf(BAR_CURSOR));
     });
+
+    it.skipIf(!nativeAvailable)("writes only the new <Static> rows per item as the log grows", async () => {
+        expect.assertions(4);
+
+        // A tall terminal so the static block is still short at item 5 and long by item 200.
+        const stdout = createStdout(COLS, true, 40);
+        const renderLog = (count: number) => (
+            <>
+                <Static items={Array.from({ length: count }, (_, index) => `item ${index + 1}`)}>
+                    {(item: string) => <Text key={item}>{item}</Text>}
+                </Static>
+                <Text>hello native</Text>
+            </>
+        );
+
+        const { rerender, unmount, waitUntilRenderFlush } = render(renderLog(4), {
+            alternateScreen: true,
+            interactive: true,
+            stdout,
+            useNativeRenderer: true,
+        });
+
+        await waitUntilRenderFlush();
+
+        const bytesForItem = async (count: number): Promise<number> => {
+            const before = stdout.getWrites().length;
+
+            rerender(renderLog(count));
+            await waitUntilRenderFlush();
+
+            return stdout.getWrites().slice(before).join("").length;
+        };
+
+        const early = await bytesForItem(5);
+
+        for (let count = 6; count < 200; count += 1) {
+            await bytesForItem(count);
+        }
+
+        const late = await bytesForItem(200);
+
+        expect(late).toBeLessThan(early * 2);
+
+        const rows = visibleRows(replay(stdout.getWrites(), 40, COLS));
+
+        // Earlier items scroll off the top of the alternate screen; the newest one sits right above the frame.
+        expect(rows[0]).toBe("item 162");
+        expect(rows[38]).toBe("item 200");
+        expect(rows[39]).toBe("hello native");
+
+        unmount();
+    });
 });
