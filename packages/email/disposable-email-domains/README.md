@@ -177,7 +177,7 @@ Inject the list once at startup with `setDomains` and, since disposable detectio
 
 ```typescript
 import { setDomains, isDisposableEmail } from "@visulima/disposable-email-domains";
-import domains from "@visulima/disposable-email-domains/domains" with { type: "json" };
+import domains from "@visulima/disposable-email-domains/domains";
 
 setDomains(domains);
 
@@ -198,10 +198,10 @@ if (!isListLoaded()) {
 
 ### Raw domain list (`./domains`)
 
-The raw, sorted array of disposable domains is exported from the `./domains` subpath. In Node ESM you must use a JSON import attribute:
+The raw, sorted array of disposable domains is the default export of the `./domains` subpath. It is a plain ES module, so no JSON import attribute is needed:
 
 ```typescript
-import domains from "@visulima/disposable-email-domains/domains" with { type: "json" };
+import domains from "@visulima/disposable-email-domains/domains";
 
 console.log(domains.length); // number of disposable domains
 ```
