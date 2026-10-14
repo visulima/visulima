@@ -1,7 +1,7 @@
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import vm from "node:vm";
 
 import { strip as stripAnsi } from "@visulima/ansi";
@@ -51,7 +51,8 @@ describe("error overview", () => {
         const output = renderError(createErrorWithStack(`Error: Oh no\n    at ${sourceUrl.href}:1:1`));
 
         expect(output).toContain("Oh no");
-        expect(output).toContain(`${sourceDirectory}/:1:1`);
+        // The path is rendered the way the platform spells it (a trailing backslash on Windows).
+        expect(output).toContain(`${fileURLToPath(sourceUrl)}:1:1`);
     });
 
     it("renders the original error when its source file is missing", () => {
