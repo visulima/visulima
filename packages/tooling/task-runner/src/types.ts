@@ -1,4 +1,6 @@
 import type { RemoteCacheOptions } from "./backends/types";
+import type { ChildEnvOptions } from "./child-env";
+import type { CacheMissReason } from "./fingerprint";
 import type { WhenCondition } from "./when-condition";
 
 /**
@@ -103,8 +105,25 @@ export interface Task {
      * `resolveWeight` in `task-scheduler.ts`).
      */
     concurrencyWeight?: number;
+
+    /**
+     * True when the target declares `inputs` (directly or through target
+     * defaults). Carried over at task graph creation. A traced run whose
+     * tracker observed no workspace access is keyed on the declared hash only
+     * when this is set; otherwise it is not cached. See
+     * {@link TaskResult.hashSource}.
+     */
+    declaresInputs?: boolean;
+
+    /**
+     * Extra env-var names or `*` patterns folded into this task's cache
+     * key. Carried over from {@link TargetConfiguration.fingerprintEnv}.
+     */
+    fingerprintEnv?: string[];
+
     /** Hash of the task inputs for caching */
     hash?: string;
+
     /** Detailed hash information */
     hashDetails?: TaskHashDetails;
 
@@ -135,8 +154,10 @@ export interface Task {
      * files the task wrote during execution.
      */
     outputs: OutputSpec[];
+
     /** Overrides/extra options passed to the task */
     overrides: Record<string, unknown>;
+
     /** Whether this task supports parallel execution */
     parallelism?: boolean;
 
@@ -157,8 +178,32 @@ export interface Task {
      * the flag and leaves the spawn decision to the executor.
      */
     pty?: boolean;
+
+    /**
+     * Position of a synthetic segment task produced by `splitCompound`:
+     * `index` is 1-based and `count` is the number of segments in the chain.
+     * Absent on ordinary tasks.
+     */
+    segment?: { count: number; index: number };
+
+    /**
+     * Set on a task that should be split into one chained task per
+     * top-level `&amp;&amp;` segment. Carried over from
+     * {@link TargetConfiguration.splitCompound}. `splitCompoundTasks` consumes
+     * it, so it is `undefined` on every task a runner executes.
+     */
+    splitCompound?: boolean;
+
     /** The target this task executes */
     target: TaskTarget;
+
+    /**
+     * Env-var names or `*` patterns excluded from this task's cache key
+     * even when another source would include them. The task still
+     * receives the variables. Carried over from
+     * {@link TargetConfiguration.untrackedEnv}.
+     */
+    untrackedEnv?: string[];
 
     /**
      * Regex strings (JavaScript flavor, anchored as the user writes them)
@@ -244,6 +289,14 @@ export interface TaskResult {
         trackedEnvPatterns: string[];
     };
 
+    /**
+     * Why the trace-mode cache lookup missed, when it did. Populated only
+     * for `hashMode: "trace"` tasks (and `autoFingerprint`) that executed
+     * because the stored fingerprint no longer matched. Persisted to the
+     * run summary so `cache why` can explain the miss after the fact.
+     */
+    cacheMissReasons?: CacheMissReason[];
+
     /** The exit code, if applicable */
     code?: number;
 
@@ -255,6 +308,7 @@ export interface TaskResult {
      * produce false cache hits on every subsequent run.
      */
     emptyFingerprint?: boolean;
+
     /** The end time of the task */
     endTime?: number;
 
@@ -266,6 +320,14 @@ export interface TaskResult {
      * `cacheOnWarning: false` cache-suppression path.
      */
     hadWarnings?: boolean;
+
+    /**
+     * Set when the run's cache key is the task's declared hash, not a trace
+     * key. That happens for a `hashMode: "trace"` task whose tracker observed
+     * no workspace access while the target declares `inputs`, so the declared
+     * hash is the only valid key. Absent for trace keys and declared-mode runs.
+     */
+    hashSource?: "declared-fallback";
 
     /**
      * Number of times the task was restarted by the retry controller
@@ -425,6 +487,14 @@ export interface TargetConfiguration {
     executor?: string;
 
     /**
+     * Env vars folded into this target's cache key, as names or `*`
+     * patterns (`"VITE_*"`). In `"declared"` mode each match becomes an
+     * env input, the same as `env://NAME`; in `"trace"` mode it extends
+     * {@link TaskRunnerOptions.fingerprintEnvPatterns} for this target.
+     */
+    fingerprintEnv?: string[];
+
+    /**
      * How this target's cache key is derived.
      *
      * - `"declared"` (default): the Nx-style path — the hash is built
@@ -433,7 +503,9 @@ export interface TargetConfiguration {
      *   machines: two runners with the same workspace state produce the
      *   same key regardless of OS or syscall surface.
      * - `"trace"`: the task is run under the file-access tracker
-     *   (strace on Linux, an fs preload shim elsewhere) and the cache
+     *   (strace or seccomp on Linux; DYLD/IAT interposition on macOS and
+     *   Windows for directly-executed commands; a Node preload otherwise)
+     *   and the cache
      *   key is derived from the files it actually *read* during
      *   execution — no `inputs` declaration required. Mirrors the
      *   shipped `{ auto: true }` output capture, but for the input
@@ -472,6 +544,7 @@ export interface TargetConfiguration {
      * separate finalisation phase outside the scheduler.
      */
     maxConcurrent?: number;
+
     /** Options passed to the executor */
     options?: Record<string, unknown>;
 
@@ -487,6 +560,7 @@ export interface TargetConfiguration {
      * a missing artifact.
      */
     outputs?: OutputSpec[];
+
     /** Whether this target supports parallel execution */
     parallelism?: boolean;
 
@@ -503,6 +577,37 @@ export interface TargetConfiguration {
      * decides based on its own toggles.
      */
     pty?: boolean;
+
+    /**
+     * Split the target's command on top-level `&amp;&amp;` into one chained task per
+     * segment, each with its own cache key. Segment _n_ folds in the key of
+     * segment _n−1_, so changing a later segment re-runs only that segment and
+     * later ones, and a failing segment stops the chain. Works in declared and
+     * trace mode. A traced segment is tracked on its own command, and its trace
+     * key folds in the trace key of the segment before it.
+     *
+     * Declared `outputs` attach to the last segment, so a cache hit on the
+     * whole chain restores them. A partial hit does not restore an earlier
+     * segment's files, so a later segment that reads a file written by an
+     * earlier segment needs that file to be a declared output of its own
+     * target. Opt-in. The split is refused, with a diagnostic and the target
+     * run whole, when the command contains a construct the splitter does not
+     * model (`;`, `||`, subshells, `cd`, `export`, `VAR=…` prefixes, command
+     * substitution, …), when an output is `{ auto: true }` (write tracking
+     * covers the whole target, not one segment), when it has a `when`
+     * condition, or when it is `always`.
+     */
+    splitCompound?: boolean;
+
+    /**
+     * Env vars this target receives but keeps out of its cache key, as
+     * names or `*` patterns (`"CI_*"`). Applies on top of
+     * {@link TaskRunnerOptions.untrackedEnvVars} and wins over
+     * `fingerprintEnv`, `autoEnvVars`, framework inference and
+     * trace-mode fingerprint patterns. Explicit `env://` inputs and the
+     * workspace `envVars` / `globalEnv` lists are not affected.
+     */
+    untrackedEnv?: string[];
 
     /**
      * Regex source string(s) that mark a successful task as having
@@ -781,13 +886,15 @@ export interface TaskRunnerOptions {
     autoEnvVars?: boolean;
 
     /**
-     * Enable auto-fingerprinting mode (Vite Task-style).
+     * Enable auto-fingerprinting mode.
      * When enabled, the task runner automatically tracks which files
      * a task accesses during execution and uses that for cache invalidation
      * instead of requiring manual input configuration.
      *
-     * Falls back to explicit inputs (Nx-style) when file tracking
-     * is not supported on the current platform.
+     * When the tracker observes no workspace access for a run, the run is keyed
+     * on the declared hash if the target declares `inputs` (see
+     * {@link TaskResult.hashSource}). Otherwise it is not cached (see
+     * {@link TaskResult.emptyFingerprint}).
      *
      * This is the workspace-wide switch. To opt a single target into
      * traced hashing without flipping it for the whole graph, set
@@ -857,13 +964,28 @@ export interface TaskRunnerOptions {
      */
     dryRun?: boolean;
 
+    /**
+     * Workspace child-environment policy. `clean` gives every task a child
+     * with only the allow-listed parent variables, `PATH`, `HOME`, `TERM`,
+     * `CI`, the platform essentials, and whatever the executor injects.
+     * Default `inherit` (the whole parent environment).
+     *
+     * The executor that spawns the task applies the policy. `vis run` does.
+     * The cache key follows it only when the runner context also carries a
+     * `childEnvPolicy` hook (see {@link TaskRunnerContext}). Then a name the clean
+     * child cannot see hashes as unset. Without that hook every name is keyed as
+     * the parent sees it. Allow-listed names are not added to the key.
+     */
+    env?: ChildEnvOptions;
+
     /** Custom environment variables to include in hash */
     envVars?: string[];
 
     /**
-     * Environment variable patterns to include in auto-fingerprint.
-     * Supports wildcard patterns like "VITE_*".
-     * Only used when autoFingerprint is enabled.
+     * Environment variable patterns to include in the trace-mode
+     * fingerprint (`autoFingerprint` or a `hashMode: "trace"` target).
+     * Supports `*` wildcards anywhere in a pattern, e.g. "VITE_*" or "*_TOKEN".
+     * Per-target additions go in {@link TargetConfiguration.fingerprintEnv}.
      */
     fingerprintEnvPatterns?: string[];
 
@@ -995,9 +1117,12 @@ export interface TaskRunnerOptions {
     targetDefaults?: Record<string, Partial<TargetConfiguration>>;
 
     /**
-     * Environment variables that should be passed to tasks but NOT
-     * included in the cache fingerprint. Useful for CI-specific vars.
-     * Only used when autoFingerprint is enabled.
+     * Environment variables that are passed to tasks but kept out of
+     * their cache key. Accepts names and `*` wildcard patterns (e.g. "CI_*").
+     * Applies to the trace-mode fingerprint and to the implicit env sources
+     * of declared-mode hashing (`autoEnvVars`, framework inference). Explicit
+     * `env://` inputs and `envVars` / `globalEnv` are not affected.
+     * Per-target overrides go in {@link TargetConfiguration.untrackedEnv}.
      */
     untrackedEnvVars?: string[];
 }
@@ -1042,8 +1167,24 @@ export interface TaskExecutionOptions {
     cwd?: string;
     /** Environment variables */
     env?: Record<string, string>;
+
+    /**
+     * `false` makes {@link TaskExecutionOptions.env} the complete child
+     * environment instead of an overlay on `process.env`. Used by the clean
+     * environment policy. Default `true`.
+     */
+    inheritEnv?: boolean;
     /** Stream output as it arrives */
     streamOutput?: boolean;
+}
+
+/**
+ * The environment one task child is spawned with. `inheritEnv: false` means
+ * `env` is the whole environment.
+ */
+export interface ChildSpawnEnv {
+    env: Record<string, string>;
+    inheritEnv: boolean;
 }
 
 /**
@@ -1060,10 +1201,37 @@ export type TasksRunner = (tasks: Task[], options: TaskRunnerOptions, context: T
  * Context provided to the task runner.
  */
 export interface TaskRunnerContext {
+    /**
+     * Child-environment policy for one task, after per-target overrides.
+     * Hashing uses it to decide which env names the task can see. When
+     * absent, the workspace {@link TaskRunnerOptions.env} applies to every task.
+     */
+    childEnvPolicy?: (task: Task) => ChildEnvOptions;
     /** Lifecycle hooks */
     lifeCycle: LifeCycleInterface;
+
+    /**
+     * Fails a traced task before its command runs (checked on a cache miss).
+     * Returns the failure message, or `undefined` to let the command run.
+     */
+    preTraceCheck?: (task: Task, options: { cwd: string }) => string | undefined;
+
     /** The project graph */
     projectGraph: ProjectGraph;
+
+    /**
+     * The environment a traced task child is spawned with. The caller owns the
+     * merge (injected variables, env files, service env) and returns the result,
+     * so a traced run and an executor run see the same environment. Absent means
+     * the child inherits the parent environment with nothing added.
+     */
+    resolveChildEnv?: (task: Task, options: { cwd: string }) => ChildSpawnEnv;
+
+    /**
+     * The shell command a traced task spawns, after any caller-side argument
+     * and shell handling. Absent, the project's target command is spawned.
+     */
+    resolveCommand?: (task: Task) => string | undefined;
     /** The task executor */
     taskExecutor: TaskExecutor;
     /** The task graph */
@@ -1083,6 +1251,8 @@ export type ConcurrentCommandInput
             command: string;
             cwd?: string;
             env?: Record<string, string>;
+            /** `false` spawns with only `env`; see {@link ConcurrentCommandConfig.inheritEnv}. */
+            inheritEnv?: boolean;
             name?: string;
             /** Initial PTY dimensions (only used when stdin is "pty"). */
             ptySize?: { cols: number; rows: number };
@@ -1099,6 +1269,14 @@ export interface ConcurrentCommandConfig {
     cwd?: string;
     /** Additional environment variables merged with process env. */
     env?: Record<string, string>;
+
+    /**
+     * Whether the child inherits the parent `process.env` under `env`.
+     * Default `true`. `false` spawns the child with only `env` (plus the PATH
+     * enhancement), so the caller owns the whole environment. This forces the
+     * JS spawner, since the native addon always copies the parent environment.
+     */
+    inheritEnv?: boolean;
     /** Human-readable name for this command (used in prefixes/logs). */
     name?: string;
 
@@ -1266,6 +1444,14 @@ export interface LifeCycleInterface {
     printCacheDisabledByTask?: (task: Task) => void;
     /** Called when a cache miss occurs with diagnostic information */
     printCacheMiss?: (task: Task, reasons: string) => void;
+
+    /**
+     * Called when a traced task's tracker observed no workspace access, and
+     * the run was cached under its declared hash instead (the target declares
+     * `inputs`). Informational: nothing fails and nothing is skipped. It fires
+     * only on the run that stored the fallback entry, never on a later hit.
+     */
+    printDeclaredFallback?: (task: Task) => void;
 
     /**
      * Called when caching was skipped because auto-fingerprint tracking

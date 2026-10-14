@@ -53,9 +53,11 @@ vis run dev --services=persistent --stop-services         # Boot service deps + 
 | `--cache-dir`        |       |                | Custom cache directory                                                                                                                                                                                                                                                                                              |
 | `--cache-mode`       |       |                | Remote cache mode: `read`, `write`, or `readwrite` (overrides `remoteCache.mode` from config)                                                                                                                                                                                                                       |
 | `--cache-backend`    |       |                | Remote cache wire backend: `http` (Turborepo-compatible) or `reapi` (Bazel REAPI gRPC)                                                                                                                                                                                                                              |
+| `--hash-mode`        |       |                | Override how the requested target is hashed for this run: `declared` (listed `inputs`) or `trace` (the files the task actually reads). Overrides a configured `hashMode`; see [Caching](/guides/caching#cache-keys-declared-and-traced-inputs).                                                                     |
 | `--dry-run`          |       | `false`        | Show what would run without executing                                                                                                                                                                                                                                                                               |
 | `--summarize`        |       | `false`        | Generate a JSON run summary at `.vis/runs/<id>.json` (also enables historical diffs for `vis cache why` / `vis replay`)                                                                                                                                                                                             |
 | `--fail-fast`        |       | `false`        | Stop all tasks on first failure                                                                                                                                                                                                                                                                                     |
+| `--if-present`       |       | `false`        | Exit 0 with a one-line notice when the target, or a `--filter` / `--query` / `--tag` selection, matches no project. Without it, an empty selection is an error (exit 1). See [Empty selections](#empty-selections)                                                                                                  |
 | `--partition`        |       |                | Partition for distributed CI (e.g. `1/4`). Falls back to `VIS_PARTITION`.                                                                                                                                                                                                                                           |
 | `--skip-constraints` |       | `false`        | Skip project constraint validation                                                                                                                                                                                                                                                                                  |
 | `--query`            |       |                | Filter by query (e.g. `language=typescript && tag=lib`)                                                                                                                                                                                                                                                             |
@@ -73,6 +75,17 @@ vis run dev --services=persistent --stop-services         # Boot service deps + 
 | `--last-details`     |       | `false`        | Render the most-recent run's saved summary (`.vis/last-summary.json`) and exit without executing any tasks. Use for "what happened in the last build?" without re-running.                                                                                                                                          |
 | `--reverse`          |       | `false`        | Run the dependency graph leaves-first (dependents before deps). Use for teardown targets like `destroy`/`undeploy` — see [Reverse order](#reverse-order-teardown).                                                                                                                                                  |
 | `--runner-tags`      |       |                | Comma-separated tags this runner advertises (e.g. `gpu,slow`). Tasks declaring `options.runnerTags` only run when at least one tag overlaps; untagged tasks always run. Falls back to `VIS_RUNNER_TAGS`.                                                                                                            |
+
+### Empty selections
+
+A run whose `--filter`, `--query` or `--tag` selects no project exits 1 with a message, the same way a missing target does, so a CI step cannot pass without running anything. Add `--if-present` to keep the quiet exit 0 with a one-line notice:
+
+```bash
+vis run :build --query "language=cobol"                # exit 1: no project matches
+vis run :build --query "language=cobol" --if-present   # exit 0: "Query ... matched no projects; skipping (--if-present)."
+```
+
+`--affected` is not affected: "No files changed" and "No projects affected by the changes" stay exit 0, because an empty affected set is a valid result.
 
 ### Positional args after the target
 
@@ -164,6 +177,7 @@ Targets in `project.json` support vis-specific options:
 | `timeout`              | `number`                                | `0`             | Wall-clock budget in ms. `0` disables the watchdog. Exceeding it sends `SIGTERM` and marks the task as timed out (exit code 124) — see [Timeouts & Signals](#timeouts--signals)                         |
 | `killGracePeriodMs`    | `number`                                | `5000`          | Milliseconds between `SIGTERM` and the escalating `SIGKILL` when `timeout` fires. `0` disables escalation                                                                                               |
 | `affectedFiles`        | `false \| "args" \| "env" \| "both"`    | `false`         | Forward changed files to task                                                                                                                                                                           |
+| `env`                  | `{ mode, allow? }`                      | `inherit`       | Child environment for this target. `clean` passes only `allow` and the basics. See [Clean child environment](#clean-child-environment)                                                                  |
 | `envFile`              | `boolean \| string \| string[]`         |                 | Dotenv file(s) — see [env file layering](#env-file-layering)                                                                                                                                            |
 | `mutex`                | `string`                                |                 | Named lock for serializing tasks                                                                                                                                                                        |
 | `osType`               | `string \| string[]`                    |                 | Restrict to Linux (`linux`), macOS (`macos`), or Windows (`windows`)                                                                                                                                    |
@@ -173,6 +187,8 @@ Targets in `project.json` support vis-specific options:
 | `unixShell`            | `string`                                |                 | Shell override for Linux/macOS                                                                                                                                                                          |
 | `when`                 | see [Task conditions](#task-conditions) |                 | Declarative gate — skip the task unless the condition matches                                                                                                                                           |
 | `windowsShell`         | `string`                                |                 | Shell override for Windows                                                                                                                                                                              |
+
+These keys live under `options`. A few related settings are properties of the target itself, written next to `command`, not inside `options`: `cache`, `inputs`, `outputs`, `dependsOn`, `hashMode`, `fingerprintEnv`, `untrackedEnv`, `parallelism` and `splitCompound`. `vis run` warns when one of them is written under `options`, because it is ignored there. `splitCompound: true` splits a top-level `&&` command into chained tasks (`target#1`, `target#2`, …), each cached on its own; see [Splitting a command chain](../guides/caching#splitting-a-command-chain-splitcompound).
 
 ### Task metadata
 
@@ -296,6 +312,44 @@ export default defineConfig({
     test: { maxWorkers, minWorkers: 1 },
 });
 ```
+
+### Clean child environment
+
+By default each task inherits the whole environment of `vis`. The opt-in `clean` mode gives a task's child process only what it needs:
+
+- the variables named in `allow` (exact names or `*` patterns),
+- `PATH`, `HOME`, `TERM` and `CI`, plus the platform essentials: `SystemRoot`, `TEMP`, `TMP`, `USERPROFILE`, `PATHEXT` and `COMSPEC` on Windows; `TMPDIR`, `SHELL`, `LANG`, `LC_*` and `USER` elsewhere,
+- the variables vis injects (see the table below).
+
+Set it for the workspace in `vis.config.ts`:
+
+```ts
+export default defineConfig({
+    taskRunner: { env: { allow: ["NODE_ENV", "DATABASE_URL_*"], mode: "clean" } },
+});
+```
+
+Or override one target in `project.json`. A target's `allow` adds to the workspace list when the workspace is `clean`. Under a workspace `inherit`, it applies to that target alone:
+
+```json
+{ "targets": { "dev": { "command": "node server.js", "options": { "env": { "mode": "inherit" } } } } }
+```
+
+Clean mode is never a default. A traced target (`hashMode: "trace"`, or a workspace `autoFingerprint`) gets the same clean environment as any other task, plus the variables the tracker writes (see the table below). The tracker runs without its native backends in that case, because they inherit the parent environment: on Linux it traces with strace, elsewhere with the Node preload. A traced command that is not a Node process may then record no file accesses, and vis skips caching it. See [Caching](/guides/caching#clean-child-environment).
+
+| Group                                 | Variables                                                                                                                                                           | Notes                                                              |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Set on `vis`'s own process            | `VIS_VERSION`, `VIS_MONOREPO_ROOT`, `NODE_EXTRA_CA_CERTS`, `NO_COLOR`, `FORCE_COLOR`, and the variables the toolchain step exports when it activates a Node version | Every child inherits these under `inherit`. Clean mode keeps them. |
+| Injected per task                     | `INIT_CWD`, `VIS_TASK_SLOTS`, `VIS_AFFECTED_FILES` (when `affectedFiles` is `env` or `both`), `VIS_ARG_<NAME>` (declared task arguments)                            | Never filtered, so clean mode always keeps them.                   |
+| Added by the tracker (traced targets) | `TASK_RUNNER_HINTS`, `TASK_RUNNER_PROTOCOL`, `NODE_OPTIONS` (the `--import` preload, appended to the child's own `NODE_OPTIONS`)                                    | Never filtered, so clean mode keeps them.                          |
+| User overlays                         | `envFile` values, and the env of a registered service                                                                                                               | Never filtered. Their names come from your config.                 |
+| Spawner additions                     | `PATH` with the `node_modules/.bin` chain prepended; `Path` and `PATHEXT` on Windows; `FORCE_COLOR=1` unless set; `TERM=xterm-256color` for PTY tasks               | Added by the spawner, after the policy has been applied.           |
+
+The table lists what a task receives. Persistent, traced and retried targets receive the same injected variables and clean-env policy as an executor task. A TUI retry runs in the same working directory as the first attempt.
+
+Under `clean`, a variable that is not allow-listed is dropped, including the ones you usually expect to inherit such as `NODE_OPTIONS` and `npm_config_*`. Add them to `allow` if the task needs them.
+
+A `$VAR` the clean child cannot see fails the task under `strictEnv`, the same as an unset variable, instead of expanding to an empty string. The check runs for traced targets too, against the environment the traced child gets, before it spawns.
 
 ### Task conditions
 

@@ -3,12 +3,16 @@ import { xxh3Hash } from "@shared/xxh3";
 
 import { createRemoteCacheBackend } from "./backends/factory";
 import { Cache } from "./cache";
+import type { ChildEnvOptions } from "./child-env";
+import { childEnvNameFilter } from "./child-env";
 import { inferFrameworkEnvPatterns } from "./framework-inference";
 import { IncrementalFileHasher } from "./incremental-hasher";
+import { splitCompoundTasks } from "./split-compound-tasks";
 import { InProcessTaskHasher } from "./task-hasher";
 import { TaskOrchestrator } from "./task-orchestrator";
 import { TaskScheduler } from "./task-scheduler";
 import type { ProjectConfiguration, Task, TaskGraph, TaskResults, TaskRunnerContext, TaskRunnerOptions } from "./types";
+import { resolveTaskCwd } from "./utils";
 
 /**
  * Splits a {@link TaskGraph} into the regular dependency-graph tasks
@@ -57,21 +61,73 @@ const partitionAlwaysTasks = (taskGraph: TaskGraph): { alwaysTasks: Task[]; grap
 };
 
 /**
+ * The predicate the task hasher and the global namespace use to decide whether
+ * the child can see an env name.
+ *
+ * Built only when the executor is given `childEnvPolicy`, because that hook is
+ * the signal that the executor enforces the policy. Without it the child may
+ * still read the parent's value, so every name is keyed as the parent sees it.
+ * A key that omits a name the child reads gives a stale hit; an extra name only
+ * costs a miss.
+ *
+ * With no task (the workspace global hash and the global namespace), a name is
+ * hidden only when no task in `tasks` can see it. One inherit task in a clean
+ * workspace still reads the variable, so the shared key must include it.
+ */
+export const buildChildEnvVisible = (
+    workspace: ChildEnvOptions,
+    childEnvPolicy: ((task: Task) => ChildEnvOptions) | undefined,
+    tasks: ReadonlyArray<Task> = [],
+): ((name: string, task?: Task) => boolean) | undefined => {
+    if (childEnvPolicy === undefined) {
+        return undefined;
+    }
+
+    const filters = new Map<string, (name: string) => boolean>();
+    const keepFor = (policy: ChildEnvOptions): ((name: string) => boolean) => {
+        const key = JSON.stringify(policy);
+        let keep = filters.get(key);
+
+        if (!keep) {
+            keep = childEnvNameFilter(policy);
+            filters.set(key, keep);
+        }
+
+        return keep;
+    };
+
+    return (name: string, task?: Task): boolean => {
+        if (task) {
+            return keepFor(childEnvPolicy(task))(name);
+        }
+
+        if (tasks.length === 0) {
+            return keepFor(workspace)(name);
+        }
+
+        return tasks.some((candidate) => keepFor(childEnvPolicy(candidate))(name));
+    };
+};
+
+/**
  * Hashes the resolved `globalEnv` values into a short namespace segment.
  * The hash uses `name=value` lines sorted deterministically so the
  * segment is stable across runs when env hasn't changed.
  *
  * Returns `undefined` when there are no globalEnv entries — callers
  * skip namespacing rather than creating an empty `ns/` subtree.
+ *
+ * A name the workspace child-env policy hides hashes as empty, the same as
+ * the task hasher treats it.
  */
-const computeGlobalEnvNamespace = (globalEnv: string[] | undefined): string | undefined => {
+export const computeGlobalEnvNamespace = (globalEnv: string[] | undefined, isVisible: (name: string) => boolean = () => true): string | undefined => {
     if (!globalEnv || globalEnv.length === 0) {
         return undefined;
     }
 
     const payload = [...globalEnv]
         .sort()
-        .map((name) => `${name}=${process.env[name] ?? ""}`)
+        .map((name) => `${name}=${isVisible(name) ? (process.env[name] ?? "") : ""}`)
         .join("\n");
 
     return xxh3Hash(Buffer.from(payload)).slice(0, 16);
@@ -90,7 +146,7 @@ const computeGlobalEnvNamespace = (globalEnv: string[] | undefined): string | un
  * User-supplied `untrackedEnvVars` are appended after these so users
  * can extend (not replace) the defaults.
  */
-const DEFAULT_UNTRACKED_ENV_PATTERNS: ReadonlyArray<string> = [
+export const DEFAULT_UNTRACKED_ENV_PATTERNS: ReadonlyArray<string> = [
     // GitHub Actions runner env (busts cache between local and CI)
     "GITHUB_*",
     "RUNNER_*",
@@ -195,12 +251,19 @@ const resolveParallel = (parallel: number | boolean | undefined): number => {
  * ```
  */
 const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, context: TaskRunnerContext): Promise<TaskResults> => {
-    const { lifeCycle, projectGraph, taskExecutor, taskGraph, workspaceRoot } = context;
+    const { childEnvPolicy, lifeCycle, projectGraph, resolveChildEnv, taskExecutor, taskGraph, workspaceRoot } = context;
+
+    // Which env names a task's child can see. Only the executor that is given
+    // `childEnvPolicy` enforces it; without the hook every name is keyed as the
+    // parent sees it.
+    const childEnvVisible = buildChildEnvVisible(options.env ?? { mode: "inherit" }, childEnvPolicy, Object.values(taskGraph.tasks));
 
     // Partition the cache by globalEnv fingerprint when the caller
     // opts in. Flipping an env var no longer busts every entry — the
     // old namespace survives, so rolling back the env restores its hits.
-    const cacheNamespace = options.namespaceByGlobalEnv ? computeGlobalEnvNamespace(options.globalEnv) : undefined;
+    const cacheNamespace = options.namespaceByGlobalEnv
+        ? computeGlobalEnvNamespace(options.globalEnv, (name) => childEnvVisible?.(name) ?? true)
+        : undefined;
 
     // Create the cache
     const cache = new Cache({
@@ -233,8 +296,20 @@ const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, con
         await incrementalHasher.load();
     }
 
+    // The values each task's child will see, for keying env names. Same merge as the orchestrator's
+    // `#childEnvValues`: the parent's environment under inherit, only the overlay under clean.
+    const childEnv = resolveChildEnv
+        ? (task: Task): NodeJS.ProcessEnv => {
+            const spawn = resolveChildEnv(task, { cwd: resolveTaskCwd(workspaceRoot, task) });
+
+            return spawn.inheritEnv ? { ...process.env, ...spawn.env } : spawn.env;
+        }
+        : undefined;
+
     const taskHasher = new InProcessTaskHasher({
         autoEnvVars: options.autoEnvVars,
+        childEnv,
+        childEnvVisible,
         envVars: options.envVars,
         frameworkInference: options.frameworkInference,
         globalEnv: options.globalEnv,
@@ -246,12 +321,38 @@ const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, con
         projects,
         smartLockfileHashing: options.smartLockfileHashing,
         targetDefaults: options.targetDefaults,
+        untrackedEnvVars: options.untrackedEnvVars,
         workspaceRoot,
+    });
+
+    // The shell command a task runs. A segment of a `splitCompound` chain carries
+    // its own command in `overrides`, so that wins over the target's command.
+    // Shared by the split below and the trace/fingerprint path.
+    const resolveCommand = (task: Task): string | undefined => {
+        const overridden = task.overrides["command"];
+
+        if (typeof overridden === "string") {
+            return overridden;
+        }
+
+        const project = projectGraph.nodes[task.target.project];
+        const targetConfig = project?.data.targets?.[task.target.target];
+        const defaultConfig = options.targetDefaults?.[task.target.target];
+
+        return targetConfig?.command ?? defaultConfig?.command;
+    };
+
+    // Targets that opted into `splitCompound` become chained segment tasks
+    // here, before the scheduler and orchestrator read the graph. Idempotent:
+    // a graph the caller already split passes through unchanged.
+    const compoundGraph = splitCompoundTasks(taskGraph, {
+        commandOf: resolveCommand,
+        onDiagnostic: options.onDiagnostic,
     });
 
     // Pull `always: true` tasks out of the main graph — they run
     // sequentially in a finalisation phase, never block other tasks.
-    const { alwaysTasks, graph: scheduledGraph } = partitionAlwaysTasks(taskGraph);
+    const { alwaysTasks, graph: scheduledGraph } = partitionAlwaysTasks(compoundGraph);
 
     // Calculate max parallel
     const maxParallel = resolveParallel(options.parallel);
@@ -264,17 +365,6 @@ const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, con
     // resolver, framework env-pattern inference) even when the global
     // `autoFingerprint` switch is off.
     const anyTraceTask = Object.values(scheduledGraph.tasks).some((task) => task.hashMode === "trace");
-
-    // Build command resolver for the trace/fingerprint path. Always
-    // supplied now: a per-target `hashMode: "trace"` needs to resolve
-    // its shell command even when `autoFingerprint` is off.
-    const resolveCommand = (task: Task): string | undefined => {
-        const project = projectGraph.nodes[task.target.project];
-        const targetConfig = project?.data.targets?.[task.target.target];
-        const defaultConfig = options.targetDefaults?.[task.target.target];
-
-        return targetConfig?.command ?? defaultConfig?.command;
-    };
 
     // Create remote cache if configured. `createRemoteCacheBackend`
     // centralizes backend selection so new backends (REAPI gRPC) can
@@ -299,6 +389,7 @@ const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, con
         cache,
         cacheDiagnostics: options.cacheDiagnostics,
         captureOutput: true,
+        childEnvPolicy,
         dataDirectory: options.dataDirectory,
         dryRun: options.dryRun,
         fingerprintEnvPatterns,
@@ -307,8 +398,10 @@ const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, con
         // through the same callback the wire-level backend uses, so a user
         // observes upload failures regardless of where they originate.
         onRemoteUploadError: options.remoteCache?.onUploadError,
+        preTraceCheck: context.preTraceCheck,
         remoteCache,
-        resolveCommand,
+        resolveChildEnv,
+        resolveCommand: context.resolveCommand ?? resolveCommand,
         scheduler,
         skipCache: options.skipNxCache,
         summarize: options.summarize,

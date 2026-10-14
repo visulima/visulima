@@ -351,6 +351,14 @@ export interface VisConfig {
         defaultProvider?: "bitbucket" | "github" | "gitlab" | "sourcehut";
 
         /**
+         * Template used by a bare `vis create`. Accepts any template input, including an
+         * organization scope (`@acme` opens the `@acme/create` manifest picker, `@acme:app`
+         * selects one entry directly). In a terminal the usual prompts still run, minus the template step.
+         * @example "@acme"
+         */
+        defaultTemplate?: string;
+
+        /**
          * Initialize a git repository after scaffolding standalone projects.
          * @default false
          */

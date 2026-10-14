@@ -11,6 +11,7 @@ import { oxlintAdapter } from "../../lint-fmt/adapters/oxlint";
 import { ruffCheckAdapter } from "../../lint-fmt/adapters/ruff";
 import { shellcheckAdapter } from "../../lint-fmt/adapters/shellcheck";
 import { stylelintAdapter } from "../../lint-fmt/adapters/stylelint";
+import { typecheckAdapter } from "../../lint-fmt/adapters/typecheck";
 import type { AdapterRunOptions, Finding, LintAdapterId } from "../../lint-fmt/config-types";
 import { detectAdapters } from "../../lint-fmt/detect";
 import { changedFilesSince, filterByExtensions, stagedFiles } from "../../lint-fmt/diff";
@@ -35,6 +36,7 @@ const SOURCE_ADAPTERS = [
     markdownlintAdapter,
     shellcheckAdapter,
     denoLintAdapter,
+    typecheckAdapter,
 ];
 
 const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Console, LintOptions>): Promise<void> => {
@@ -43,10 +45,22 @@ const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Co
     const adapters = registerAdapters(SOURCE_ADAPTERS, lintConfig?.order);
     const detected = detectAdapters(root, adapters);
     const allEligible = adaptersByKind(detected, adapters, "lint");
-    const eligible = allEligible.filter(({ adapter }) => lintConfig?.adapters?.[adapter.id as LintAdapterId]?.enabled !== false);
+    // Opt-in adapters (the type check) run only when explicitly enabled; everything else runs unless disabled.
+    const eligible = allEligible.filter(({ adapter }) => {
+        const enabled = lintConfig?.adapters?.[adapter.id as LintAdapterId]?.enabled;
+
+        return adapter.optIn ? enabled === true : enabled !== false;
+    });
+
+    // An enabled switch that matches nothing must say so rather than silently skip the check.
+    for (const adapter of adapters) {
+        if (adapter.optIn && lintConfig?.adapters?.[adapter.id as LintAdapterId]?.enabled === true && !detected.has(adapter.id)) {
+            logger.warn(`vis lint: adapters.${adapter.id}.enabled is set, but ${adapter.id} was not detected (needs a tsconfig.json and a typescript dependency at the workspace root). Skipping it.`);
+        }
+    }
 
     if (eligible.length === 0) {
-        logger.warn("vis lint: no linter detected in this workspace (looked for: oxlint, biome, eslint, stylelint, ruff, markdownlint, shellcheck, deno).");
+        logger.warn("vis lint: no linter detected in this workspace (looked for: oxlint, biome, eslint, stylelint, ruff, markdownlint, shellcheck, deno; typecheck runs only when enabled).");
 
         return;
     }
@@ -105,7 +119,16 @@ const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Co
         for (const { adapter, presence } of eligible) {
             let files: string[];
 
-            if (filterToAdapter) {
+            if (adapter.scope === "project") {
+                // Project-wide check: run only when the requested files include one it owns, then check everything.
+                const requested = positionalFiles ?? cycleFiles;
+
+                if (requested && requested.length > 0 && filterByExtensions(requested, adapter.extensions).length === 0) {
+                    continue;
+                }
+
+                files = ["."];
+            } else if (filterToAdapter) {
                 files = filterByExtensions(cycleFiles, adapter.extensions);
 
                 if (files.length === 0) {

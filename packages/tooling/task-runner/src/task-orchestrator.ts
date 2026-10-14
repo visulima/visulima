@@ -1,20 +1,21 @@
-// eslint-disable-next-line import/no-extraneous-dependencies -- bundled inline by packem from workspace devDependency
-import { createXxh3Hasher } from "@shared/xxh3";
 import { join, resolve } from "@visulima/path";
 
 import { retrieveByTaskHash, storeByTaskHash } from "./backends/hash-bridge";
 import type { RemoteCacheBackend } from "./backends/types";
 import type { Cache, CachedResult } from "./cache";
 import { applyAccessHints, mergeEnvPatterns, summarizeHints } from "./cache-hints";
-import type { TaskFingerprint } from "./fingerprint";
-import { FingerprintManager } from "./fingerprint";
+import type { ChildEnvOptions } from "./child-env";
+import { pickChildParentEnv } from "./child-env";
+import type { TrackerKind } from "./file-access-tracker";
+import type { CacheMissReason, TaskFingerprint } from "./fingerprint";
+import { FingerprintManager, hashFingerprint } from "./fingerprint";
 import { generateRunSummary, writeLastRunSummary, writeRunSummary } from "./run-summary";
 import { findCycle } from "./task-graph-utils";
 import type { TaskHasher } from "./task-hasher";
 import { computeTaskHash } from "./task-hasher";
 import type { TaskScheduler } from "./task-scheduler";
 import { TrackedTaskExecutor } from "./tracked-executor";
-import type { LifeCycleInterface, OutputSpec, Task, TaskExecutor, TaskGraph, TaskHashDetails, TaskResult, TaskResults, TaskStatus } from "./types";
+import type { ChildSpawnEnv, LifeCycleInterface, OutputSpec, Task, TaskExecutor, TaskGraph, TaskHashDetails, TaskResult, TaskResults, TaskStatus } from "./types";
 import { createFailureResult, resolveTaskCwd } from "./utils";
 import type { WhenContext } from "./when-condition";
 import { evaluateWhen, explainWhen, getCurrentBranch } from "./when-condition";
@@ -50,6 +51,9 @@ interface TaskOrchestratorOptions {
     cacheDiagnostics?: boolean;
     captureOutput?: boolean;
 
+    /** Child-environment policy per task. Under clean, a traced fingerprint keys only the names the child can see. */
+    childEnvPolicy?: (task: Task) => ChildEnvOptions;
+
     /**
      * Directory used to persist run summaries. Forwarded to
      * {@link writeRunSummary} / {@link writeLastRunSummary} so
@@ -59,6 +63,7 @@ interface TaskOrchestratorOptions {
     dataDirectory?: string;
     dryRun?: boolean;
     fingerprintEnvPatterns?: string[];
+
     lifeCycle: LifeCycleInterface;
 
     /**
@@ -68,7 +73,16 @@ interface TaskOrchestratorOptions {
      * fills the gap for steps the backend never sees.
      */
     onRemoteUploadError?: (hash: string, error: unknown) => void;
+
+    /**
+     * Fails a traced task before its command runs. Called on a cache miss,
+     * before any tracking, with the working directory the child will get.
+     * Returns the failure message, or `undefined` to let the command run.
+     */
+    preTraceCheck?: (task: Task, options: { cwd: string }) => string | undefined;
     remoteCache?: RemoteCacheBackend;
+    /** Spawn environment for a traced child. See `TaskRunnerContext.resolveChildEnv`. */
+    resolveChildEnv?: (task: Task, options: { cwd: string }) => ChildSpawnEnv;
     resolveCommand?: (task: Task) => string | undefined;
     scheduler: TaskScheduler;
     skipCache?: boolean;
@@ -87,32 +101,8 @@ interface TaskOrchestratorOptions {
     workspaceRoot: string;
 }
 
-const hashFingerprint = (fingerprint: TaskFingerprint): string => {
-    const hash = createXxh3Hasher();
-
-    hash.update(fingerprint.commandHash);
-
-    for (const key of Object.keys(fingerprint.fileHashes).toSorted()) {
-        hash.update(key);
-        hash.update(fingerprint.fileHashes[key] as string);
-    }
-
-    for (const path of fingerprint.missingFiles) {
-        hash.update(`missing:${path}`);
-    }
-
-    for (const key of Object.keys(fingerprint.directoryListings).toSorted()) {
-        hash.update(`dir:${key}`);
-        hash.update(JSON.stringify(fingerprint.directoryListings[key]));
-    }
-
-    for (const key of Object.keys(fingerprint.envHashes).toSorted()) {
-        hash.update(key);
-        hash.update(fingerprint.envHashes[key] as string);
-    }
-
-    return hash.digest();
-};
+/** Upper bound on miss reasons written to the run summary (a changed generated file can list thousands). */
+const MAX_PERSISTED_MISS_REASONS = 50;
 
 /**
  * Returns `true` on the first warning pattern that matches `output`.
@@ -232,6 +222,12 @@ class TaskOrchestrator {
 
     readonly #resolveCommand: ((task: Task) => string | undefined) | undefined;
 
+    readonly #preTraceCheck: ((task: Task, options: { cwd: string }) => string | undefined) | undefined;
+
+    readonly #childEnvPolicy: ((task: Task) => ChildEnvOptions) | undefined;
+
+    readonly #resolveChildEnv: ((task: Task, options: { cwd: string }) => ChildSpawnEnv) | undefined;
+
     readonly #remoteCache: RemoteCacheBackend | undefined;
 
     readonly #onRemoteUploadError: ((hash: string, error: unknown) => void) | undefined;
@@ -284,6 +280,9 @@ class TaskOrchestrator {
         this.#untrackedEnvVars = options.untrackedEnvVars ?? [];
         this.#cacheDiagnostics = options.cacheDiagnostics ?? false;
         this.#resolveCommand = options.resolveCommand ?? undefined;
+        this.#preTraceCheck = options.preTraceCheck ?? undefined;
+        this.#childEnvPolicy = options.childEnvPolicy ?? undefined;
+        this.#resolveChildEnv = options.resolveChildEnv ?? undefined;
         this.#remoteCache = options.remoteCache ?? undefined;
         this.#onRemoteUploadError = options.onRemoteUploadError ?? undefined;
         this.#dryRun = options.dryRun ?? false;
@@ -578,12 +577,13 @@ class TaskOrchestrator {
      * dependencies, whose hashes already fold theirs — a Merkle-style chain,
      * so we never walk the whole graph here.
      *
-     * Only dependencies with an already-computed content hash contribute. The
-     * scheduler runs every dependency to completion before releasing a
-     * dependent, so a declared-path dependency's `hash` is set by the time we
-     * reach here. A dependency on the trace/fingerprint path (which instead
-     * records real dependency-output reads at execution time) has no content
-     * `hash` and is skipped — its invalidation is handled by that path.
+     * Only dependencies with an already-computed hash contribute. The scheduler
+     * runs every dependency to completion before releasing a dependent, so a
+     * dependency's `hash` is set by the time we reach here: its content hash on
+     * the declared path, its trace key on the trace path (on a hit as well as on
+     * a store, so the dependent's key does not depend on whether the dependency
+     * ran). A traced dependency that stored no key — self-modifying, empty
+     * fingerprint, cache disabled by a hint — contributes nothing.
      */
     #foldDependencyHashes(task: Task, hashDetails: TaskHashDetails): void {
         const dependencyIds = this.#taskGraph?.dependencies[task.id];
@@ -609,9 +609,12 @@ class TaskOrchestrator {
         }
     }
 
-    async #processTask(task: Task): Promise<TaskResult> {
-        const startTime = Date.now();
-
+    /**
+     * Computes the declared (content) hash of a task and records `hash` and
+     * `hashDetails` on it. Shared by the declared path and the trace-mode
+     * declared fallback so both key a task identically.
+     */
+    async #computeDeclaredHash(task: Task): Promise<string> {
         const hashDetails = await this.#taskHasher.hashTask(task);
 
         // Make `dependsOn` cache-correct, not just execution-ordering: fold the
@@ -622,6 +625,14 @@ class TaskOrchestrator {
         const hash = computeTaskHash(hashDetails);
 
         Object.assign(task, { hash, hashDetails });
+
+        return hash;
+    }
+
+    async #processTask(task: Task): Promise<TaskResult> {
+        const startTime = Date.now();
+
+        const hash = await this.#computeDeclaredHash(task);
 
         if (this.#dryRun) {
             return this.#dryRunResult(task, startTime);
@@ -671,40 +682,121 @@ class TaskOrchestrator {
             return this.#dryRunResult(task, startTime);
         }
 
-        if (!this.#skipCache && task.cache !== false) {
+        // Reasons are recorded for the run summary whether or not the
+        // console diagnostics are on, so `cache why` can explain a miss later.
+        let cacheMissReasons: CacheMissReason[] | undefined;
+        // The declared hash, when the lookup computed it (see the declared-fallback branch below).
+        let declaredKey: string | undefined;
+        // The predecessor's key for a segment (see #chainKeyFor). `null` means the segment cannot be keyed this run.
+        const chainKey = this.#chainKeyFor(task);
+
+        if (!this.#skipCache && task.cache !== false && chainKey !== null) {
             const cachedResult = await this.#cache.getByTaskId(task.id);
 
             if (cachedResult?.fingerprint && this.#fingerprintManager) {
-                const commandMiss = this.#fingerprintManager.validateCommand(
-                    cachedResult.fingerprint,
-                    `${task.target.project}:${task.target.target}`,
-                    task.overrides,
-                );
+                // A different command, tracker or predecessor observed different state, so its
+                // file hashes say nothing about this run. All are checked before any file is hashed.
+                const identityMiss
+                    = this.#fingerprintManager.validateCommand(cachedResult.fingerprint, `${task.target.project}:${task.target.target}`, this.#commandKey(task))
+                        ?? this.#fingerprintManager.validateTracker(cachedResult.fingerprint, this.#predictTracker(task))
+                        ?? this.#fingerprintManager.validateChain(cachedResult.fingerprint, chainKey);
 
-                if (commandMiss) {
+                if (identityMiss) {
+                    cacheMissReasons = [identityMiss];
+
                     if (this.#cacheDiagnostics) {
-                        this.#lifeCycle.printCacheMiss?.(task, this.#fingerprintManager.formatMissReasons([commandMiss]));
+                        this.#lifeCycle.printCacheMiss?.(task, this.#fingerprintManager.formatMissReasons([identityMiss]));
                     }
                 } else {
-                    const missReasons = await this.#fingerprintManager.validate(cachedResult.fingerprint);
+                    const missReasons = await this.#fingerprintManager.validate(
+                        cachedResult.fingerprint,
+                        this.#childEnvValues(task, resolveTaskCwd(this.#workspaceRoot, task)),
+                    );
 
                     if (!missReasons) {
+                        // A traced task publishes its key on a hit as well as on a store, so whatever follows it
+                        // (the next segment, or a declared task that `dependsOn` it) folds the same key either way.
+                        Object.assign(task, { hash: cachedResult.hash });
+
                         return this.#applyCachedResult(task, cachedResult, startTime);
                     }
+
+                    cacheMissReasons = missReasons;
 
                     if (this.#cacheDiagnostics) {
                         this.#lifeCycle.printCacheMiss?.(task, this.#fingerprintManager.formatMissReasons(missReasons));
                     }
                 }
-            } else if (this.#cacheDiagnostics && !cachedResult) {
-                this.#lifeCycle.printCacheMiss?.(task, "Cache miss reasons:\n  - No previous fingerprint found (first run)");
+            } else if (cachedResult && task.declaresInputs && this.#fingerprintManager) {
+                // An indexed entry without a fingerprint was stored by the
+                // declared fallback (see #executeTaskWithTracking), so its key is
+                // the declared hash. It stays valid only while that hash holds.
+                declaredKey = await this.#computeDeclaredHash(task);
+
+                if (declaredKey === cachedResult.hash) {
+                    return this.#applyCachedResult(task, cachedResult, startTime, "declared-fallback");
+                }
+
+                cacheMissReasons = [{ detail: "declared inputs", type: "declared-changed" }];
+
+                if (this.#cacheDiagnostics) {
+                    this.#lifeCycle.printCacheMiss?.(task, this.#fingerprintManager.formatMissReasons(cacheMissReasons));
+                }
+            } else if (!cachedResult) {
+                cacheMissReasons = [{ detail: "no previous fingerprint", type: "no-fingerprint" }];
+
+                if (this.#cacheDiagnostics) {
+                    this.#lifeCycle.printCacheMiss?.(task, "Cache miss reasons:\n  - No previous fingerprint found (first run)");
+                }
             }
         }
 
-        return this.#executeTaskWithTracking(task, startTime);
+        return this.#executeTaskWithTracking(task, startTime, cacheMissReasons, declaredKey, chainKey);
     }
 
-    async #applyCachedResult(task: Task, cachedResult: CachedResult, startTime: number): Promise<TaskResult> {
+    /**
+     * The key a `splitCompound` segment folds in: the key its predecessor settled
+     * on this run, so segment _n_ cannot be served while segment _n−1_ differs.
+     *
+     * `undefined` for a task that is not a segment after the first, which has no
+     * predecessor. `null` when the predecessor has no key because it ran without
+     * storing one (self-modifying, an empty tracker with no declared inputs, a
+     * `disableCache` hint, a warning that skips the cache). The chain before such
+     * a segment is then unknown, so the segment is neither served nor stored.
+     */
+    #chainKeyFor(task: Task): string | null | undefined {
+        const { segment } = task;
+
+        if (segment === undefined || segment.index === 1) {
+            return undefined;
+        }
+
+        const predecessor = (this.#taskGraph?.dependencies[task.id] ?? [])
+            .map((id) => this.#taskGraph?.tasks[id])
+            .find((candidate) => candidate?.segment?.index === segment.index - 1 && candidate.target.project === task.target.project && candidate.target.target === task.target.target);
+
+        return predecessor?.hash ?? null;
+    }
+
+    /**
+     * The tracker kind the run will record, or `undefined` when it runs without
+     * one (no shell command, so the synthetic-reads branch). Decided before the
+     * run; mirrors the gate in {@link #executeTaskWithTracking}.
+     */
+    #predictTracker(task: Task): TrackerKind | undefined {
+        const shellCommand = this.#resolveCommand?.(task);
+
+        if (!shellCommand || !this.#trackedExecutor?.isTrackingSupported) {
+            return undefined;
+        }
+
+        // The same child-environment policy `execute` will receive: a clean environment changes which tracker runs.
+        const childSpawn = this.#resolveChildEnv?.(task, { cwd: resolveTaskCwd(this.#workspaceRoot, task) });
+
+        return this.#trackedExecutor.trackerKindFor(shellCommand, { inheritEnv: childSpawn?.inheritEnv });
+    }
+
+    async #applyCachedResult(task: Task, cachedResult: CachedResult, startTime: number, hashSource?: TaskResult["hashSource"]): Promise<TaskResult> {
         const restored = await this.#cache.restoreOutputs(cachedResult.hash, task.outputs, task.cacheRestore);
         const status: TaskStatus = restored ? "local-cache" : "local-cache-kept-existing";
 
@@ -715,6 +807,7 @@ class TaskOrchestrator {
             status,
             task,
             terminalOutput: cachedResult.terminalOutput,
+            ...(hashSource === undefined ? {} : { hashSource }),
         };
 
         this.#results.set(task.id, result);
@@ -806,13 +899,71 @@ class TaskOrchestrator {
         return checks.filter((path): path is string => path !== undefined);
     }
 
-    async #executeTaskWithTracking(task: Task, startTime: number): Promise<TaskResult> {
+    /**
+     * The command a traced or fingerprinted task is keyed on: its task overrides
+     * with the command the run actually spawns (forwarded args, `affectedFiles`
+     * args and any custom shell included), so every spawn input is in the key.
+     */
+    #commandKey(task: Task): Record<string, unknown> {
+        const spawned = this.#resolveCommand?.(task);
+
+        return spawned === undefined ? task.overrides : { ...task.overrides, command: spawned };
+    }
+
+    /**
+     * The environment a traced child receives, as the fingerprint reads it:
+     * the complete child env, so `envFile` values, service env, `VIS_ARG_*`
+     * and per-target env are keyed as the child sees them, and a name the
+     * clean policy hides is absent (keyed as unset). The tracker's own
+     * variables are not part of it: the hints path changes on every run.
+     * Without a resolver the parent's env is read, under the policy when one is set.
+     */
+    #childEnvValues(task: Task, cwd: string): NodeJS.ProcessEnv {
+        const spawn = this.#resolveChildEnv?.(task, { cwd });
+
+        if (spawn === undefined) {
+            const policy = this.#childEnvPolicy?.(task);
+
+            return policy?.mode === "clean" ? pickChildParentEnv(process.env, policy) : process.env;
+        }
+
+        return spawn.inheritEnv ? { ...process.env, ...spawn.env } : spawn.env;
+    }
+
+    async #executeTaskWithTracking(
+        task: Task,
+        startTime: number,
+        cacheMissReasons?: CacheMissReason[],
+        declaredKey?: string,
+        chainKey?: string | null,
+    ): Promise<TaskResult> {
         if (!this.#fingerprintManager) {
             return this.#executeTask(task, startTime);
         }
 
         const taskCommand = `${task.target.project}:${task.target.target}`;
         const cwd = resolveTaskCwd(this.#workspaceRoot, task);
+
+        // Checked before anything runs, so a failing check never reaches the tracker.
+        const preTraceFailure = this.#preTraceCheck?.(task, { cwd });
+
+        if (preTraceFailure !== undefined) {
+            this.#lifeCycle.onTaskStderr?.(task, preTraceFailure);
+
+            const failed: TaskResult = {
+                cacheMissReasons: cacheMissReasons?.slice(0, MAX_PERSISTED_MISS_REASONS),
+                code: 1,
+                endTime: Date.now(),
+                startTime,
+                status: "failure",
+                task,
+                terminalOutput: preTraceFailure,
+            };
+
+            this.#results.set(task.id, failed);
+
+            return failed;
+        }
 
         try {
             let code: number;
@@ -844,7 +995,12 @@ class TaskOrchestrator {
             const canTrack = shellCommand && this.#trackedExecutor?.isTrackingSupported;
 
             if (canTrack && this.#trackedExecutor) {
-                const trackedResult = await this.#trackedExecutor.execute(task, { captureOutput: this.#captureOutput, cwd }, shellCommand);
+                const childSpawn = this.#resolveChildEnv?.(task, { cwd });
+                const trackedResult = await this.#trackedExecutor.execute(
+                    task,
+                    { captureOutput: this.#captureOutput, cwd, env: childSpawn?.env, inheritEnv: childSpawn?.inheritEnv },
+                    shellCommand,
+                );
 
                 code = trackedResult.code;
                 terminalOutput = trackedResult.terminalOutput;
@@ -864,10 +1020,11 @@ class TaskOrchestrator {
                 fingerprint = await this.#fingerprintManager.createFingerprint(
                     accesses,
                     taskCommand,
-                    task.overrides,
-                    process.env,
-                    mergeEnvPatterns(this.#fingerprintEnvPatterns, trackedResult.hints),
-                    this.#untrackedEnvVars,
+                    this.#commandKey(task),
+                    this.#childEnvValues(task, cwd),
+                    mergeEnvPatterns([...this.#fingerprintEnvPatterns, ...(task.fingerprintEnv ?? [])], trackedResult.hints),
+                    [...this.#untrackedEnvVars, ...(task.untrackedEnv ?? [])],
+                    trackedResult.tracker,
                 );
             } else {
                 const executionResult = await this.#taskExecutor(task, {
@@ -890,17 +1047,23 @@ class TaskOrchestrator {
                 fingerprint = await this.#fingerprintManager.createFingerprint(
                     fileAccesses,
                     taskCommand,
-                    task.overrides,
-                    process.env,
-                    this.#fingerprintEnvPatterns,
-                    this.#untrackedEnvVars,
+                    this.#commandKey(task),
+                    this.#childEnvValues(task, cwd),
+                    [...this.#fingerprintEnvPatterns, ...(task.fingerprintEnv ?? [])],
+                    [...this.#untrackedEnvVars, ...(task.untrackedEnv ?? [])],
                 );
+            }
+
+            // The predecessor's key joins the stored fingerprint, so the segment's trace key folds it in.
+            if (fingerprint && typeof chainKey === "string") {
+                fingerprint = { ...fingerprint, chainKey };
             }
 
             const hadWarnings = code === 0 && detectWarnings(task.warningPattern, terminalOutput);
 
             const result: TaskResult = {
                 cacheHints,
+                cacheMissReasons: cacheMissReasons?.slice(0, MAX_PERSISTED_MISS_REASONS),
                 code,
                 endTime: Date.now(),
                 hadWarnings: hadWarnings || undefined,
@@ -916,7 +1079,7 @@ class TaskOrchestrator {
             const skipCacheOnWarning = hadWarnings && task.cacheOnWarning === false;
 
             // Same abort-gate as the declared path — see `#executeTask`.
-            if (code === 0 && task.cache !== false && fingerprint && !skipCacheOnWarning && !this.#aborted) {
+            if (code === 0 && task.cache !== false && fingerprint && chainKey !== null && !skipCacheOnWarning && !this.#aborted) {
                 const modified = this.#detectSelfModifiedFingerprint(fingerprint);
                 const emptyFingerprintReason = this.#describeEmptyFingerprint(fingerprint, usedRealTracker, trackerAccessCount);
 
@@ -928,7 +1091,7 @@ class TaskOrchestrator {
                     result.selfModified = true;
 
                     this.#lifeCycle.printSelfModifyingSkip?.(task, modified);
-                } else if (emptyFingerprintReason) {
+                } else if (emptyFingerprintReason && !task.declaresInputs) {
                     result.emptyFingerprint = true;
 
                     this.#lifeCycle.printEmptyFingerprintWarning?.(task, emptyFingerprintReason);
@@ -939,6 +1102,19 @@ class TaskOrchestrator {
                     // build that genuinely wrote nothing). Seeding the
                     // cache would let a later hit restore nothing.
                     this.#lifeCycle.printEmptyFingerprintWarning?.(task, AUTO_OUTPUTS_UNAVAILABLE_REASON);
+                } else if (emptyFingerprintReason) {
+                    // The tracker saw no workspace access, so the only valid key is the
+                    // declared hash. Hashing after the run gives the same inputs the run
+                    // used, because nothing it touched was tracked. The lookup's hash is
+                    // reused when it already exists, so the declared hash is computed once.
+                    const hash = declaredKey ?? (await this.#computeDeclaredHash(task));
+
+                    result.hashSource = "declared-fallback";
+
+                    await this.#cache.put(hash, terminalOutput, task.outputs, code, undefined, autoWrites);
+                    await this.#cache.setTaskIndex(task.id, hash);
+
+                    this.#lifeCycle.printDeclaredFallback?.(task);
                 } else {
                     const hash = hashFingerprint(fingerprint);
 

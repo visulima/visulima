@@ -2,6 +2,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 
 import { join } from "@visulima/path";
 
+import type { CacheMissReason } from "./fingerprint";
 import type { OutputSpec, TaskGraph, TaskHashDetails, TaskResult, TaskResults } from "./types";
 import { uniqueId } from "./utils";
 
@@ -20,6 +21,12 @@ interface TaskSummary {
     cacheHints?: TaskResult["cacheHints"];
 
     /**
+     * Trace-mode miss reasons (capped at 50 entries). Omitted for hits and
+     * for tasks that did not run the trace-mode lookup.
+     */
+    cacheMissReasons?: CacheMissReason[];
+
+    /**
      * Why a cacheable task that ran (exit 0) seeded no cache entry.
      * Omitted for cache hits, failures, and ordinary cache writes.
      * `disabled-by-task` — the task called `disableCache()`;
@@ -27,6 +34,7 @@ interface TaskSummary {
      * `empty-fingerprint` — tracking observed no workspace accesses.
      */
     cacheSkipReason?: "disabled-by-task" | "empty-fingerprint" | "self-modified";
+
     /** Cache status */
     cacheStatus: "HIT" | "MISS" | "REMOTE_HIT" | "SKIPPED";
     /** Dependencies on other tasks */
@@ -41,6 +49,13 @@ interface TaskSummary {
     hash: string | undefined;
     /** Detailed hash information */
     hashDetails: TaskHashDetails | undefined;
+
+    /**
+     * Key a traced run was stored or looked up under: `declared-fallback` when
+     * the tracker observed no workspace access and the target declares
+     * `inputs`. Omitted for trace keys and declared-mode runs.
+     */
+    hashSource?: TaskResult["hashSource"];
     /** The task's declared outputs (glob patterns, literals, or `{ auto: true }`). */
     outputs: OutputSpec[];
 
@@ -51,6 +66,8 @@ interface TaskSummary {
      * pass should still register as a flake observation).
      */
     retryAttempts: number | undefined;
+    /** Position in a `splitCompound` chain; absent for ordinary tasks. */
+    segment: { count: number; index: number } | undefined;
     /** Start time (ISO 8601) */
     startTime: string | undefined;
     /** The task target */
@@ -167,6 +184,7 @@ const generateRunSummary = (results: TaskResults, taskGraph: TaskGraph, startTim
         const summary: TaskSummary = {
             cacheable: result.task.cache !== false,
             cacheHints: result.cacheHints,
+            cacheMissReasons: result.cacheMissReasons,
             cacheSkipReason: getCacheSkipReason(result),
             cacheStatus: getCacheStatus(result),
             dependencies: taskDeps,
@@ -175,8 +193,10 @@ const generateRunSummary = (results: TaskResults, taskGraph: TaskGraph, startTim
             exitCode: result.code,
             hash: result.task.hash,
             hashDetails: result.task.hashDetails,
+            hashSource: result.hashSource,
             outputs: result.task.outputs,
             retryAttempts: result.retryAttempts,
+            segment: result.task.segment,
             startTime: result.startTime ? new Date(result.startTime).toISOString() : undefined,
             target: {
                 configuration: result.task.target.configuration,

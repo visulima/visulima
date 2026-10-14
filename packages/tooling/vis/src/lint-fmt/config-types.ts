@@ -21,13 +21,14 @@ export type AdapterId
         | "ruff-check"
         | "ruff-fmt"
         | "shellcheck"
-        | "stylelint";
+        | "stylelint"
+        | "typecheck";
 
 /** Adapter IDs that can format (adapter `kind` is `"fmt"` or `"both"`). */
 export type FmtAdapterId = "biome" | "deno-fmt" | "dprint" | "oxfmt" | "prettier" | "ruff-fmt";
 
 /** Adapter IDs that can lint (adapter `kind` is `"lint"` or `"both"`). */
-export type LintAdapterId = "biome" | "deno-lint" | "eslint" | "markdownlint" | "oxlint" | "ruff-check" | "shellcheck" | "stylelint";
+export type LintAdapterId = "biome" | "deno-lint" | "eslint" | "markdownlint" | "oxlint" | "ruff-check" | "shellcheck" | "stylelint" | "typecheck";
 
 export type FindingSeverity = "error" | "info" | "warning";
 
@@ -149,6 +150,20 @@ export interface ToolAdapter {
     readonly id: AdapterId;
     /** What the adapter does. `both` participates in lint and fmt. */
     readonly kind: AdapterKind;
+
+    /**
+     * When true, detection alone never enables the adapter: the user must set
+     * `lint.adapters.&lt;id>.enabled: true`. For checks that are slow or can fail
+     * on code that lints clean (e.g. a full type check).
+     */
+    readonly optIn?: boolean;
     /** Normalize tool output into Finding[]. */
     parse: (result: RunResult, presence: ToolPresence) => Finding[];
+
+    /**
+     * `project` adapters check the whole project defined by their config and ignore
+     * file arguments; the runner gives them `["."]`, so their results are never served
+     * from the per-file lint cache. Defaults to `files`.
+     */
+    readonly scope?: "files" | "project";
 }

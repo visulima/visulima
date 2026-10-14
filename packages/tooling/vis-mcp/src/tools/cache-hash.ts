@@ -12,7 +12,8 @@ export const registerCacheHash = ({ server }: ToolDeps, context: ToolContext): v
         {
             annotations: { readOnlyHint: true },
             description:
-                "Print the recorded hash and per-input hash details for a task — the contributing inputs (command, nodes, runtime, implicitDeps) that produced it.",
+                "Print the recorded hash and per-input hash details for a task — the contributing inputs (command, nodes, runtime, implicitDeps) that produced it. "
+                + "A trace-mode task has no hashDetails; its result carries `trackedFingerprint` instead (the files, env names and missing paths the run tracked).",
             inputSchema: {
                 runId: z.string().optional().describe("Run ID to inspect (default: latest)"),
                 taskId: z.string().describe('Task ID like "@my/app:build"'),

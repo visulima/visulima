@@ -7,7 +7,8 @@ import type { Toolbox } from "@visulima/cerebro";
 import { isAccessibleSync } from "@visulima/fs";
 import { formatBytes } from "@visulima/humanizer";
 import { join, relative } from "@visulima/path";
-import { Cache, digestFile, getLastRunSummaryPath, parseCacheSize, readLastRunSummary } from "@visulima/task-runner";
+import type { TaskFingerprint } from "@visulima/task-runner";
+import { Cache, describeCacheMissReason, digestFile, getLastRunSummaryPath, parseCacheSize, readLastRunSummary } from "@visulima/task-runner";
 
 import { clearCache as clearAiResponseCache, getCacheStats as getAiCacheStats } from "../../ai/ai-cache";
 import { applyBranchScope, isCacheDirectoryInsideWorkspace, resolveSharedCacheDirectory } from "../../cache/cache-directory";
@@ -620,9 +621,11 @@ export const runWhy = async (taskId: string, options: RunWhyOptions, logger: Con
                         : null,
                     runId: summary.id,
                     task: {
+                        cacheMissReasons: task.cacheMissReasons ?? null,
                         cacheStatus: task.cacheStatus,
                         hash: task.hash ?? null,
                         hashDetails: task.hashDetails ?? null,
+                        hashSource: task.hashSource ?? null,
                         taskId: task.taskId,
                     },
                 },
@@ -639,6 +642,10 @@ export const runWhy = async (taskId: string, options: RunWhyOptions, logger: Con
     logger.info(`  status:  ${task.cacheStatus}`);
     logger.info(`  hash:    ${task.hash ?? "(none)"}`);
 
+    if (task.hashSource === "declared-fallback") {
+        logger.info("  key:     declared-fallback (tracker observed no workspace access; keyed on declared inputs)");
+    }
+
     if (previousTask) {
         logger.info(`  prev:    ${previousTask.hash ?? "(none)"}  [run ${previousSummary?.id ?? "?"}]`);
     } else {
@@ -646,6 +653,25 @@ export const runWhy = async (taskId: string, options: RunWhyOptions, logger: Con
     }
 
     logger.info("");
+
+    if (task.hashDetails === undefined) {
+        // Trace-mode tasks keep no declared hash inputs, so the diff below is
+        // empty by construction. Their explanation is the recorded miss reason.
+        if (task.cacheMissReasons && task.cacheMissReasons.length > 0) {
+            logger.info("Cache miss reasons (trace-mode fingerprint):");
+
+            for (const reason of task.cacheMissReasons) {
+                logger.info(`  - ${describeCacheMissReason(reason)}`);
+            }
+        } else {
+            pail.info("No hash inputs recorded for this run (trace-mode tasks record a miss reason only when the cache misses).");
+        }
+
+        logger.info("");
+        pail.info(`Tracked files and env of this run: vis cache hash ${taskId} --run ${summary.id}`);
+
+        return;
+    }
 
     if (!previousTask) {
         pail.info("No previous run to diff against — first time this task was recorded.");
@@ -705,10 +731,38 @@ export const runWhy = async (taskId: string, options: RunWhyOptions, logger: Con
 };
 
 interface RunHashOptions {
+    /** Cache roots to read a trace-mode fingerprint from, in lookup order. */
+    cacheDirectories?: string[];
     format: string;
     runId: string | undefined;
     workspaceRoot: string;
 }
+
+/**
+ * Trace-mode tasks have no declared hash details; their tracked inputs live in
+ * the cache entry keyed by the run's hash.
+ */
+const readTrackedFingerprint = async (hash: string | undefined, cacheDirectories: string[], workspaceRoot: string): Promise<TaskFingerprint | undefined> => {
+    if (hash === undefined) {
+        return undefined;
+    }
+
+    for (const cacheDirectory of cacheDirectories) {
+        const entry = await new Cache({ cacheDirectory, workspaceRoot }).get(hash);
+
+        if (entry?.fingerprint) {
+            return entry.fingerprint;
+        }
+    }
+
+    return undefined;
+};
+
+const renderTrackedFingerprint = (fingerprint: TaskFingerprint, logger: Console): void => {
+    renderHashDetailsBucket("tracked files", fingerprint.fileHashes, logger);
+    renderHashDetailsBucket("tracked env", fingerprint.envHashes, logger);
+    renderHashDetailsBucket("missing files", Object.fromEntries(fingerprint.missingFiles.map((path) => [path, "absent"])), logger);
+};
 
 export const runHash = async (taskId: string, options: RunHashOptions, logger: Console): Promise<void> => {
     const { format, runId, workspaceRoot } = options;
@@ -755,6 +809,8 @@ export const runHash = async (taskId: string, options: RunHashOptions, logger: C
         return;
     }
 
+    const trackedFingerprint = task.hashDetails === undefined ? await readTrackedFingerprint(task.hash, options.cacheDirectories ?? [], workspaceRoot) : undefined;
+
     if (format === "json") {
         process.stdout.write(
             `${JSON.stringify(
@@ -762,8 +818,10 @@ export const runHash = async (taskId: string, options: RunHashOptions, logger: C
                     cacheStatus: task.cacheStatus,
                     hash: task.hash ?? null,
                     hashDetails: task.hashDetails ?? null,
+                    hashSource: task.hashSource ?? null,
                     runId: summary.id,
                     taskId: task.taskId,
+                    trackedFingerprint: trackedFingerprint ?? null,
                 },
                 undefined,
                 2,
@@ -778,12 +836,19 @@ export const runHash = async (taskId: string, options: RunHashOptions, logger: C
     logger.info(`  status:  ${task.cacheStatus}`);
     logger.info(`  hash:    ${task.hash ?? "(none)"}`);
 
+    if (task.hashSource === "declared-fallback") {
+        logger.info("  key:     declared-fallback (no files were tracked; the entry is keyed on the declared inputs below)");
+    }
+
     if (task.hashDetails) {
         logger.info("");
         logger.info(`  command: ${truncateHash(task.hashDetails.command)}`);
         renderHashDetailsBucket("nodes", task.hashDetails.nodes, logger);
         renderHashDetailsBucket("runtime", task.hashDetails.runtime, logger);
         renderHashDetailsBucket("implicitDeps", task.hashDetails.implicitDeps, logger);
+    } else if (trackedFingerprint) {
+        logger.info("");
+        renderTrackedFingerprint(trackedFingerprint, logger);
     } else {
         logger.info("");
         pail.info("No hash details recorded for this task.");
@@ -1373,7 +1438,7 @@ export const cacheWhyExecute = async ({ argument, logger, options, workspaceRoot
     );
 };
 
-export const cacheHashExecute = async ({ argument, logger, options, workspaceRoot: wsRoot }: Toolbox<Console, CacheHashOptions>): Promise<void> => {
+export const cacheHashExecute = async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, CacheHashOptions>): Promise<void> => {
     const taskId = argument[0];
 
     if (!taskId) {
@@ -1383,9 +1448,12 @@ export const cacheHashExecute = async ({ argument, logger, options, workspaceRoo
         return;
     }
 
+    const { directoriesFor } = resolveCacheDirectoryFromContext(wsRoot, options, visConfig as Record<string, unknown> | undefined);
+
     await runHash(
         taskId,
         {
+            cacheDirectories: directoriesFor("read"),
             format: options.format ?? "table",
             runId: options.run,
             workspaceRoot: resolveWorkspaceRoot(wsRoot),

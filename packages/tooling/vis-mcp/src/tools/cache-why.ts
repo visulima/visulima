@@ -12,7 +12,9 @@ export const registerCacheWhy = ({ server }: ToolDeps, context: ToolContext): vo
         {
             annotations: { readOnlyHint: true },
             description:
-                "Explain why a task's cache hash rotated between runs. Diffs the task's hashDetails (command, nodes, runtime, implicitDeps) against the previous run to pinpoint what changed.",
+                "Explain why a task's cache hash rotated between runs. When the task has hashDetails (command, nodes, runtime, implicitDeps), diffs them against the previous run to pinpoint what changed. "
+                + "A trace-mode task has no hashDetails, so the diff is empty and the reasons are in `task.cacheMissReasons` (`{ type, detail }` entries, null when there are none). "
+                + "`task.hashSource` is `declared-fallback` when the run was keyed on its declared inputs.",
             inputSchema: {
                 runId: z.string().optional().describe("Run ID to inspect (default: latest)"),
                 taskId: z.string().describe('Task ID like "@my/app:build"'),

@@ -39,7 +39,7 @@ The server speaks JSON-RPC over stdio and never writes to stdout outside the pro
 claude mcp add vis -- pnpm exec vis-mcp
 ```
 
-Once added, the eight `vis` tools are available in any Claude Code session opened in this repo.
+Once added, the thirteen `vis` tools are available in any Claude Code session opened in this repo.
 
 ### Claude Desktop
 
@@ -115,7 +115,7 @@ By default `vis-mcp` operates against `process.cwd()`. Override it from the clie
 
 ## Claude Skill
 
-The package also exports a Claude Skill at `node_modules/@visulima/vis/skills/vis/SKILL.md`. The skill encodes opinionated workflow guidance — when to use each tool, the safety story for `run_task`, and how to investigate cache misses.
+The package also exports a Claude Skill at `node_modules/@visulima/vis/skills/vis/SKILL.md`. The skill encodes opinionated workflow guidance — when to use each tool, the read-only boundary, and how to investigate cache misses.
 
 To activate it project-wide, symlink the skill into your repo:
 
@@ -134,7 +134,7 @@ Skills and the MCP server are independent — you can use either, or both. The M
 
 ## Tool reference
 
-The MCP server exposes eight read-only tools.
+The MCP server exposes thirteen read-only tools.
 
 ### `list_projects`
 
@@ -187,7 +187,7 @@ Read the run summary from `.vis/`. Defaults to `last-summary.json`.
 
 ### `cache_why`
 
-Diff a task's cache hash against the previous run to pinpoint what changed.
+Diff a task's cache hash against the previous run to pinpoint what changed. For a trace-mode task (no `hashDetails`), the reasons are in `task.cacheMissReasons`, which is `null` on a hit.
 
 | Argument | Type      | Description                       |
 | -------- | --------- | --------------------------------- |
@@ -196,12 +196,64 @@ Diff a task's cache hash against the previous run to pinpoint what changed.
 
 ### `cache_hash`
 
-Print the recorded hash and per-input hash details (command, nodes, runtime, implicitDeps).
+Print the recorded hash and per-input hash details (command, nodes, runtime, implicitDeps). For a trace-mode task, returns `trackedFingerprint` (tracked files, env names, missing paths) instead.
 
 | Argument | Type      | Description                       |
 | -------- | --------- | --------------------------------- |
 | `taskId` | `string`  | Task ID like `@my/app:build`      |
 | `runId`  | `string?` | Specific run (defaults to latest) |
+
+### `list_runs`
+
+List recorded runs from `.vis/runs/`, newest first. Use the run IDs with `get_run_logs`, `cache_hash`, and `cache_why`.
+
+| Argument | Type      | Description                                |
+| -------- | --------- | ------------------------------------------ |
+| `limit`  | `number?` | Maximum runs to return (1–100, default 20) |
+
+### `audit`
+
+Audit installed packages for known vulnerabilities via `vis audit --format json`. Uses the local offline OSV cache when one exists, otherwise the live OSV API.
+
+| Argument       | Type       | Description                                                 |
+| -------------- | ---------- | ----------------------------------------------------------- |
+| `ecosystem`    | `string?`  | Comma-separated OSV ecosystems (default `npm`)              |
+| `offline`      | `boolean?` | Force the local cache; errors if it is missing              |
+| `prodOnly`     | `boolean?` | Skip devDependencies                                        |
+| `severity`     | `enum?`    | Minimum severity: `low`, `medium`, `high`, `critical`       |
+| `showAccepted` | `boolean?` | Include findings on the accepted-risk list                  |
+| `usage`        | `boolean?` | Report only vulnerabilities in statically-imported packages |
+
+### `advisory_status`
+
+Report the local OSV advisory database freshness via `vis advisories status --format json`. Check it before an offline `audit`.
+
+| Argument | Type      | Description                |
+| -------- | --------- | -------------------------- |
+| `db`     | `string?` | Override the cache DB path |
+
+### `lint`
+
+Run check-only lint via `vis lint --format json`, returning merged findings and per-adapter runs. It never applies fixes. The `typecheck` adapter is opt-in; see [type checking](/commands/lint#type-checking).
+
+| Argument      | Type        | Description                                                      |
+| ------------- | ----------- | ---------------------------------------------------------------- |
+| `files`       | `string[]?` | Restrict the run to these files                                  |
+| `maxWarnings` | `number?`   | Forwarded as `--max-warnings`                                    |
+| `quiet`       | `boolean?`  | Suppress warning-severity findings                               |
+| `since`       | `string?`   | Only lint files changed vs this ref                              |
+| `staged`      | `boolean?`  | Only lint files in the git index (takes precedence over `since`) |
+
+### `fmt`
+
+Run check-only formatting via `vis fmt --check --format json`. Each finding is a file that would change. It never writes; run `vis fmt` to apply.
+
+| Argument | Type        | Description                          |
+| -------- | ----------- | ------------------------------------ |
+| `files`  | `string[]?` | Restrict the check to these files    |
+| `quiet`  | `boolean?`  | Suppress per-file logs               |
+| `since`  | `string?`   | Only check files changed vs this ref |
+| `staged` | `boolean?`  | Only check files in the git index    |
 
 ## Safety: agent prepares, human executes
 

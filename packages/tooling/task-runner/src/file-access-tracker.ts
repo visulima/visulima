@@ -6,11 +6,12 @@ import { platform } from "node:os";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { join, resolve } from "@visulima/path";
+import { join, relative, resolve } from "@visulima/path";
 
 import { loadNativeBindings } from "./native-binding";
 import { withEnhancedPath } from "./path-utils";
-import { isInsideWorkspace, uniqueId } from "./utils";
+import type { WorkspaceContainment } from "./utils";
+import { createWorkspaceContainment, uniqueId } from "./utils";
 
 /**
  * Lazily checks whether strace is available on the current system.
@@ -369,6 +370,18 @@ export interface FileAccess {
 }
 
 /**
+ * Which mechanism observed a run's file accesses. Part of the trace key, so
+ * the same workspace traced on two platforms (or two Linux backends) never
+ * produces the same key for different observations.
+ *
+ * - `seccomp` / `strace`: Linux syscall tracing (whole process tree).
+ * - `interpose`: macOS DYLD interpose on a directly exec'd binary.
+ * - `iat`: Windows IAT hook on a directly exec'd binary.
+ * - `preload`: Node `--import` shim (Node processes only).
+ */
+export type TrackerKind = "seccomp" | "strace" | "interpose" | "iat" | "preload";
+
+/**
  * Result of tracking file accesses during a command execution.
  */
 export interface TrackingResult {
@@ -379,6 +392,15 @@ export interface TrackingResult {
     /** The command stdout + stderr output */
     output: string;
 }
+
+/**
+ * The variables a tracked child is spawned with before the PATH enhancement:
+ * the parent environment with `options.env` on top, or `options.env` alone
+ * when `inheritEnv` is `false` (clean mode, where the caller has already
+ * applied the policy).
+ */
+const spawnBaseEnv = (options: { env?: Record<string, string | undefined>; inheritEnv?: boolean }): Record<string, string | undefined> =>
+    options.inheritEnv === false ? { ...options.env } : { ...process.env, ...options.env };
 
 /**
  * Strace syscall patterns and their corresponding file access types.
@@ -471,6 +493,8 @@ const wireAbort = (signal: AbortSignal | undefined, target: Killable): (() => vo
 export class FileAccessTracker {
     readonly #workspaceRoot: string;
 
+    readonly #contain: WorkspaceContainment;
+
     readonly #excludePatterns: RegExp[];
 
     /**
@@ -482,6 +506,7 @@ export class FileAccessTracker {
 
     public constructor(workspaceRoot: string, excludePatterns?: RegExp[]) {
         this.#workspaceRoot = resolve(workspaceRoot);
+        this.#contain = createWorkspaceContainment(workspaceRoot);
         this.#excludePatterns = excludePatterns ?? [
             /\/proc\//,
             /\/sys\//,
@@ -502,6 +527,15 @@ export class FileAccessTracker {
     }
 
     /**
+     * The Linux backend {@link track} dispatches to when {@link isSupported}
+     * is true. Same order as {@link track}: seccomp first, then strace.
+     */
+    // eslint-disable-next-line class-methods-use-this
+    public linuxTrackerKind(): "seccomp" | "strace" {
+        return isSeccompAvailable() ? "seccomp" : "strace";
+    }
+
+    /**
      * True when the macOS DYLD-interpose tracker is usable. Unlike
      * {@link isSupported} (which gates the syscall-level Linux paths),
      * interpose only covers *directly-exec'd* commands — the caller
@@ -511,6 +545,32 @@ export class FileAccessTracker {
     // eslint-disable-next-line class-methods-use-this
     public isInterposeSupported(): boolean {
         return isInterposeAvailable();
+    }
+
+    /**
+     * True when the strace tracker can run on this host. Unlike {@link isSupported}
+     * it ignores seccomp, which inherits the parent environment and so cannot run
+     * under a complete child environment.
+     */
+    // eslint-disable-next-line class-methods-use-this
+    public isStraceAvailable(): boolean {
+        return platform() === "linux" && isStraceAvailable();
+    }
+
+    /**
+     * Tracks a command under strace. The clean-environment path uses this instead
+     * of {@link track}, which would dispatch to seccomp when it is available.
+     */
+    public async trackWithStrace(
+        command: string,
+        options: {
+            abortSignal?: AbortSignal;
+            cwd?: string;
+            env?: Record<string, string | undefined>;
+            inheritEnv?: boolean;
+        } = {},
+    ): Promise<TrackingResult> {
+        return this.#runWithStrace(command, options);
     }
 
     /**
@@ -527,6 +587,8 @@ export class FileAccessTracker {
             abortSignal?: AbortSignal;
             cwd?: string;
             env?: Record<string, string | undefined>;
+            /** `false`: `env` is the complete child environment, not an overlay on `process.env`. Default `true`. */
+            inheritEnv?: boolean;
         } = {},
     ): Promise<TrackingResult> {
         return this.#runWithInterpose(argv, options);
@@ -557,6 +619,8 @@ export class FileAccessTracker {
             abortSignal?: AbortSignal;
             cwd?: string;
             env?: Record<string, string | undefined>;
+            /** `false`: `env` is the complete child environment, not an overlay on `process.env`. Default `true`. */
+            inheritEnv?: boolean;
         } = {},
     ): Promise<TrackingResult> {
         return this.#runWithIatHook(argv, options);
@@ -582,6 +646,8 @@ export class FileAccessTracker {
             abortSignal?: AbortSignal;
             cwd?: string;
             env?: Record<string, string | undefined>;
+            /** `false`: `env` is the complete child environment, not an overlay on `process.env`. Default `true`. */
+            inheritEnv?: boolean;
         } = {},
     ): Promise<TrackingResult> {
         if (platform() !== "linux") {
@@ -617,6 +683,8 @@ export class FileAccessTracker {
             abortSignal?: AbortSignal;
             cwd?: string;
             env?: Record<string, string | undefined>;
+            /** `false`: `env` is the complete child environment, not an overlay on `process.env`. Default `true`. */
+            inheritEnv?: boolean;
         },
     ): Promise<TrackingResult> {
         const native = loadNativeBindings();
@@ -634,7 +702,7 @@ export class FileAccessTracker {
         // propagated through the native binding's spawn-options to
         // Command::current_dir / Command::env on the helper.
         const cwd = options.cwd ?? this.#workspaceRoot;
-        const env = withEnhancedPath({ ...process.env, ...options.env }, cwd);
+        const env = withEnhancedPath(spawnBaseEnv(options), cwd);
         const envFiltered: Record<string, string> = {};
 
         for (const [k, v] of Object.entries(env)) {
@@ -702,11 +770,13 @@ export class FileAccessTracker {
             for (const a of result.accesses) {
                 const absolute = a.path.startsWith("/") ? a.path : resolve(cwd, a.path);
 
-                if (this.#shouldExclude(absolute) || !isInsideWorkspace(this.#workspaceRoot, absolute)) {
+                const inside = this.resolveAccessPath(absolute);
+
+                if (inside === undefined) {
                     continue;
                 }
 
-                accesses.push({ path: absolute, type: a.kind });
+                accesses.push({ path: inside, type: a.kind });
             }
 
             // Concatenate stdout + stderr to mirror the strace path's
@@ -743,6 +813,8 @@ export class FileAccessTracker {
             abortSignal?: AbortSignal;
             cwd?: string;
             env?: Record<string, string | undefined>;
+            /** `false`: `env` is the complete child environment, not an overlay on `process.env`. Default `true`. */
+            inheritEnv?: boolean;
         },
     ): Promise<TrackingResult> {
         const native = loadNativeBindings();
@@ -753,7 +825,7 @@ export class FileAccessTracker {
         }
 
         const cwd = options.cwd ?? this.#workspaceRoot;
-        const env = withEnhancedPath({ ...process.env, ...options.env }, cwd);
+        const env = withEnhancedPath(spawnBaseEnv(options), cwd);
         const envFiltered: Record<string, string> = {};
 
         for (const [k, v] of Object.entries(env)) {
@@ -810,11 +882,13 @@ export class FileAccessTracker {
             for (const a of result.accesses) {
                 const absolute = a.path.startsWith("/") ? a.path : resolve(cwd, a.path);
 
-                if (this.#shouldExclude(absolute) || !isInsideWorkspace(this.#workspaceRoot, absolute)) {
+                const inside = this.resolveAccessPath(absolute);
+
+                if (inside === undefined) {
                     continue;
                 }
 
-                accesses.push({ path: absolute, type: a.kind });
+                accesses.push({ path: inside, type: a.kind });
             }
 
             const output = `${result.stdout.toString("utf8")}${result.stderr.toString("utf8")}`;
@@ -844,6 +918,8 @@ export class FileAccessTracker {
             abortSignal?: AbortSignal;
             cwd?: string;
             env?: Record<string, string | undefined>;
+            /** `false`: `env` is the complete child environment, not an overlay on `process.env`. Default `true`. */
+            inheritEnv?: boolean;
         },
     ): Promise<TrackingResult> {
         const native = loadNativeBindings();
@@ -854,7 +930,7 @@ export class FileAccessTracker {
         }
 
         const cwd = options.cwd ?? this.#workspaceRoot;
-        const env = withEnhancedPath({ ...process.env, ...options.env }, cwd);
+        const env = withEnhancedPath(spawnBaseEnv(options), cwd);
         const envFiltered: Record<string, string> = {};
 
         for (const [k, v] of Object.entries(env)) {
@@ -901,8 +977,6 @@ export class FileAccessTracker {
 
         options.abortSignal?.addEventListener("abort", abortHandler, { once: true });
 
-        const workspaceLower = this.#workspaceRoot.toLowerCase();
-
         try {
             const result = await native.trackWithIatHook(argv, dllPath, { cwd, env: envFiltered }, onStarted);
 
@@ -913,11 +987,13 @@ export class FileAccessTracker {
                 // drive-qualified or rooted path as absolute, else resolve.
                 const absolute = /^(?:[a-z]:)?[/\\]/iu.test(a.path) ? a.path : resolve(cwd, a.path);
 
-                if (this.#shouldExclude(absolute) || !absolute.toLowerCase().startsWith(workspaceLower)) {
+                const inside = this.resolveAccessPath(absolute);
+
+                if (inside === undefined) {
                     continue;
                 }
 
-                accesses.push({ path: absolute, type: a.kind });
+                accesses.push({ path: inside, type: a.kind });
             }
 
             const output = `${result.stdout.toString("utf8")}${result.stderr.toString("utf8")}`;
@@ -943,6 +1019,8 @@ export class FileAccessTracker {
             abortSignal?: AbortSignal;
             cwd?: string;
             env?: Record<string, string | undefined>;
+            /** `false`: `env` is the complete child environment, not an overlay on `process.env`. Default `true`. */
+            inheritEnv?: boolean;
         },
     ): Promise<TrackingResult> {
         const traceDirectory = join(this.#workspaceRoot, "node_modules", ".cache", "task-runner");
@@ -983,7 +1061,7 @@ export class FileAccessTracker {
                 straceArgs,
                 {
                     cwd: options.cwd ?? this.#workspaceRoot,
-                    env: withEnhancedPath({ ...process.env, ...options.env }, options.cwd ?? this.#workspaceRoot),
+                    env: withEnhancedPath(spawnBaseEnv(options), options.cwd ?? this.#workspaceRoot),
                     maxBuffer: 50 * 1024 * 1024, // 50MB
                 },
                 async (_error, stdout, stderr) => {
@@ -1079,17 +1157,19 @@ export class FileAccessTracker {
                 path = resolve(cwd, path);
             }
 
-            if (this.#shouldExclude(path) || !isInsideWorkspace(this.#workspaceRoot, path)) {
+            const inside = this.resolveAccessPath(path);
+
+            if (inside === undefined) {
                 return undefined;
             }
 
             if (isMissing) {
-                return { path, type: "missing" };
+                return { path: inside, type: "missing" };
             }
 
             const type: FileAccess["type"] = kind === "open" ? parseOpenAccessType(line) : kind === "creat" ? "write" : "stat";
 
-            return { path, type };
+            return { path: inside, type };
         }
 
         // unlink/rename take a path but don't match the capturing patterns
@@ -1103,21 +1183,37 @@ export class FileAccessTracker {
                 path = resolve(cwd, path);
             }
 
-            if (this.#shouldExclude(path) || !isInsideWorkspace(this.#workspaceRoot, path)) {
+            const inside = this.resolveAccessPath(path);
+
+            if (inside === undefined) {
                 return undefined;
             }
 
-            return { path, type: "write" };
+            return { path: inside, type: "write" };
         }
 
         return undefined;
     }
 
     /**
-     * Checks if a path should be excluded from tracking.
+     * The workspace-relative-canonical form of an access, or `undefined` when it lies
+     * outside the workspace or matches an exclude pattern. Containment comes first and the
+     * patterns are matched against the path *inside* the workspace: matching them against the
+     * absolute path drops every access of a workspace that itself lives under a `dev`, `tmp`
+     * or `etc` directory (`~/dev/project`), because the patterns describe system locations.
+     * @param absolutePath Absolute path the traced process touched.
+     * @returns The path in the workspace root's spelling, or `undefined` to ignore the access.
      */
-    #shouldExclude(filePath: string): boolean {
-        return this.#excludePatterns.some((pattern) => pattern.test(filePath));
+    public resolveAccessPath(absolutePath: string): string | undefined {
+        const inside = this.#contain(absolutePath);
+
+        if (inside === undefined) {
+            return undefined;
+        }
+
+        const insideWorkspace = `/${relative(this.#workspaceRoot, inside).replaceAll("\\", "/")}`;
+
+        return this.#excludePatterns.some((pattern) => pattern.test(insideWorkspace)) ? undefined : inside;
     }
 
     /**
@@ -1147,6 +1243,8 @@ export class FileAccessTracker {
             abortSignal?: AbortSignal;
             cwd?: string;
             env?: Record<string, string | undefined>;
+            /** `false`: `env` is the complete child environment, not an overlay on `process.env`. Default `true`. */
+            inheritEnv?: boolean;
         },
     ): Promise<TrackingResult> {
         return new Promise((_resolve) => {
@@ -1164,7 +1262,7 @@ export class FileAccessTracker {
                 ["-c", command],
                 {
                     cwd: options.cwd ?? this.#workspaceRoot,
-                    env: withEnhancedPath({ ...process.env, ...options.env }, options.cwd ?? this.#workspaceRoot),
+                    env: withEnhancedPath(spawnBaseEnv(options), options.cwd ?? this.#workspaceRoot),
                     maxBuffer: 50 * 1024 * 1024,
                 },
                 (_error, stdout, stderr) => {

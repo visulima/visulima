@@ -6,7 +6,7 @@ import type { AdapterId, AdapterKind, ToolAdapter, ToolPresence } from "./config
  * After filtering by `kind` (or `both`), the resulting sequence
  * becomes:
  *
- *   lint: oxlint → biome → eslint → stylelint → deno-lint
+ *   lint: oxlint → biome → eslint → stylelint → deno-lint → typecheck
  *   fmt:  oxfmt  → biome → dprint → prettier → deno-fmt
  *
  * Rust-native tools come first so they get a chance to short-circuit
@@ -37,6 +37,7 @@ const ADAPTER_ORDER: ReadonlyArray<AdapterId> = [
     "shellcheck",
     "deno-lint",
     "deno-fmt",
+    "typecheck",
 ];
 
 /**

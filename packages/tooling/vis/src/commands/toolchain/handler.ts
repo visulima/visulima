@@ -5,6 +5,7 @@ import { dim, green, red, yellow } from "@visulima/colorize";
 import { join } from "@visulima/path";
 
 import { pail } from "../../io/logger";
+import { checkProjectEnvironment } from "../../runtime/env-consistency";
 import type { DetectedManager, RuntimeTool, ToolchainConfig, ToolchainStatus, ToolStatus, VersionManagerName } from "../../runtime/toolchain";
 import {
     buildInstallInvocation,
@@ -121,11 +122,15 @@ const printStatus = (status: ToolchainStatus): void => {
 
 const executeStatus = (workspaceRoot: string, toolchainConfig: ToolchainConfig | undefined, options: Record<string, unknown>): void => {
     const status = getToolchainStatus(workspaceRoot, toolchainConfig);
+    const declarationWarnings = checkProjectEnvironment(workspaceRoot)
+        .filter((diagnostic) => diagnostic.status === "warn")
+        .map((diagnostic) => diagnostic.message);
 
     if (options.json) {
         process.stdout.write(
             `${JSON.stringify(
                 {
+                    declarationWarnings,
                     detected: status.detected.map((m) => {
                         return {
                             binPath: m.binPath ?? null,
@@ -157,6 +162,14 @@ const executeStatus = (workspaceRoot: string, toolchainConfig: ToolchainConfig |
     }
 
     printStatus(status);
+
+    if (declarationWarnings.length > 0) {
+        pail.info("");
+
+        for (const warning of declarationWarnings) {
+            pail.warn(`  ${warning}`);
+        }
+    }
 
     const mismatches = status.tools.filter((t) => !t.matches);
 

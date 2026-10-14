@@ -44,7 +44,7 @@ const safeMtime = (path: string | undefined): string => {
 // without the new field would deserialize with `undefined` properties
 // and crash render code that assumes presence. Cheaper than a runtime
 // schema check and self-invalidating.
-const CACHE_SCHEMA_VERSION = 2;
+const CACHE_SCHEMA_VERSION = 3;
 
 export const buildDoctorCacheKey = (input: CacheKeyInput): string => {
     const payload = JSON.stringify({

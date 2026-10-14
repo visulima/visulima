@@ -6,19 +6,18 @@
  * directory before discover/load runs against them.
  *
  * Sources are normalized via the same patterns vis create uses; see
- * `src/commands/create/templates/remote.ts` for the underlying
- * downloadTemplate call.
+ * `src/util/git-source.ts` for the underlying download.
  */
 
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 
 import { join } from "@visulima/path";
-import { downloadTemplate } from "giget";
 
 import { pail } from "../io/logger";
+import { downloadGitSource } from "../util/git-source";
 
-const REMOTE_PROTOCOLS = ["git://", "npm://", "https://", "github:", "gitlab:", "bitbucket:", "sourcehut:"];
+const REMOTE_PROTOCOLS = ["git://", "git:", "git@", "npm://", "https://", "github:", "gitlab:", "gitlab://", "bitbucket:", "sourcehut:"];
 
 /**
  * True when the input looks like a remote source giget can resolve.
@@ -72,8 +71,8 @@ export const fetchRemoteTemplate = async (source: string, options: FetchOptions 
     pail.info(`Downloading ${source}…`);
 
     try {
-        const result = await downloadTemplate(source, {
-            auth: options.auth || process.env.GIGET_AUTH || process.env.GITHUB_TOKEN || process.env.GH_TOKEN || undefined,
+        const result = await downloadGitSource(source, {
+            auth: options.auth,
             dir: directory,
             force: true,
             preferOffline: options.preferOffline,
