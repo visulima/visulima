@@ -39,7 +39,7 @@ Default opening move when the user asks about the workspace:
 ### Plan a build
 
 1. `list_targets` (optionally with `project: "@scope/name"`) to see what `build`/`test`/`lint`/etc. targets exist.
-2. Tell the user the exact command (`vis run @scope/name:build`) and let them run it. `vis run` exits 1 when the target is missing, or when `--filter`, `--query` or `--tag` selects no project; `vis ci` and `vis affected` behave the same. Suggest `--if-present` (quiet exit 0) only when an empty selection is acceptable, such as one script shared across repos that don't all define the target. An empty `--affected` set is not an error.
+2. Tell the user the exact command (`vis run @scope/name:build`) and let them run it. `vis run` exits 1 when the target is missing, or when `--filter`, `--query` or `--tag` selects no project; `vis ci` and `vis affected` behave the same. Suggest `--if-present` (exit 0 with a one-line notice) only when an empty selection is acceptable, such as one script shared across repos that don't all define the target. An empty `--affected` set is not an error.
 3. Use `get_run_logs` afterwards to read each task's `exitCode`, `cacheStatus`, and the run's `stats`.
 
 ### Check lint and formatting

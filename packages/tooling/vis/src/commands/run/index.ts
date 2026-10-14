@@ -132,11 +132,12 @@ const runOptionDefinitions = {
         description: "Stop all tasks on first failure",
         type: Boolean,
     },
-    "if-present": {
+    ...negatable({
         defaultValue: false,
         description: "Exit 0 with a one-line notice when no project has the requested target or matches a --filter/--query/--tag selection",
+        name: "if-present",
         type: Boolean,
-    },
+    }),
     "last-details": {
         defaultValue: false,
         description: "Render the most-recent run's saved summary (from .vis/last-summary.json) and exit without executing any tasks",

@@ -208,7 +208,7 @@ export const buildEnvCoveragePosture = async (config: VisConfig, workspaceRoot: 
         return { status: "ok", targets };
     }
 
-    const { projectOptions, workspace } = discoverWorkspace(workspaceRoot, config, await loadVisTaskConfigsForWorkspace(workspaceRoot));
+    const { projectOptions, workspace } = discoverWorkspace(workspaceRoot, config, await loadVisTaskConfigsForWorkspace(workspaceRoot, config));
     const workspaceExact = [...(runner.envVars ?? []), ...(runner.globalEnv ?? [])];
     const workspaceUntracked = [...DEFAULT_UNTRACKED_ENV_PATTERNS, ...(runner.untrackedEnvVars ?? [])];
     const namedInputs = config.namedInputs ?? {};

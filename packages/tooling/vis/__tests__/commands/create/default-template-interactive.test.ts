@@ -99,6 +99,25 @@ describe("create.defaultTemplate with the interactive prompts", () => {
         expect(vi.mocked(runDlx).mock.calls[0]?.[1]).toMatchObject({ package: "@vistest-org/create-lib" });
     });
 
+    it("resolves an alias for the default before deciding to show the org picker", async () => {
+        expect.assertions(3);
+
+        vi.mocked(runTemplatePicker).mockResolvedValue("lib");
+        vi.mocked(runInteractivePrompts).mockResolvedValue({
+            gitInit: false,
+            overwrite: false,
+            projectName: "my-lib",
+            targetDir: "my-lib",
+            template: "acme",
+        });
+
+        await bareCreate({ defaultTemplate: "acme", templates: { acme: "@vistest-org" } });
+
+        expect(runTemplatePicker).toHaveBeenCalledTimes(1);
+        expect(vi.mocked(runTemplatePicker).mock.invocationCallOrder[0]).toBeLessThan(vi.mocked(runInteractivePrompts).mock.invocationCallOrder[0] as number);
+        expect(vi.mocked(runDlx).mock.calls[0]?.[1]).toMatchObject({ package: "@vistest-org/create-lib" });
+    });
+
     it("does not open the org picker when the default is not an organization", async () => {
         expect.assertions(2);
 

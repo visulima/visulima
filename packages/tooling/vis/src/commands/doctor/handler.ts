@@ -38,6 +38,7 @@ import {
     markCodemodAvailability,
     runCodemod,
 } from "../optimize/handler";
+import type { EnvCoveragePosture } from "./env-coverage";
 import { buildEnvCoveragePosture, describeEnvCoverage } from "./env-coverage";
 import { applyFilter, filterFindingsByPattern, parseFilterPatterns } from "./filter";
 import type { DoctorOptions } from "./index";
@@ -1040,7 +1041,13 @@ const execute = async ({ fs, logger, options, visConfig, visConfigError, workspa
     const fullResults: DoctorResults = {
         ...scanResults,
         elapsedMs: Date.now() - startedAt,
-        envCoverage: await buildEnvCoveragePosture(visConfig ?? {}, wsRoot),
+        // A discovery failure (a duplicated project name, an overlay that does not load) must not
+        // discard the security results above, so the section is left empty with a warning.
+        envCoverage: await buildEnvCoveragePosture(visConfig ?? {}, wsRoot).catch((error: unknown): EnvCoveragePosture => {
+            pail.warn(`Env coverage check failed: ${error instanceof Error ? error.message : String(error)}`);
+
+            return { status: "ok", targets: [] };
+        }),
     };
 
     // Cache the full unfiltered results so a later run with a different

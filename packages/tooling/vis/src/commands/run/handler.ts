@@ -2751,7 +2751,8 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
                         });
                     }
                 } else if (loopAction === "retry" && retryTaskId) {
-                    const task = initialTasks.find((t) => t.id === retryTaskId);
+                    // A split target retries by segment id, which only the graph knows.
+                    const task = taskGraph.tasks[retryTaskId] ?? initialTasks.find((t) => t.id === retryTaskId);
                     // Same command the first attempt ran, so a retry keeps its forwarded arguments and shell.
                     const command = task ? resolveTaskCommand(task, spawnContext.affectedFiles, currentOs) : undefined;
 

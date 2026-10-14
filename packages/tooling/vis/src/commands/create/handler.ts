@@ -286,9 +286,11 @@ const execute = async ({ argument, logger, options, rawUnknown, visConfig, works
     }
 
     // Org picker is shown before the prompt flow opens its readline, so the name prompt comes after the choice.
+    // The alias is resolved first, as for a template typed on the command line, so an alias for an org scope gets the same preflight.
+    const resolvedDefault = defaultTemplate ? (createConfig?.templates?.[defaultTemplate] ?? defaultTemplate) : undefined;
     const presetOrg: OrgChoice | undefined
-        = runsPrompts && defaultTemplate && isOrgInput(defaultTemplate)
-            ? await resolveOrgTemplate(defaultTemplate, { args: [], cwd: wsRoot || cwd, interactive: true })
+        = runsPrompts && resolvedDefault && isOrgInput(resolvedDefault)
+            ? await resolveOrgTemplate(resolvedDefault, { args: [], cwd: wsRoot || cwd, interactive: true })
             : undefined;
 
     const detectedPm = detectPm(cwd);

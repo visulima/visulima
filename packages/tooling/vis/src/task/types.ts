@@ -71,11 +71,11 @@ export interface VisTargetOptions {
      * - `allow`: names and `*` wildcard patterns kept under `clean`. Added to
      *   the workspace allow-list when the workspace is also `clean`.
      *
-     * A target that runs through syscall tracking (`hashMode: "trace"`, or a
-     * workspace `autoFingerprint`) cannot be `clean`: those runs bypass the
-     * executor that builds the clean environment, so the run fails instead of
-     * silently inheriting. Without this option the workspace `taskRunner.env`
-     * applies, and that defaults to `inherit`.
+     * A traced target (`hashMode: "trace"`, or a workspace `autoFingerprint`)
+     * can be `clean` too: it gets the same environment plus the tracker's own
+     * variables, and the tracker then runs without its native backends. Without
+     * this option the workspace `taskRunner.env` applies, and that defaults to
+     * `inherit`.
      */
     env?: ChildEnvOptions;
 
