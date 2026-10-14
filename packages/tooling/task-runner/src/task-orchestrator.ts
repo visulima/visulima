@@ -577,12 +577,13 @@ class TaskOrchestrator {
      * dependencies, whose hashes already fold theirs — a Merkle-style chain,
      * so we never walk the whole graph here.
      *
-     * Only dependencies with an already-computed content hash contribute. The
-     * scheduler runs every dependency to completion before releasing a
-     * dependent, so a declared-path dependency's `hash` is set by the time we
-     * reach here. A dependency on the trace/fingerprint path (which instead
-     * records real dependency-output reads at execution time) has no content
-     * `hash` and is skipped — its invalidation is handled by that path.
+     * Only dependencies with an already-computed hash contribute. The scheduler
+     * runs every dependency to completion before releasing a dependent, so a
+     * dependency's `hash` is set by the time we reach here: its content hash on
+     * the declared path, its trace key on the trace path (on a hit as well as on
+     * a store, so the dependent's key does not depend on whether the dependency
+     * ran). A traced dependency that stored no key — self-modifying, empty
+     * fingerprint, cache disabled by a hint — contributes nothing.
      */
     #foldDependencyHashes(task: Task, hashDetails: TaskHashDetails): void {
         const dependencyIds = this.#taskGraph?.dependencies[task.id];
@@ -713,10 +714,9 @@ class TaskOrchestrator {
                     );
 
                     if (!missReasons) {
-                        // A segment publishes its key on a hit as well as on a store, so the segment after it can fold it.
-                        if (task.segment !== undefined) {
-                            Object.assign(task, { hash: cachedResult.hash });
-                        }
+                        // A traced task publishes its key on a hit as well as on a store, so whatever follows it
+                        // (the next segment, or a declared task that `dependsOn` it) folds the same key either way.
+                        Object.assign(task, { hash: cachedResult.hash });
 
                         return this.#applyCachedResult(task, cachedResult, startTime);
                     }
