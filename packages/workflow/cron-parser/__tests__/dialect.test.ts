@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
 
-import { CronExpressionParser, CronParseError } from "../src";
+import { CronParseError, parse } from "../src";
 
 const atStart = { currentDate: "2026-01-01T00:00:00Z", tz: "UTC" } as const;
 
-const daysOfWeek = (expression: string, options?: Parameters<typeof CronExpressionParser.parse>[1]): unknown =>
-    CronExpressionParser.parse(expression, options).fields.dayOfWeek.values;
+const daysOfWeek = (expression: string, options?: Parameters<typeof parse>[1]): unknown =>
+    parse(expression, options).fields.dayOfWeek.values;
 
-const runs = (expression: string, options?: Parameters<typeof CronExpressionParser.parse>[1]): string[] =>
-    CronExpressionParser.parse(expression, { ...atStart, ...options })
+const runs = (expression: string, options?: Parameters<typeof parse>[1]): string[] =>
+    parse(expression, { ...atStart, ...options })
         .take(3)
         .map((run) => run.toISOString());
 
@@ -16,9 +16,9 @@ describe("the dialect option", () => {
     it("accepts the day of month extensions by default", () => {
         expect.hasAssertions();
 
-        expect(() => CronExpressionParser.parse("0 0 1W * *")).not.toThrow();
-        expect(() => CronExpressionParser.parse("0 0 LW * *")).not.toThrow();
-        expect(() => CronExpressionParser.parse("0 0 L-3 * *")).not.toThrow();
+        expect(() => parse("0 0 1W * *")).not.toThrow();
+        expect(() => parse("0 0 LW * *")).not.toThrow();
+        expect(() => parse("0 0 L-3 * *")).not.toThrow();
     });
 
     it("reads a day of month `5L` as the last day by default, the way cron-parser does", () => {
@@ -31,40 +31,40 @@ describe("the dialect option", () => {
     it("keeps `H`, `#` and a day of month `5L`, but drops `W`, `LW` and `L-n`, under `cron-parser`", () => {
         expect.hasAssertions();
 
-        expect(() => CronExpressionParser.parse("H * * * *", { dialect: "cron-parser" })).not.toThrow();
-        expect(() => CronExpressionParser.parse("0 0 * * MON#2", { dialect: "cron-parser" })).not.toThrow();
-        expect(() => CronExpressionParser.parse("0 0 5L * *", { dialect: "cron-parser" })).not.toThrow();
-        expect(() => CronExpressionParser.parse("0 0 L-3 * *", { dialect: "cron-parser" })).toThrow(CronParseError);
-        expect(() => CronExpressionParser.parse("0 0 1W * *", { dialect: "cron-parser" })).toThrow(CronParseError);
-        expect(() => CronExpressionParser.parse("0 0 LW * *", { dialect: "cron-parser" })).toThrow(CronParseError);
+        expect(() => parse("H * * * *", { dialect: "cron-parser" })).not.toThrow();
+        expect(() => parse("0 0 * * MON#2", { dialect: "cron-parser" })).not.toThrow();
+        expect(() => parse("0 0 5L * *", { dialect: "cron-parser" })).not.toThrow();
+        expect(() => parse("0 0 L-3 * *", { dialect: "cron-parser" })).toThrow(CronParseError);
+        expect(() => parse("0 0 1W * *", { dialect: "cron-parser" })).toThrow(CronParseError);
+        expect(() => parse("0 0 LW * *", { dialect: "cron-parser" })).toThrow(CronParseError);
     });
 
     it("matches the live Cloudflare validator on the atoms it rejects", () => {
         expect.hasAssertions();
 
-        expect(() => CronExpressionParser.parse("H * * * *", { dialect: "cloudflare" })).toThrow(CronParseError);
-        expect(() => CronExpressionParser.parse("0 0 ? * *", { dialect: "cloudflare" })).toThrow(CronParseError);
-        expect(() => CronExpressionParser.parse("0 0 0 * * *", { dialect: "cloudflare" })).toThrow(CronParseError);
-        expect(() => CronExpressionParser.parse("@daily", { dialect: "cloudflare" })).toThrow(CronParseError);
-        expect(() => CronExpressionParser.parse("0 0 5L * *", { dialect: "cloudflare" })).toThrow(CronParseError);
+        expect(() => parse("H * * * *", { dialect: "cloudflare" })).toThrow(CronParseError);
+        expect(() => parse("0 0 ? * *", { dialect: "cloudflare" })).toThrow(CronParseError);
+        expect(() => parse("0 0 0 * * *", { dialect: "cloudflare" })).toThrow(CronParseError);
+        expect(() => parse("@daily", { dialect: "cloudflare" })).toThrow(CronParseError);
+        expect(() => parse("0 0 5L * *", { dialect: "cloudflare" })).toThrow(CronParseError);
     });
 
     it("matches the live Cloudflare validator on the atoms it takes", () => {
         expect.hasAssertions();
 
-        expect(() => CronExpressionParser.parse("0 0 L * *", { dialect: "cloudflare" })).not.toThrow();
-        expect(() => CronExpressionParser.parse("0 0 1W * *", { dialect: "cloudflare" })).not.toThrow();
-        expect(() => CronExpressionParser.parse("59 23 LW * *", { dialect: "cloudflare" })).not.toThrow();
-        expect(() => CronExpressionParser.parse("0 0 L-3 * *", { dialect: "cloudflare" })).not.toThrow();
-        expect(() => CronExpressionParser.parse("0 0 * * 2#2", { dialect: "cloudflare" })).not.toThrow();
-        expect(() => CronExpressionParser.parse("0 0 * * MON#2", { dialect: "cloudflare" })).not.toThrow();
-        expect(() => CronExpressionParser.parse("0 18 * * 6L", { dialect: "cloudflare" })).not.toThrow();
+        expect(() => parse("0 0 L * *", { dialect: "cloudflare" })).not.toThrow();
+        expect(() => parse("0 0 1W * *", { dialect: "cloudflare" })).not.toThrow();
+        expect(() => parse("59 23 LW * *", { dialect: "cloudflare" })).not.toThrow();
+        expect(() => parse("0 0 L-3 * *", { dialect: "cloudflare" })).not.toThrow();
+        expect(() => parse("0 0 * * 2#2", { dialect: "cloudflare" })).not.toThrow();
+        expect(() => parse("0 0 * * MON#2", { dialect: "cloudflare" })).not.toThrow();
+        expect(() => parse("0 18 * * 6L", { dialect: "cloudflare" })).not.toThrow();
     });
 
     it("rejects a weekday of 0 under `cloudflare`, where 1 is Sunday", () => {
         expect.hasAssertions();
 
-        expect(() => CronExpressionParser.parse("0 0 * * 0", { dialect: "cloudflare" })).toThrow(CronParseError);
+        expect(() => parse("0 0 * * 0", { dialect: "cloudflare" })).toThrow(CronParseError);
         expect(daysOfWeek("0 0 * * 1", { dialect: "cloudflare" })).toStrictEqual([0]);
         expect(daysOfWeek("0 0 * * 2", { dialect: "cloudflare" })).toStrictEqual([1]);
         expect(daysOfWeek("0 0 * * 7", { dialect: "cloudflare" })).toStrictEqual([6]);
@@ -80,7 +80,7 @@ describe("the dialect option", () => {
     it("reads a bare `L` in the weekday field as Saturday under `cloudflare`", () => {
         expect.hasAssertions();
 
-        expect(() => CronExpressionParser.parse("0 0 * * L", { dialect: "cloudflare" })).not.toThrow();
+        expect(() => parse("0 0 * * L", { dialect: "cloudflare" })).not.toThrow();
         expect(daysOfWeek("0 0 * * L", { dialect: "cloudflare" })).toStrictEqual([6]);
         expect(runs("0 0 * * L", { dialect: "cloudflare" })).toStrictEqual(runs("0 0 * * 6"));
     });
@@ -88,11 +88,11 @@ describe("the dialect option", () => {
     it("makes a day of month text stand alone under `cloudflare`", () => {
         expect.hasAssertions();
 
-        expect(() => CronExpressionParser.parse("0 0 1W,LW * *", { dialect: "cloudflare" })).toThrow(CronParseError);
-        expect(() => CronExpressionParser.parse("0 0 L-1,L-2 * *", { dialect: "cloudflare" })).toThrow(CronParseError);
-        expect(() => CronExpressionParser.parse("0 0 L,15 * *", { dialect: "cloudflare" })).toThrow(CronParseError);
-        expect(() => CronExpressionParser.parse("0 0 1,15 * *", { dialect: "cloudflare" })).not.toThrow();
-        expect(() => CronExpressionParser.parse("0 0 1W,LW * *")).not.toThrow();
+        expect(() => parse("0 0 1W,LW * *", { dialect: "cloudflare" })).toThrow(CronParseError);
+        expect(() => parse("0 0 L-1,L-2 * *", { dialect: "cloudflare" })).toThrow(CronParseError);
+        expect(() => parse("0 0 L,15 * *", { dialect: "cloudflare" })).toThrow(CronParseError);
+        expect(() => parse("0 0 1,15 * *", { dialect: "cloudflare" })).not.toThrow();
+        expect(() => parse("0 0 1W,LW * *")).not.toThrow();
     });
 
     it("does not rewrite the digits of a step", () => {
@@ -103,7 +103,7 @@ describe("the dialect option", () => {
         let thrown: unknown;
 
         try {
-            CronExpressionParser.parse("0 0 * * 1-7/10", { dialect: "cloudflare" });
+            parse("0 0 * * 1-7/10", { dialect: "cloudflare" });
         } catch (error) {
             thrown = error;
         }
@@ -118,11 +118,11 @@ describe("the dialect option", () => {
     it("rejects a step as large as the field under `cloudflare`", () => {
         expect.hasAssertions();
 
-        expect(() => CronExpressionParser.parse("0 0 * * */7", { dialect: "cloudflare" })).toThrow(CronParseError);
-        expect(() => CronExpressionParser.parse("0 0 * * 1-7/7", { dialect: "cloudflare" })).toThrow(CronParseError);
-        expect(() => CronExpressionParser.parse("*/60 * * * *", { dialect: "cloudflare" })).toThrow(CronParseError);
-        expect(() => CronExpressionParser.parse("0 0 * * */6", { dialect: "cloudflare" })).not.toThrow();
-        expect(() => CronExpressionParser.parse("*/59 * * * *", { dialect: "cloudflare" })).not.toThrow();
+        expect(() => parse("0 0 * * */7", { dialect: "cloudflare" })).toThrow(CronParseError);
+        expect(() => parse("0 0 * * 1-7/7", { dialect: "cloudflare" })).toThrow(CronParseError);
+        expect(() => parse("*/60 * * * *", { dialect: "cloudflare" })).toThrow(CronParseError);
+        expect(() => parse("0 0 * * */6", { dialect: "cloudflare" })).not.toThrow();
+        expect(() => parse("*/59 * * * *", { dialect: "cloudflare" })).not.toThrow();
     });
 
     it("computes the same runs as the equivalent numbering outside `cloudflare`", () => {
@@ -136,53 +136,53 @@ describe("the dialect option", () => {
     it("lets a feature override a single entry of the dialect", () => {
         expect.hasAssertions();
 
-        expect(() => CronExpressionParser.parse("H * * * *", { features: { hashed: false } })).toThrow(CronParseError);
-        expect(() => CronExpressionParser.parse("0 0 * * MON#2", { features: { nthDayOfWeek: false } })).toThrow(CronParseError);
-        expect(() => CronExpressionParser.parse("0 0 1W * *", { dialect: "cron-parser", features: { nearestWeekday: true } })).not.toThrow();
+        expect(() => parse("H * * * *", { features: { hashed: false } })).toThrow(CronParseError);
+        expect(() => parse("0 0 * * MON#2", { features: { nthDayOfWeek: false } })).toThrow(CronParseError);
+        expect(() => parse("0 0 1W * *", { dialect: "cron-parser", features: { nearestWeekday: true } })).not.toThrow();
     });
 
     it("takes the cron spec's field count in strict mode, without padding", () => {
         expect.hasAssertions();
 
-        expect(() => CronExpressionParser.parse("0 0 * * *", { strict: true })).not.toThrow();
-        expect(() => CronExpressionParser.parse("0 0 0 * * *", { strict: true })).not.toThrow();
-        expect(() => CronExpressionParser.parse("0 0 * *", { strict: true })).toThrow(CronParseError);
-        expect(() => CronExpressionParser.parse("0 0 * * *", { seconds: "require", strict: true })).toThrow(CronParseError);
-        expect(() => CronExpressionParser.parse("0 0 0 * * *", { seconds: "forbid", strict: true })).toThrow(CronParseError);
+        expect(() => parse("0 0 * * *", { strict: true })).not.toThrow();
+        expect(() => parse("0 0 0 * * *", { strict: true })).not.toThrow();
+        expect(() => parse("0 0 * *", { strict: true })).toThrow(CronParseError);
+        expect(() => parse("0 0 * * *", { seconds: "require", strict: true })).toThrow(CronParseError);
+        expect(() => parse("0 0 0 * * *", { seconds: "forbid", strict: true })).toThrow(CronParseError);
     });
 
     it("rejects a dialect it does not know", () => {
         expect.hasAssertions();
 
-        expect(() => CronExpressionParser.parse("* * * * *", { dialect: "vixie" as "extended" })).toThrow(CronParseError);
+        expect(() => parse("* * * * *", { dialect: "vixie" as "extended" })).toThrow(CronParseError);
     });
 
     it("treats the seconds field as forbidden, optional or required", () => {
         expect.hasAssertions();
 
-        expect(() => CronExpressionParser.parse("0 0 0 * * *", { seconds: "forbid" })).toThrow(CronParseError);
-        expect(() => CronExpressionParser.parse("0 0 0 * * *", { seconds: "require" })).not.toThrow();
-        expect(() => CronExpressionParser.parse("0 0 * * *", { seconds: "require" })).toThrow(CronParseError);
-        expect(() => CronExpressionParser.parse("0 0 * * *", { seconds: "optional" })).not.toThrow();
+        expect(() => parse("0 0 0 * * *", { seconds: "forbid" })).toThrow(CronParseError);
+        expect(() => parse("0 0 0 * * *", { seconds: "require" })).not.toThrow();
+        expect(() => parse("0 0 * * *", { seconds: "require" })).toThrow(CronParseError);
+        expect(() => parse("0 0 * * *", { seconds: "optional" })).not.toThrow();
     });
 
     it("reports the extensions an expression is made of", () => {
         expect.hasAssertions();
 
-        expect(CronExpressionParser.parse("* * * * *").usedFeatures).toStrictEqual(new Set());
-        expect(CronExpressionParser.parse("H * * * *").usedFeatures).toStrictEqual(new Set(["hashed"]));
-        expect(CronExpressionParser.parse("@daily").usedFeatures).toStrictEqual(new Set(["nicknames"]));
-        expect(CronExpressionParser.parse("0 0 0 * * *").usedFeatures).toStrictEqual(new Set(["seconds"]));
-        expect(CronExpressionParser.parse("0 0 * * *").usedFeatures).toStrictEqual(new Set());
-        expect(CronExpressionParser.parse("0 0 LW * *").usedFeatures).toStrictEqual(new Set(["lastWeekday"]));
-        expect(CronExpressionParser.parse("0 0 L-3 * *").usedFeatures).toStrictEqual(new Set(["lastOffset"]));
-        expect(CronExpressionParser.parse("0 0 15W * *").usedFeatures).toStrictEqual(new Set(["nearestWeekday"]));
-        expect(CronExpressionParser.parse("0 0 L * *").usedFeatures).toStrictEqual(new Set(["lastDayOfMonth"]));
+        expect(parse("* * * * *").usedFeatures).toStrictEqual(new Set());
+        expect(parse("H * * * *").usedFeatures).toStrictEqual(new Set(["hashed"]));
+        expect(parse("@daily").usedFeatures).toStrictEqual(new Set(["nicknames"]));
+        expect(parse("0 0 0 * * *").usedFeatures).toStrictEqual(new Set(["seconds"]));
+        expect(parse("0 0 * * *").usedFeatures).toStrictEqual(new Set());
+        expect(parse("0 0 LW * *").usedFeatures).toStrictEqual(new Set(["lastWeekday"]));
+        expect(parse("0 0 L-3 * *").usedFeatures).toStrictEqual(new Set(["lastOffset"]));
+        expect(parse("0 0 15W * *").usedFeatures).toStrictEqual(new Set(["nearestWeekday"]));
+        expect(parse("0 0 L * *").usedFeatures).toStrictEqual(new Set(["lastDayOfMonth"]));
         // eslint-disable-next-line no-secrets/no-secrets -- a dialect feature name, not a secret
-        expect(CronExpressionParser.parse("0 0 5L * *").usedFeatures).toStrictEqual(new Set(["numberedLastDayOfMonth"]));
-        expect(CronExpressionParser.parse("0 9 * * 5L").usedFeatures).toStrictEqual(new Set(["lastDayOfWeek"]));
-        expect(CronExpressionParser.parse("0 9 * * 2#2").usedFeatures).toStrictEqual(new Set(["nthDayOfWeek"]));
-        expect(CronExpressionParser.parse("0 0 ? * *").usedFeatures).toStrictEqual(new Set(["noSpecificTime"]));
-        expect(CronExpressionParser.parse("H 0 LW * *").usedFeatures).toStrictEqual(new Set(["hashed", "lastWeekday"]));
+        expect(parse("0 0 5L * *").usedFeatures).toStrictEqual(new Set(["numberedLastDayOfMonth"]));
+        expect(parse("0 9 * * 5L").usedFeatures).toStrictEqual(new Set(["lastDayOfWeek"]));
+        expect(parse("0 9 * * 2#2").usedFeatures).toStrictEqual(new Set(["nthDayOfWeek"]));
+        expect(parse("0 0 ? * *").usedFeatures).toStrictEqual(new Set(["noSpecificTime"]));
+        expect(parse("H 0 LW * *").usedFeatures).toStrictEqual(new Set(["hashed", "lastWeekday"]));
     });
 });

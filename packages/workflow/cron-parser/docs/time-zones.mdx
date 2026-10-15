@@ -10,7 +10,7 @@ An expression is read on the wall clock of its `tz`, and a run is a real instant
 - **A time that does not exist** (02:30 on the spring-forward day) runs after the gap, at the same minute of the first hour after it, when the expression names its hours. An every-hour schedule skips the missing hour, so it does not run twice. A day that never happened at all (Samoa lost 30 December 2011) is dropped rather than moved.
 
     ```ts
-    CronExpressionParser.parse("30 2 * * *", { currentDate: "2021-03-13T12:00:00Z", tz: "America/New_York" }).next().toISOString();
+    parse("30 2 * * *", { currentDate: "2021-03-13T12:00:00Z", tz: "America/New_York" }).next().toISOString();
     // "2021-03-14T07:30:00.000Z"  (03:30 EDT)
     ```
 

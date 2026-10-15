@@ -5,13 +5,13 @@ description: The classes, options, types and errors exported by @visulima/cron-p
 
 # API reference
 
-## `CronExpressionParser`
+## `parse`
 
 ```ts
-CronExpressionParser.parse(expression: string, options?: CronExpressionOptions): CronExpression;
+parse(expression: string, options?: CronExpressionOptions): CronExpression;
 ```
 
-Parses an expression and returns a `CronExpression`. Throws a `CronParseError` when the expression is invalid or uses a syntax the chosen dialect turns off. `CronExpressionParser` is also the default export.
+Parses an expression and returns a `CronExpression`. Throws a `CronParseError` when the expression is invalid or uses a syntax the chosen dialect turns off. It is the only parser export; `CronExpressionParser` was removed, see the [migration guide](/docs/packages/cron-parser/migration).
 
 ## `CronExpression`
 
@@ -47,11 +47,11 @@ An interval is iterable: `[...interval]` lists the runs up to `endDate`.
 
 The date type `next()` and `prev()` return. Besides the date accessors it exposes `getUTCOffset()`, `toISOString()` (UTC) and `toJSON()` (with the zone's own offset).
 
-## `CronFileParser`
+## `parseFile` and `parseFileSync`
 
 ```ts
-CronFileParser.parseFile(filePath: string): Promise<CronFileParserResult>;
-CronFileParser.parseFileSync(filePath: string): CronFileParserResult;
+parseFile(filePath: string): Promise<CronFileParserResult>;
+parseFileSync(filePath: string): CronFileParserResult;
 ```
 
 Imported from `@visulima/cron-parser/file`. The result has `expressions` (the parsed `CronExpression`s), `variables` (`NAME=value` lines, quotes removed) and `errors` (the entries that failed, keyed by the entry text).
@@ -67,10 +67,10 @@ An `Error` with these properties:
 | `token`  | The part of the expression that failed, when there is one.                                          |
 
 ```ts
-import { CronExpressionParser, CronParseError } from "@visulima/cron-parser";
+import { parse, CronParseError } from "@visulima/cron-parser";
 
 try {
-    CronExpressionParser.parse("10 ! 12 8 0");
+    parse("10 ! 12 8 0");
 } catch (error) {
     if (error instanceof CronParseError) {
         error.code; // "FIELD_CHARACTER"

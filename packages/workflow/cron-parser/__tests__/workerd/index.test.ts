@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { CronDate, CronExpressionParser } from "../../src/index";
+import { CronDate, parse } from "../../src/index";
 
 describe("@visulima/cron-parser on workerd", () => {
     it("should resolve IANA zones through Intl", () => {
         expect.assertions(2);
 
-        const interval = CronExpressionParser.parse("0 9 * * *", { currentDate: "2021-03-13T00:00:00Z", tz: "America/New_York" });
+        const interval = parse("0 9 * * *", { currentDate: "2021-03-13T00:00:00Z", tz: "America/New_York" });
 
         // 09:00 EST (UTC-5) before the DST change on 2021-03-14, 09:00 EDT (UTC-4) after it.
         expect(interval.next().toISOString()).toBe("2021-03-13T14:00:00.000Z");
@@ -16,7 +16,7 @@ describe("@visulima/cron-parser on workerd", () => {
     it("should run a job that falls inside a spring-forward gap after the gap", () => {
         expect.assertions(1);
 
-        const interval = CronExpressionParser.parse("30 2 * * *", { currentDate: "2021-03-13T12:00:00Z", tz: "America/New_York" });
+        const interval = parse("30 2 * * *", { currentDate: "2021-03-13T12:00:00Z", tz: "America/New_York" });
 
         expect(interval.next().toISOString()).toBe("2021-03-14T07:30:00.000Z");
     });

@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { CronExpressionParser, CronParseError } from "../src";
+import { CronParseError, parse } from "../src";
 
 const atStart = { currentDate: "2026-01-01T00:00:00Z", tz: "UTC" } as const;
 
-const errorFrom = (expression: string, options?: Parameters<typeof CronExpressionParser.parse>[1]): CronParseError => {
+const errorFrom = (expression: string, options?: Parameters<typeof parse>[1]): CronParseError => {
     try {
-        CronExpressionParser.parse(expression, options);
+        parse(expression, options);
     } catch (error) {
         expect(error).toBeInstanceOf(CronParseError);
 
@@ -20,8 +20,8 @@ describe("nicknames under a forbidden seconds field", () => {
     it("judges the field count on the written expression, not on the six field expansion", () => {
         expect.hasAssertions();
 
-        expect(() => CronExpressionParser.parse("@daily", { ...atStart, seconds: "forbid" })).not.toThrow();
-        expect(() => CronExpressionParser.parse("@daily", { ...atStart, dialect: "cloudflare", features: { nicknames: true } })).not.toThrow();
+        expect(() => parse("@daily", { ...atStart, seconds: "forbid" })).not.toThrow();
+        expect(() => parse("@daily", { ...atStart, dialect: "cloudflare", features: { nicknames: true } })).not.toThrow();
     });
 
     it("still rejects a six field expression when seconds are forbidden", () => {
@@ -33,7 +33,7 @@ describe("nicknames under a forbidden seconds field", () => {
     it("falls back to every minute for an empty expression under a five field dialect", () => {
         expect.hasAssertions();
 
-        const { fields } = CronExpressionParser.parse("", { ...atStart, dialect: "cloudflare" });
+        const { fields } = parse("", { ...atStart, dialect: "cloudflare" });
 
         expect(fields.second.values).toStrictEqual([0]);
         expect(fields.minute.values).toHaveLength(60);
@@ -46,10 +46,10 @@ describe("resolving a dialect", () => {
 
         // `sundayIsOne` is a rule, not a feature: overriding it must not turn Cloudflare's reading off.
         const options = { ...atStart, dialect: "cloudflare", features: { sundayIsOne: false } } as unknown as Parameters<
-            typeof CronExpressionParser.parse
+            typeof parse
         >[1];
 
-        expect(CronExpressionParser.parse("0 0 * * 1", options).fields.dayOfWeek.values).toStrictEqual([0]);
+        expect(parse("0 0 * * 1", options).fields.dayOfWeek.values).toStrictEqual([0]);
     });
 
     it.each(["constructor", "toString", "__proto__"])("rejects %s as an unknown dialect", (dialect) => {

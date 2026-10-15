@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { CronExpressionParser, CronParseError } from "../src";
+import { CronParseError, parse } from "../src";
 
-const thrownBy = (expression: string, options?: Parameters<typeof CronExpressionParser.parse>[1]): CronParseError => {
+const thrownBy = (expression: string, options?: Parameters<typeof parse>[1]): CronParseError => {
     try {
-        CronExpressionParser.parse(expression, options);
+        parse(expression, options);
     } catch (error) {
         expect(error).toBeInstanceOf(CronParseError);
 

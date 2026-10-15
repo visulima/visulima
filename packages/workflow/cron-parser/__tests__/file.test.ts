@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { CronDate } from "../src/cron-date";
 import type { CronExpression } from "../src/cron-expression";
-import { CronFileParser } from "../src/file";
+import { parseFile, parseFileSync } from "../src/file";
 
 vi.mock(import("node:fs/promises"));
 vi.mock(import("node:fs"));
@@ -28,7 +28,7 @@ const mockCrontabExampleContent = `
   0 09-18 * * 1-5 /path/to/exe
 `;
 
-describe(CronFileParser, () => {
+describe("the crontab reader", () => {
     beforeEach(() => {
         // Mock fs/promises
         vi.mocked(fsPromises.readFile).mockImplementation(((path: string) => {
@@ -71,7 +71,7 @@ describe(CronFileParser, () => {
                 vi.mocked(fs.readFileSync).mockReturnValueOnce(content);
             }
 
-            const result = await CronFileParser[method]("tests/crontab.example");
+            const result = await { parseFile, parseFileSync }[method]("tests/crontab.example");
 
             expect(result.errors).toEqual({});
             expect(result.variables).toEqual({});
@@ -87,9 +87,9 @@ describe(CronFileParser, () => {
         });
     });
 
-    describe("parseFile", () => {
+    describe(parseFile, () => {
         it("reads and parses a valid crontab file", async () => {
-            const result = await CronFileParser.parseFile("tests/crontab.example");
+            const result = await parseFile("tests/crontab.example");
 
             expect(Object.keys(result.variables)).toHaveLength(2);
             expect(Object.keys(result.errors)).toHaveLength(0);
@@ -107,14 +107,14 @@ describe(CronFileParser, () => {
         });
 
         it("throws error for non-existing file", async () => {
-            await expect(CronFileParser.parseFile("./nonexistent.txt")).rejects.toThrow("File not found");
+            await expect(parseFile("./nonexistent.txt")).rejects.toThrow("File not found");
             expect(fsPromises.readFile).toHaveBeenCalledWith("./nonexistent.txt", "utf8");
         });
     });
 
-    describe("parseFileSync", () => {
+    describe(parseFileSync, () => {
         it("reads and parses a valid crontab file synchronously", () => {
-            const result = CronFileParser.parseFileSync("tests/crontab.example");
+            const result = parseFileSync("tests/crontab.example");
 
             expect(Object.keys(result.variables)).toHaveLength(2);
             expect(Object.keys(result.errors)).toHaveLength(0);
@@ -132,7 +132,7 @@ describe(CronFileParser, () => {
         });
 
         it("throws error for non-existing file", () => {
-            expect(() => CronFileParser.parseFileSync("./nonexistent.txt")).toThrow("File not found");
+            expect(() => parseFileSync("./nonexistent.txt")).toThrow("File not found");
             expect(fs.readFileSync).toHaveBeenCalledWith("./nonexistent.txt", "utf8");
         });
 
@@ -141,7 +141,7 @@ describe(CronFileParser, () => {
 
             vi.mocked(fs.readFileSync).mockReturnValueOnce(lines.join("\n"));
 
-            const result = CronFileParser.parseFileSync("tests/crontab.example");
+            const result = parseFileSync("tests/crontab.example");
 
             expect(result.variables).toEqual({ MAILTO: "ops@example.com" });
             expect(result.expressions).toHaveLength(2);
@@ -151,13 +151,13 @@ describe(CronFileParser, () => {
         it("splits a variable at its first equals sign", () => {
             vi.mocked(fs.readFileSync).mockReturnValueOnce("QUERY=a=b");
 
-            expect(CronFileParser.parseFileSync("tests/crontab.example").variables).toEqual({ QUERY: "a=b" });
+            expect(parseFileSync("tests/crontab.example").variables).toEqual({ QUERY: "a=b" });
         });
 
         it("reads nickname schedules and reports the ones that cannot be scheduled", () => {
             vi.mocked(fs.readFileSync).mockReturnValueOnce(["@daily /usr/bin/report", "@reboot /usr/bin/start"].join("\n"));
 
-            const result = CronFileParser.parseFileSync("tests/crontab.example");
+            const result = parseFileSync("tests/crontab.example");
 
             expect(result.expressions).toHaveLength(1);
             expect(result.expressions[0]?.stringify()).toBe("0 0 * * *");
@@ -167,7 +167,7 @@ describe(CronFileParser, () => {
         it("keeps lines named like Object.prototype members as ordinary entries", () => {
             vi.mocked(fs.readFileSync).mockReturnValueOnce(["__proto__", "__proto__=evil", "constructor=x"].join("\n"));
 
-            const result = CronFileParser.parseFileSync("tests/crontab.example");
+            const result = parseFileSync("tests/crontab.example");
 
             expect(Object.keys(result.errors)).toStrictEqual(["__proto__"]);
             expect(Object.keys(result.variables)).toStrictEqual(["__proto__", "constructor"]);
@@ -176,7 +176,7 @@ describe(CronFileParser, () => {
         });
 
         it("handles invalid expressions", () => {
-            const result = CronFileParser.parseFileSync("./temp-invalid.txt");
+            const result = parseFileSync("./temp-invalid.txt");
 
             expect(result.variables).toEqual({ FOO: "bar" });
             expect(result.expressions).toHaveLength(2);

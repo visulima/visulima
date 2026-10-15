@@ -4,9 +4,9 @@ import { describe, expect, it } from "vitest";
 import CronDate from "../src/cron-date";
 import type { CronExpression, CronExpressionOptions } from "../src/cron-expression";
 import { TIME_SPAN_OUT_OF_BOUNDS_ERROR_MESSAGE } from "../src/cron-expression";
-import { CronExpressionParser } from "../src/cron-expression-parser";
+import { parse } from "../src/cron-expression-parser";
 
-describe(CronExpressionParser, () => {
+describe(parse, () => {
     describe("timezones and DST tests", () => {
         it("it works on DST start", () => {
             const options: CronExpressionOptions = {
@@ -18,7 +18,7 @@ describe(CronExpressionParser, () => {
             let interval: CronExpression;
             let next: CronDate;
 
-            interval = CronExpressionParser.parse("0 * * * *", options);
+            interval = parse("0 * * * *", options);
 
             expect(interval).toBeDefined();
 
@@ -34,7 +34,7 @@ describe(CronExpressionParser, () => {
             expect(next.getHours()).toBe(5); // 5 AM
             expect(next.getDate()).toBe(27); // on the 27th
 
-            interval = CronExpressionParser.parse("30 2 * * *", options);
+            interval = parse("30 2 * * *", options);
 
             expect(interval).toBeDefined();
 
@@ -50,7 +50,7 @@ describe(CronExpressionParser, () => {
             expect(next.getHours()).toBe(2); // 2 AM
             expect(next.getDate()).toBe(28); // on the 28th
 
-            interval = CronExpressionParser.parse("0 3 * * *", options);
+            interval = parse("0 3 * * *", options);
 
             expect(interval).toBeDefined();
 
@@ -66,7 +66,7 @@ describe(CronExpressionParser, () => {
             expect(next.getHours()).toBe(3); // 3 on the 28th
             expect(next.getDate()).toBe(28); // on the 28th
 
-            interval = CronExpressionParser.parse("*/20 3 * * *", options);
+            interval = parse("*/20 3 * * *", options);
 
             expect(interval).toBeDefined();
 
@@ -96,7 +96,7 @@ describe(CronExpressionParser, () => {
 
             options.currentDate = "2016-03-27 00:00:01";
 
-            interval = CronExpressionParser.parse("0 * 27 * *", options);
+            interval = parse("0 * 27 * *", options);
 
             expect(interval).toBeDefined();
 
@@ -127,7 +127,7 @@ describe(CronExpressionParser, () => {
             options.currentDate = "2016-03-27 00:00:01";
             options.endDate = "2016-03-27 03:00:01";
 
-            interval = CronExpressionParser.parse("0 * * * *", options);
+            interval = parse("0 * * * *", options);
 
             expect(interval).toBeDefined();
 
@@ -159,7 +159,7 @@ describe(CronExpressionParser, () => {
                 tz: "Europe/Athens",
             };
 
-            const interval: CronExpression = CronExpressionParser.parse("0 * * * *", options);
+            const interval: CronExpression = parse("0 * * * *", options);
             let next: CronDate;
 
             expect(interval).toBeDefined();
@@ -187,7 +187,7 @@ describe(CronExpressionParser, () => {
                 tz: "Europe/Athens",
             };
 
-            const interval: CronExpression = CronExpressionParser.parse("0 3 * * *", options);
+            const interval: CronExpression = parse("0 3 * * *", options);
             let next: CronDate;
 
             expect(interval).toBeDefined();
@@ -210,7 +210,7 @@ describe(CronExpressionParser, () => {
                 tz: "Europe/Athens",
             };
 
-            const interval: CronExpression = CronExpressionParser.parse("*/20 3 * * *", options);
+            const interval: CronExpression = parse("*/20 3 * * *", options);
             let next: CronDate;
 
             expect(interval).toBeDefined();
@@ -247,7 +247,7 @@ describe(CronExpressionParser, () => {
                 tz: "Europe/Athens",
             };
 
-            const interval: CronExpression = CronExpressionParser.parse("0 * 30 * *", options);
+            const interval: CronExpression = parse("0 * 30 * *", options);
             let next: CronDate;
 
             expect(interval).toBeDefined();
@@ -286,7 +286,7 @@ describe(CronExpressionParser, () => {
                 tz: "Europe/Athens",
             };
 
-            let interval: CronExpression = CronExpressionParser.parse("0 * * * *", options);
+            let interval: CronExpression = parse("0 * * * *", options);
             let next: CronDate;
 
             expect(interval).toBeDefined();
@@ -310,7 +310,7 @@ describe(CronExpressionParser, () => {
 
             options.endDate = "2016-10-30 04:00:01";
 
-            interval = CronExpressionParser.parse("0 * * * *", options);
+            interval = parse("0 * * * *", options);
 
             expect(interval).toBeDefined();
 
@@ -344,7 +344,7 @@ describe(CronExpressionParser, () => {
             options.currentDate = new Date("Sun Oct 29 2016 01:00:00 GMT+0200");
             options.endDate = undefined;
 
-            interval = CronExpressionParser.parse("0 12 * * *", options);
+            interval = parse("0 12 * * *", options);
 
             expect(interval).toBeDefined();
 
@@ -365,7 +365,7 @@ describe(CronExpressionParser, () => {
 
             options.currentDate = new Date("Sun Oct 29 2016 02:59:00 GMT+0200");
 
-            interval = CronExpressionParser.parse("0 12 * * *", options);
+            interval = parse("0 12 * * *", options);
 
             expect(interval).toBeDefined();
 
@@ -386,7 +386,7 @@ describe(CronExpressionParser, () => {
 
             options.currentDate = new Date("Sun Oct 29 2016 02:59:59 GMT+0200");
 
-            interval = CronExpressionParser.parse("0 12 * * *", options);
+            interval = parse("0 12 * * *", options);
 
             expect(interval).toBeDefined();
 
@@ -407,7 +407,7 @@ describe(CronExpressionParser, () => {
 
             options.currentDate = new Date("Sun Oct 30 2016 01:00:00 GMT+0200");
 
-            interval = CronExpressionParser.parse("0 12 * * *", options);
+            interval = parse("0 12 * * *", options);
 
             expect(interval).toBeDefined();
 
@@ -423,7 +423,7 @@ describe(CronExpressionParser, () => {
 
             options.currentDate = new Date("Sun Oct 30 2016 01:59:00 GMT+0200");
 
-            interval = CronExpressionParser.parse("0 12 * * *", options);
+            interval = parse("0 12 * * *", options);
 
             expect(interval).toBeDefined();
 
@@ -439,7 +439,7 @@ describe(CronExpressionParser, () => {
 
             options.currentDate = new Date("Sun Oct 30 2016 01:59:59 GMT+0200");
 
-            interval = CronExpressionParser.parse("0 12 * * *", options);
+            interval = parse("0 12 * * *", options);
 
             expect(interval).toBeDefined();
 
@@ -455,7 +455,7 @@ describe(CronExpressionParser, () => {
 
             options.currentDate = new Date("Sun Oct 30 2016 02:59:00 GMT+0200");
 
-            interval = CronExpressionParser.parse("0 12 * * *", options);
+            interval = parse("0 12 * * *", options);
 
             expect(interval).toBeDefined();
 
@@ -477,7 +477,7 @@ describe(CronExpressionParser, () => {
                 tz: "America/Sao_Paulo",
             };
 
-            const interval = CronExpressionParser.parse("0 9 1 1 *", options);
+            const interval = parse("0 9 1 1 *", options);
             let next = interval.next();
 
             expect(next.getFullYear()).toBe(2019);
@@ -504,7 +504,7 @@ describe(CronExpressionParser, () => {
                 tz: "America/New_York",
             };
 
-            const interval = CronExpressionParser.parse("0 12 * * 3", options);
+            const interval = parse("0 12 * * 3", options);
             const date = interval.next();
 
             expect(date.getFullYear()).toBe(2018);
@@ -519,7 +519,7 @@ describe(CronExpressionParser, () => {
                 tz: "Europe/Athens",
             };
 
-            const interval = CronExpressionParser.parse("0 4,5 * * *", options);
+            const interval = parse("0 4,5 * * *", options);
 
             const next = interval.next();
 
@@ -535,7 +535,7 @@ describe(CronExpressionParser, () => {
                 tz: "Europe/Athens",
             };
 
-            const interval = CronExpressionParser.parse("0 2,3 * * *", options);
+            const interval = parse("0 2,3 * * *", options);
 
             const previous = interval.prev();
 
@@ -550,7 +550,7 @@ describe(CronExpressionParser, () => {
                 tz: "America/Chicago",
             };
 
-            const interval = CronExpressionParser.parse("0 8 * * 0", options);
+            const interval = parse("0 8 * * 0", options);
             const next = interval.next();
 
             expect(next).toBeInstanceOf(CronDate);
@@ -563,7 +563,7 @@ describe(CronExpressionParser, () => {
                 tz: "America/Chicago",
             };
 
-            const interval = CronExpressionParser.parse("0 8 * * 0", options);
+            const interval = parse("0 8 * * 0", options);
             const previous = interval.prev();
 
             expect(previous).toBeInstanceOf(CronDate);
@@ -580,7 +580,7 @@ describe(CronExpressionParser, () => {
                     tz: "Antarctica/Troll",
                 };
 
-                const interval = CronExpressionParser.parse("30 1 * * *", options);
+                const interval = parse("30 1 * * *", options);
 
                 expect(interval.next().toISOString()).toBe("2026-03-28T01:30:00.000Z"); // 01:30 at UTC+00
 
@@ -597,7 +597,7 @@ describe(CronExpressionParser, () => {
                 };
 
                 // 02:00 is the second of the two hours the transition removes.
-                const interval = CronExpressionParser.parse("30 2 * * *", options);
+                const interval = parse("30 2 * * *", options);
 
                 expect(interval.next().toISOString()).toBe("2026-03-29T01:30:00.000Z"); // 03:30 local
                 expect(interval.next().toISOString()).toBe("2026-03-30T00:30:00.000Z"); // 02:30 local
@@ -609,7 +609,7 @@ describe(CronExpressionParser, () => {
                     tz: "Antarctica/Troll",
                 };
 
-                const interval = CronExpressionParser.parse("30 1 * * *", options);
+                const interval = parse("30 1 * * *", options);
 
                 // Matching has to stop once the search leaves the window.
                 expect(interval.take(3).map((date) => date.toISOString())).toEqual([
@@ -626,7 +626,7 @@ describe(CronExpressionParser, () => {
                     tz: "America/New_York",
                 };
 
-                const interval = CronExpressionParser.parse("30 59 2 * * *", options);
+                const interval = parse("30 59 2 * * *", options);
 
                 expect(interval.take(3).map((date) => date.toISOString())).toEqual([
                     "2026-03-08T07:59:30.000Z", // 03:59:30 EDT, compensated
@@ -642,7 +642,7 @@ describe(CronExpressionParser, () => {
                     tz: "Australia/Lord_Howe",
                 };
 
-                const interval = CronExpressionParser.parse("30 2 * * *", options);
+                const interval = parse("30 2 * * *", options);
 
                 expect(interval.next().toISOString()).toBe("2026-10-03T15:30:00.000Z");
                 expect(interval.next().toISOString()).toBe("2026-10-04T15:30:00.000Z");
@@ -655,7 +655,7 @@ describe(CronExpressionParser, () => {
                     tz: "Australia/Lord_Howe",
                 };
 
-                const interval = CronExpressionParser.parse("30 1,2 * * *", options);
+                const interval = parse("30 1,2 * * *", options);
 
                 // 02:30 exists on the transition day (the clock jumps 02:00 -> 02:30) and is what was asked
                 // for. The reference implementation returned 03:30 here, a known defect of its hour stepping;
@@ -675,7 +675,7 @@ describe(CronExpressionParser, () => {
                     tz: "America/Santiago",
                 };
 
-                const interval = CronExpressionParser.parse("30 22 * * *", options);
+                const interval = parse("30 22 * * *", options);
 
                 expect(interval.prev().toISOString()).toBe("2026-04-05T01:30:00.000Z"); // 22:30 on the 4th
             });
@@ -688,7 +688,7 @@ describe(CronExpressionParser, () => {
                     tz: "America/Nuuk",
                 };
 
-                const interval = CronExpressionParser.parse("0 22,23 * * *", options);
+                const interval = parse("0 22,23 * * *", options);
 
                 expect(interval.take(4).map((date) => date.toISOString())).toEqual([
                     "2024-03-30T01:00:00.000Z", // 23:00 on the 29th
@@ -705,7 +705,7 @@ describe(CronExpressionParser, () => {
                     tz: "America/Santiago",
                 };
 
-                const interval = CronExpressionParser.parse("0 23,0 * * *", options);
+                const interval = parse("0 23,0 * * *", options);
 
                 expect(interval.take(4).map((date) => date.toISOString())).toEqual([
                     "2026-09-05T03:00:00.000Z", // 23:00 on the 4th
@@ -723,7 +723,7 @@ describe(CronExpressionParser, () => {
                     tz: "Pacific/Apia",
                 };
 
-                const interval = CronExpressionParser.parse("0 12 * * *", options);
+                const interval = parse("0 12 * * *", options);
 
                 expect(interval.take(4).map((date) => date.toISOString())).toEqual([
                     "2011-12-28T22:00:00.000Z", // 12:00 on the 28th

@@ -19,9 +19,9 @@ Parse cron expressions and walk their schedule, with time zone and DST support. 
 ## Quick Start
 
 ```ts
-import { CronExpressionParser } from "@visulima/cron-parser";
+import { parse } from "@visulima/cron-parser";
 
-const interval = CronExpressionParser.parse("0 9 * * 1-5", {
+const interval = parse("0 9 * * 1-5", {
     currentDate: "2026-03-06T12:00:00Z",
     tz: "America/New_York",
 });

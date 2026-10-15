@@ -1,29 +1,29 @@
 import { describe, expect, it } from "vitest";
 
-import { CronDate, CronExpressionParser, CronParseError } from "../src/cloudflare";
+import { CronDate, CronParseError, parse } from "../src/cloudflare";
 
 describe("@visulima/cron-parser/cloudflare", () => {
     it("reads the weekdays the Cloudflare way", () => {
         expect.hasAssertions();
 
-        expect(CronExpressionParser.parse("0 0 * * 1").fields.dayOfWeek.values).toStrictEqual([0]);
-        expect(CronExpressionParser.parse("0 18 * * 6L").fields.dayOfWeek.values).toStrictEqual(["5L"]);
+        expect(parse("0 0 * * 1").fields.dayOfWeek.values).toStrictEqual([0]);
+        expect(parse("0 18 * * 6L").fields.dayOfWeek.values).toStrictEqual(["5L"]);
     });
 
     it("rejects what the Cloudflare validator rejects", () => {
         expect.hasAssertions();
 
-        expect(() => CronExpressionParser.parse("H * * * *")).toThrow(CronParseError);
-        expect(() => CronExpressionParser.parse("0 0 ? * *")).toThrow(CronParseError);
-        expect(() => CronExpressionParser.parse("0 0 5L * *")).toThrow(CronParseError);
-        expect(() => CronExpressionParser.parse("0 0 0 * * *")).toThrow(CronParseError);
-        expect(() => CronExpressionParser.parse("0 0 * * */7")).toThrow(CronParseError);
+        expect(() => parse("H * * * *")).toThrow(CronParseError);
+        expect(() => parse("0 0 ? * *")).toThrow(CronParseError);
+        expect(() => parse("0 0 5L * *")).toThrow(CronParseError);
+        expect(() => parse("0 0 0 * * *")).toThrow(CronParseError);
+        expect(() => parse("0 0 * * */7")).toThrow(CronParseError);
     });
 
     it("still lets the caller name another dialect", () => {
         expect.hasAssertions();
 
-        expect(() => CronExpressionParser.parse("H * * * *", { dialect: "extended" })).not.toThrow();
+        expect(() => parse("H * * * *", { dialect: "extended" })).not.toThrow();
     });
 
     it("re-exports the rest of the default entry", () => {

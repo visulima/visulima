@@ -1,4 +1,16 @@
 {
     "title": "Cron Parser",
-    "pages": ["index", "installation", "---Getting Started---", "usage", "---Concepts---", "dialects", "time-zones", "---API Reference---", "api"]
+    "pages": [
+        "index",
+        "installation",
+        "---Getting Started---",
+        "usage",
+        "---Concepts---",
+        "dialects",
+        "time-zones",
+        "---Guides---",
+        "migration",
+        "---API Reference---",
+        "api"
+    ]
 }

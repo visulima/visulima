@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
 
-import { CronExpressionParser, CronParseError } from "../src";
-import { CronExpressionParser as CloudflareParser } from "../src/cloudflare";
+import { CronParseError, parse } from "../src";
+import { parse as parseCloudflare } from "../src/cloudflare";
 
 const atStart = { currentDate: "2026-01-15T10:00:00Z", tz: "UTC" } as const;
 
-const weekdaysOf = (expression: string): unknown => CloudflareParser.parse(expression, atStart).fields.dayOfWeek.values;
+const weekdaysOf = (expression: string): unknown => parseCloudflare(expression, atStart).fields.dayOfWeek.values;
 
 const codeOf = (expression: string): string => {
     try {
-        CloudflareParser.parse(expression, atStart);
+        parseCloudflare(expression, atStart);
     } catch (error) {
         expect(error).toBeInstanceOf(CronParseError);
 
@@ -62,7 +62,7 @@ describe("the cloudflare weekday scale", () => {
     it("moves the number in front of an L and records the feature", () => {
         expect.hasAssertions();
 
-        const expression = CloudflareParser.parse("0 0 * * 5L", atStart);
+        const expression = parseCloudflare("0 0 * * 5L", atStart);
 
         // Cloudflare's 5 is Thursday, which is 4 on this package's scale.
         expect(expression.fields.dayOfWeek.values).toStrictEqual(["4L"]);
@@ -78,7 +78,7 @@ describe("the cloudflare weekday scale", () => {
     it("leaves the default scale alone", () => {
         expect.hasAssertions();
 
-        expect(CronExpressionParser.parse("0 0 * * 0", atStart).fields.dayOfWeek.values).toStrictEqual([0]);
-        expect(CronExpressionParser.parse("0 0 * * 1-7", atStart).fields.dayOfWeek.values).toStrictEqual([0, 1, 2, 3, 4, 5, 6, 7]);
+        expect(parse("0 0 * * 0", atStart).fields.dayOfWeek.values).toStrictEqual([0]);
+        expect(parse("0 0 * * 1-7", atStart).fields.dayOfWeek.values).toStrictEqual([0, 1, 2, 3, 4, 5, 6, 7]);
     });
 });
