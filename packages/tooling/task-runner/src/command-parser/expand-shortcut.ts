@@ -23,7 +23,7 @@ export const expandShortcut = (config: ConcurrentCommandConfig): ConcurrentComma
 
     const [, prefix, script, args] = match;
 
-    const runPrefix: string = prefix === "node" ? "node --run" : `${prefix} run`;
+    const runPrefix = prefix === "node" ? "node --run" : `${prefix} run`;
 
     return {
         ...config,

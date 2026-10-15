@@ -170,13 +170,10 @@ const isColorSupportedFactory = (stdName: "err" | "out", options: CreateIsColorS
             // Windows 10 build 10586 is the first Windows release that supports 256 colors.
             // Windows 10 build 14931 is the first release that supports 16m/TrueColor.
 
-            // Prefer an injected `process.os.release` (used by tests); otherwise read it from
-            // `node:os`. The previous code called `proc.os.release()` unconditionally, which always
-            // threw on real Node (`process` has no `os` property), so Windows detection was silently
-            // broken and fell through to no color.
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            const injectedOsRelease = proc.os?.release as (() => string) | undefined;
-            const rawRelease = typeof injectedOsRelease === "function" ? injectedOsRelease() : getOsRelease();
+            // Prefer an injected `process.os` (used by tests); otherwise read it from `node:os`.
+            // Keep the receiver: `release` is called as a method on the injected object.
+            const injectedOs = proc.os as { release?: () => string } | undefined;
+            const rawRelease = typeof injectedOs?.release === "function" ? injectedOs.release() : getOsRelease();
 
             const release = rawRelease.split(".");
 

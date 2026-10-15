@@ -8,7 +8,7 @@
  * falls through to the Node branch; only genuinely Bun-specific reads (e.g.
  * `Bun.version`) go through this guard.
  */
-const hasBun = (
+export const hasBun = (
     global: typeof globalThis,
 ): global is typeof globalThis & {
     Bun: { version?: string };
@@ -64,12 +64,10 @@ export const getVersions = (): Record<string, string> => {
     // Bun exposes a Node-compatible `process.versions`; augment it with the
     // Bun-specific version read from the `Bun` global.
     if (hasBun(globalThis)) {
-        const { Bun } = globalThis as { Bun?: { version?: string } };
-
         const versions: Record<string, string> = { ...(process as { versions: Record<string, string> }).versions };
 
-        if (Bun?.version) {
-            versions.bun = Bun.version;
+        if (globalThis.Bun?.version) {
+            versions.bun = globalThis.Bun.version;
         }
 
         return versions;

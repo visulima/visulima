@@ -111,8 +111,8 @@ const execute = async (toolbox: Toolbox<Console, InstallOptions>): Promise<void>
 
     // Runtime selection (--runtime / VIS_RUNTIME / config). A resolved `bun`
     // runtime pins the bun backend, but an explicit `--installer` flag still
-    // wins (flagBackend ?? runtimeBackend). Surfaces the deferred-runtime notice.
-    const runtimeBackend = runtimeInstallerBackend(resolveCommandRuntime({ logger, options, visConfig }, cwd));
+    // wins (flagBackend ?? runtimeBackend).
+    const runtimeBackend = runtimeInstallerBackend(resolveCommandRuntime({ options, visConfig }, cwd));
 
     // `--no-aube` is the user's explicit escape hatch: ignore CLI flag,
     // env, and config; go straight to lockfile detection (unless a runtime

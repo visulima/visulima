@@ -12,7 +12,6 @@ import type { RuntimeResolution } from "./resolve-runtime";
 import { resolveRuntime } from "./resolve-runtime";
 
 interface RuntimeCommandContext {
-    logger?: { warn?: (...arguments_: unknown[]) => void };
     /** Raw command/global options bag — the `--runtime` flag is read defensively. */
     options?: unknown;
     visConfig?: { runtime?: RuntimeId };

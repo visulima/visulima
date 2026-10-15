@@ -525,16 +525,10 @@ const runInstallCaptured = async (
 };
 
 /**
- * Append the PM-specific silent flag. npm/pnpm/bun/yarn (classic +
- * berry) all accept `--silent` (yarn berry treats it as an alias for
- * `--quiet`). Aube has no flag and
- * forwards verbatim — the resolver already controls its output level.
+ * Append `--silent`. npm/pnpm/bun/yarn (classic + berry) all accept it
+ * (yarn berry treats it as an alias for `--quiet`).
  */
-const applySilent = (resolved: ResolvedCommand): ResolvedCommand => {
-    const flag = "--silent";
-
-    return { ...resolved, args: [...resolved.args, flag] };
-};
+const applySilent = (resolved: ResolvedCommand): ResolvedCommand => ({ ...resolved, args: [...resolved.args, "--silent"] });
 
 /**
  * Append the PM-specific dry-run flag, or return `null` when the PM

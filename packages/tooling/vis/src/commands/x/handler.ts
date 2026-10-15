@@ -24,7 +24,7 @@ const execute = async ({ argument, logger, options, rawUnknown, visConfig, works
     // Positional args after the file, plus anything after `--`.
     const scriptArguments = [...rest, ...(rawUnknown ?? [])];
 
-    const { runtime } = resolveCommandRuntime({ logger, options, visConfig }, wsRoot ?? cwd);
+    const { runtime } = resolveCommandRuntime({ options, visConfig }, wsRoot ?? cwd);
 
     const code = await runFile(absoluteFile, scriptArguments, runtime, cwd);
 

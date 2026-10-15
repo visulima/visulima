@@ -22,10 +22,4 @@ export interface RuntimeAdapter {
      * detectors never disagree.
      */
     readonly lockfiles: ReadonlyArray<string>;
-
-    /**
-     * File that declares runnable scripts for this runtime. `package.json`
-     * for both Node and Bun.
-     */
-    readonly scriptSource: "package.json";
 }

@@ -9,5 +9,4 @@ export const nodeAdapter: RuntimeAdapter = {
     id: "node",
     label: "Node.js",
     lockfiles: ["pnpm-lock.yaml", "yarn.lock", "package-lock.json", "npm-shrinkwrap.json"],
-    scriptSource: "package.json",
 };

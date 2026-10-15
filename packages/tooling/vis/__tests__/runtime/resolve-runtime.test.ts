@@ -146,7 +146,6 @@ describe(resolveRuntime, () => {
             const result = resolveRuntime(root, { env: {} });
 
             expect(result.adapter.id).toBe("bun");
-            expect(result.adapter.scriptSource).toBe("package.json");
         });
     });
 });

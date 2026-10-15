@@ -1,14 +1,10 @@
 import CompletionError from "../errors/completion-error";
 import type { Command as ICommand, EnvDefinition, OptionDefinition } from "../types/command";
 import type { Toolbox as IToolbox } from "../types/toolbox";
+import { hasBun } from "../util/general/runtime-process";
 
 const validShells = ["bash", "zsh", "fish", "powershell"];
 const validRuntimes = ["node", "bun"];
-
-/**
- * Type guard to check if Bun is available in global scope.
- */
-const hasBun = (global: typeof globalThis): global is typeof globalThis & { Bun: unknown } => "Bun" in global;
 
 /**
  * Detects the current JavaScript runtime.
