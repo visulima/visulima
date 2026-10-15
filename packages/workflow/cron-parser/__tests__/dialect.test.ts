@@ -95,13 +95,24 @@ describe("the dialect option", () => {
         expect(() => CronExpressionParser.parse("0 0 1W,LW * *")).not.toThrow();
     });
 
-    it("leaves the digits of a step alone under `cloudflare`", () => {
+    it("does not rewrite the digits of a step", () => {
         expect.hasAssertions();
 
-        // `10` is a step, not a weekday `0`; `1-7/10` used to throw because the `0` was shifted.
-        expect(daysOfWeek("0 0 * * 1-7/10", { dialect: "cloudflare" })).toStrictEqual([0]);
-        expect(daysOfWeek("0 0 * * */12", { dialect: "cloudflare" })).toStrictEqual([0]);
+        // `10` has to stay a step, not be read as the weekday `0`. `sundayIsOne` on its own, without the
+        // `cloudflare` step cap, so the step digits are the only thing under test.
+        expect(daysOfWeek("0 0 * * 1-7/10", { features: { sundayIsOne: true } })).toStrictEqual([0]);
+        expect(daysOfWeek("0 0 * * */12", { features: { sundayIsOne: true } })).toStrictEqual([0]);
         expect(daysOfWeek("0 0 * * 1-7/2", { dialect: "cloudflare" })).toStrictEqual([0, 2, 4, 6]);
+    });
+
+    it("rejects a step as large as the field under `cloudflare`", () => {
+        expect.hasAssertions();
+
+        expect(() => CronExpressionParser.parse("0 0 * * */7", { dialect: "cloudflare" })).toThrow(CronParseError);
+        expect(() => CronExpressionParser.parse("0 0 * * 1-7/7", { dialect: "cloudflare" })).toThrow(CronParseError);
+        expect(() => CronExpressionParser.parse("*/60 * * * *", { dialect: "cloudflare" })).toThrow(CronParseError);
+        expect(() => CronExpressionParser.parse("0 0 * * */6", { dialect: "cloudflare" })).not.toThrow();
+        expect(() => CronExpressionParser.parse("*/59 * * * *", { dialect: "cloudflare" })).not.toThrow();
     });
 
     it("computes the same runs as the equivalent numbering outside `cloudflare`", () => {

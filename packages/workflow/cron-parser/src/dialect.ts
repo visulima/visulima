@@ -41,6 +41,8 @@ type CronFeatures = {
     numberedLastDayOfMonth: boolean;
     /** Whether a leading seconds field, that is a six field expression, is forbidden, allowed or required. */
     seconds: CronSeconds;
+    /** Whether a step may be as large as the field itself: Cloudflare rejects a weekday step of 7 and a minute step of 60. */
+    stepSmallerThanField: boolean;
 
     /**
      * Reads the weekdays as Cloudflare does: `0` is invalid and `1` is Sunday through `7` Saturday,
@@ -52,11 +54,15 @@ type CronFeatures = {
 };
 
 /**
- * A syntax extension an expression can actually use, as reported by `CronExpression#usedFeatures`. The
- * mode switches `mixedDayOfMonthText` and `sundayIsOne` are not here: they change what is accepted or
- * how it is read, not what the expression is made of.
+ * The switches that change what is accepted or how it is read, rather than what an expression is made
+ * of, so they are not reported by `CronExpression#usedFeatures`.
  */
-type CronFeature = Exclude<keyof CronFeatures, "mixedDayOfMonthText" | "sundayIsOne">;
+type CronModeFeature = "mixedDayOfMonthText" | "stepSmallerThanField" | "sundayIsOne";
+
+/**
+ * A syntax extension an expression can actually use, as reported by `CronExpression#usedFeatures`.
+ */
+type CronFeature = Exclude<keyof CronFeatures, CronModeFeature>;
 
 /** A named grammar. `extended` is everything this package knows, and is the default. */
 type CronDialect = "cloudflare" | "cron-parser" | "extended";
@@ -75,6 +81,7 @@ const EXTENDED_FEATURES: CronFeatures = {
     nthDayOfWeek: true,
     numberedLastDayOfMonth: true,
     seconds: "optional",
+    stepSmallerThanField: false,
     sundayIsOne: false,
 };
 
@@ -106,6 +113,7 @@ const CLOUDFLARE_FEATURES: CronFeatures = {
     noSpecificTime: false,
     numberedLastDayOfMonth: false,
     seconds: "forbid",
+    stepSmallerThanField: true,
     sundayIsOne: true,
 };
 

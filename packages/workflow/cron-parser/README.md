@@ -116,7 +116,7 @@ CronExpressionParser.parse("0 0 1W * *", { dialect: "cron-parser", features: { n
 // parses: the dialect turns `1W` off, the feature turns it back on
 ```
 
-The switches are `hashed`, `lastDayOfMonth`, `lastDayOfWeek`, `lastOffset`, `lastWeekday`, `mixedDayOfMonthText`, `nearestWeekday`, `nicknames`, `noSpecificTime`, `nthDayOfWeek`, `numberedLastDayOfMonth`, `sundayIsOne`, and `seconds` which is `"forbid"`, `"optional"` or `"require"` rather than a boolean.
+The switches are `hashed`, `lastDayOfMonth`, `lastDayOfWeek`, `lastOffset`, `lastWeekday`, `mixedDayOfMonthText`, `nearestWeekday`, `nicknames`, `noSpecificTime`, `nthDayOfWeek`, `numberedLastDayOfMonth`, `stepSmallerThanField`, `sundayIsOne`, and `seconds` which is `"forbid"`, `"optional"` or `"require"` rather than a boolean.
 
 To read what an expression is actually made of, rather than constrain it, `usedFeatures` lists the extensions it uses:
 
@@ -126,7 +126,7 @@ CronExpressionParser.parse("0 0 0 * * *").usedFeatures; // ["seconds"]
 CronExpressionParser.parse("* * * * *").usedFeatures; // []
 ```
 
-The `cloudflare` dialect was checked against the validator wrangler itself deploys through, `cron-triggers.cloudflareworkers.com` (backed by [`cloudflare/saffron`](https://github.com/cloudflare/saffron)). Three of its rules are easy to miss and are built in: the weekdays run `1` (Sunday) to `7` (Saturday) and a weekday of `0` is rejected, so `0 0 * * 1` fires on Sunday and `0 18 * * 6L` on the last Friday (`sundayIsOne` does that rewrite, and it follows the number before an `L` or a `#`; the three letter names always mean the day they name, and a bare `L` in the weekday field is Saturday); and a day of month text such as `LW`, `L-3` or `15W` has to stand alone, so `1,15` parses but `1W,LW` does not (`mixedDayOfMonthText`).
+The `cloudflare` dialect was checked against the validator wrangler itself deploys through, `cron-triggers.cloudflareworkers.com` (backed by [`cloudflare/saffron`](https://github.com/cloudflare/saffron)). A few of its rules are easy to miss and are built in: the weekdays run `1` (Sunday) to `7` (Saturday) and a weekday of `0` is rejected, so `0 0 * * 1` fires on Sunday and `0 18 * * 6L` on the last Friday (`sundayIsOne` does that rewrite, and it follows the number before an `L` or a `#`; the three letter names always mean the day they name, and a bare `L` in the weekday field is Saturday); a day of month text such as `LW`, `L-3` or `15W` has to stand alone, so `1,15` parses but `1W,LW` does not (`mixedDayOfMonthText`); and a step may not be as large as the field, so `*/6` is a valid weekday step but `*/7` is not, and minutes allow `*/59` but not `*/60` (`stepSmallerThanField`).
 
 ### Parse errors
 

@@ -648,7 +648,7 @@ class CronExpressionParser {
                 CronExpressionParser.#assertLastDayOfWeek(atom, features, used);
             }
 
-            handleResult(CronExpressionParser.#parseRepeat(field, atom, constraints), constraints);
+            handleResult(CronExpressionParser.#parseRepeat(field, atom, constraints, features), constraints);
         }
 
         return stack;
@@ -792,10 +792,11 @@ class CronExpressionParser {
      * @param field The field to parse.
      * @param value The repeat to parse.
      * @param constraints The constraints for the field.
+     * @param features The syntax the chosen dialect allows.
      * @private
      * @returns The parsed repeat.
      */
-    static #parseRepeat(field: CronUnit, value: string, constraints: CronConstraints): ParseRangeResponse {
+    static #parseRepeat(field: CronUnit, value: string, constraints: CronConstraints, features: CronFeatures): ParseRangeResponse {
         const atoms = value.split("/");
 
         if (atoms.length > 2) {
@@ -804,11 +805,42 @@ class CronExpressionParser {
 
         if (atoms.length === 2) {
             const [range, step] = atoms as [string, string];
+            const stepNumber = Number.parseInt(step, 10);
 
-            return CronExpressionParser.#parseRange(field, range.includes("-") ? range : `${range}-${constraints.max}`, Number.parseInt(step, 10), constraints);
+            CronExpressionParser.#assertStepWithinField(field, stepNumber, constraints, features);
+
+            return CronExpressionParser.#parseRange(field, range.includes("-") ? range : `${range}-${constraints.max}`, stepNumber, constraints);
         }
 
         return CronExpressionParser.#parseRange(field, value, 1, constraints);
+    }
+
+    /**
+     * Rejects a step as large as the field itself, which Cloudflare does not allow: the day of week field
+     * has 7 values, so a step of 6 is fine and a step of 7 is not, and it is the field's size that decides,
+     * so minutes allow a step of 59.
+     * @param field The field being parsed.
+     * @param step The step, already read as a number.
+     * @param constraints The constraints for the field.
+     * @param features The syntax the chosen dialect allows.
+     * @throws {CronParseError} When the step reaches the size of the field and the dialect forbids it.
+     * @private
+     */
+    static #assertStepWithinField(field: CronUnit, step: number, constraints: CronConstraints, features: CronFeatures): void {
+        const fieldSize = constraints.max - constraints.min + 1;
+
+        if (!features.stepSmallerThanField || step < fieldSize) {
+            return;
+        }
+
+        throw new CronParseError(
+            `Constraint error, step ${step} has to be smaller than the ${fieldSize} values of the ${CronExpressionParser.#fieldName(field)} field`,
+            {
+                code: "INVALID_STEP",
+                field: CronExpressionParser.#fieldName(field),
+                token: String(step),
+            },
+        );
     }
 
     /**
