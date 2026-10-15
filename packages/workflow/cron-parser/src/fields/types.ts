@@ -11,7 +11,7 @@ type DayOfWeekRange = IntRange<RangeFrom<0>, 7> | "L"; // 0-7 - inclusive
 type CronFieldType = SixtyRange[] | HourRange[] | DayOfMonthRange[] | MonthRange[] | DayOfWeekRange[];
 type CronChars = "L" | "W";
 type CronMin = 0 | 1;
-type CronMax = 6 | 7 | 12 | 23 | 31 | 59;
+type CronMax = 7 | 12 | 23 | 31 | 59;
 type ParseRangeResponse = number[] | string[] | number | string;
 
 type CronConstraints = {

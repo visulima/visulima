@@ -7,18 +7,19 @@ import { daysInMonth, getSystemZone, getZone, MS_PER_HOUR, MS_PER_MINUTE, resolv
  *
  * Written as an explicit union rather than `(typeof TimeUnit)[keyof typeof TimeUnit]`, because a type
  * alias that shares its name with the `const` it derives from makes the dts bundler emit an invalid
- * `type TimeUnit: { … } = …`. Keep the two in step by hand.
+ * `type TimeUnit: { … } = …`. The mapped type on the `const` makes the compiler check the two against
+ * each other: a unit missing from either side fails to compile.
  */
 type TimeUnit = "Day" | "Hour" | "Minute" | "Month" | "Second" | "Year";
 
-const TimeUnit = {
+const TimeUnit: { readonly [Unit in TimeUnit]: Unit } = {
     Day: "Day",
     Hour: "Hour",
     Minute: "Minute",
     Month: "Month",
     Second: "Second",
     Year: "Year",
-} as const;
+};
 
 /** Calendar units move the wall clock; the rest move elapsed time. */
 type Delta = { days?: number; months?: number; ms?: number; years?: number };

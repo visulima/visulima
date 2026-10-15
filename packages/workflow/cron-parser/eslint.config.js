@@ -23,12 +23,4 @@ export default createConfig(
             tsconfigPath: "./tsconfig.eslint.json",
         },
     },
-    {
-        // A few dialect feature names (`numberedLastDayOfMonth`, `mixedDayOfMonthText`) read as high
-        // entropy to the secret heuristic.
-        files: ["src/**/*.ts", "__tests__/**/*.ts"],
-        rules: {
-            "no-secrets/no-secrets": "off",
-        },
-    },
 );

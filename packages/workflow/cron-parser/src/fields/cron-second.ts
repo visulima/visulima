@@ -1,3 +1,4 @@
+import type { CronFieldName } from "../errors";
 import type { CronFieldOptions } from "./cron-field";
 import { CronField } from "./cron-field";
 import type { CronChars, CronMax, CronMin, SixtyRange } from "./types";
@@ -12,6 +13,10 @@ const SECOND_CHARS: ReadonlyArray<CronChars> = Object.freeze([]);
  * @augments CronField
  */
 class CronSecond extends CronField {
+    public static override get fieldName(): CronFieldName {
+        return "second";
+    }
+
     public static override get min(): CronMin {
         return MIN_SECOND;
     }

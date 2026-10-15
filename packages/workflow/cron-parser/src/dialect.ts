@@ -130,16 +130,18 @@ const DIALECTS: Record<CronDialect, { features: CronFeatures; rules: CronRules }
  * @throws {CronParseError} When the dialect is not one of the named ones.
  */
 const resolveFeatures = (dialect?: CronDialect, features?: Partial<CronFeatures>): ResolvedFeatures => {
-    const preset = (DIALECTS as Record<string, { features: CronFeatures; rules: CronRules } | undefined>)[dialect ?? "extended"];
+    const name = dialect ?? "extended";
 
-    if (preset === undefined) {
+    if (!Object.hasOwn(DIALECTS, name)) {
         throw new CronParseError(`Unknown dialect: ${String(dialect)}, expected one of ${Object.keys(DIALECTS).join(", ")}`, {
             code: "UNKNOWN_DIALECT",
             token: String(dialect),
         });
     }
 
-    return { ...preset.rules, ...preset.features, ...features };
+    const preset = DIALECTS[name];
+
+    return { ...preset.features, ...features, ...preset.rules };
 };
 
 export { resolveFeatures };

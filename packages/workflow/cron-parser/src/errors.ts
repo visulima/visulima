@@ -42,15 +42,6 @@ type CronParseErrorOptions = {
     token?: string;
 };
 
-/** `CronDayOfMonth` and the like, as the option and field names spell it. */
-const CRON_PREFIX = /^Cron/;
-
-const fieldNameOf = (constructorName: string): CronFieldName => {
-    const withoutPrefix = constructorName.replace(CRON_PREFIX, "");
-
-    return (withoutPrefix.charAt(0).toLowerCase() + withoutPrefix.slice(1)) as CronFieldName;
-};
-
 /**
  * Thrown when an expression cannot be parsed, or uses syntax the chosen dialect does not allow.
  * `field` and `token` point at what failed, so a caller can mark the spot without reading the message.
@@ -74,5 +65,5 @@ class CronParseError extends Error {
     }
 }
 
-export { CRON_PARSE_ERROR_CODES, CronParseError, fieldNameOf };
+export { CRON_PARSE_ERROR_CODES, CronParseError };
 export type { CronFieldName, CronParseErrorCode, CronParseErrorOptions };

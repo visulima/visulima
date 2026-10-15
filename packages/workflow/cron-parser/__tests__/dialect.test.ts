@@ -178,6 +178,7 @@ describe("the dialect option", () => {
         expect(CronExpressionParser.parse("0 0 L-3 * *").usedFeatures).toStrictEqual(new Set(["lastOffset"]));
         expect(CronExpressionParser.parse("0 0 15W * *").usedFeatures).toStrictEqual(new Set(["nearestWeekday"]));
         expect(CronExpressionParser.parse("0 0 L * *").usedFeatures).toStrictEqual(new Set(["lastDayOfMonth"]));
+        // eslint-disable-next-line no-secrets/no-secrets -- a dialect feature name, not a secret
         expect(CronExpressionParser.parse("0 0 5L * *").usedFeatures).toStrictEqual(new Set(["numberedLastDayOfMonth"]));
         expect(CronExpressionParser.parse("0 9 * * 5L").usedFeatures).toStrictEqual(new Set(["lastDayOfWeek"]));
         expect(CronExpressionParser.parse("0 9 * * 2#2").usedFeatures).toStrictEqual(new Set(["nthDayOfWeek"]));

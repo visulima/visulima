@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/member-ordering, @typescript-eslint/prefer-nullish-coalescing, @typescript-eslint/restrict-template-expressions, @typescript-eslint/unbound-method, jsdoc/informative-docs, no-plusplus, sonarjs/regex-complexity, unicorn/no-null, unicorn/no-object-as-default-parameter -- ported from the reference implementation, whose behaviour its tests pin; these style rules stay relaxed so the code remains easy to compare with the original (the search engine in schedule.ts, zone.ts and cron-expression.ts has no such exceptions) */
-import { CronParseError, fieldNameOf } from "../errors";
+import type { CronFieldName } from "../errors";
+import { CronParseError } from "../errors";
 import type { CronChars, CronConstraints, CronFieldType, CronMax, CronMin } from "./types";
 
 /** One regular expression for every call: a regex literal inside a getter is made anew each time it runs. */
@@ -48,6 +49,14 @@ abstract class CronField {
     /**
      * Returns the minimum value allowed for this field.
      */
+
+    /**
+     * The field name the error reports, as the option and error names spell it.
+     */
+    public static get fieldName(): CronFieldName {
+        throw new Error("fieldName must be overridden");
+    }
+
     public static get min(): CronMin {
         /* istanbul ignore next */
         throw new Error("min must be overridden");
@@ -272,7 +281,7 @@ abstract class CronField {
 
                 throw new CronParseError(`${this.constructor.name} Validation error, got value ${value} expected range ${min}-${max}${charsString}`, {
                     code: "FIELD_RANGE",
-                    field: fieldNameOf(this.constructor.name),
+                    field: (this.constructor as typeof CronField).fieldName,
                     token: String(value),
                 });
             }
@@ -283,7 +292,7 @@ abstract class CronField {
             if (this.#values[index] === this.#values[index - 1]) {
                 throw new CronParseError(`${this.constructor.name} Validation error, duplicate values found: ${this.#values[index]}`, {
                     code: "DUPLICATE_VALUE",
-                    field: fieldNameOf(this.constructor.name),
+                    field: (this.constructor as typeof CronField).fieldName,
                     token: String(this.#values[index]),
                 });
             }
