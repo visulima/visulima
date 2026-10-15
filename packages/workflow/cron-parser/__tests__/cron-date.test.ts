@@ -475,11 +475,14 @@ describe(CronDate, () => {
         const expectedTime = new Date(2021, 0, 4, 10, 0, 0).toString();
 
         it("undefined date", () => {
-            const realDate = new Date();
+            // Bracketed by two readings of the clock: comparing against one reading fails when a second ticks over in between.
+            const before = Date.now();
             const d = new CronDate();
+            const after = Date.now();
 
             expect(d).toBeInstanceOf(CronDate);
-            expect(d.toDate().toString()).toBe(realDate.toString());
+            expect(d.getTime()).toBeGreaterThanOrEqual(before);
+            expect(d.getTime()).toBeLessThanOrEqual(after);
         });
 
         it("reads a JS Date", () => {
