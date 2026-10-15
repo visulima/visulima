@@ -1,3 +1,11 @@
+## @visulima/tsconfig [3.2.38](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.2.37...@visulima/tsconfig@3.2.38) (2026-10-15)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 7.0.0
+* **@visulima/path:** upgraded to 5.0.0
+
 ## @visulima/tsconfig [3.2.37](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.2.36...@visulima/tsconfig@3.2.37) (2026-10-13)
 
 

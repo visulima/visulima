@@ -1,6 +1,6 @@
 {
     "name": "@visulima/tsconfig",
-    "version": "3.2.37",
+    "version": "3.2.38",
     "description": "Find and/or parse the tsconfig.json file from a directory path.",
     "keywords": [
         "anolilab",
@@ -72,8 +72,8 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/fs": "6.1.0",
-        "@visulima/path": "4.0.0",
+        "@visulima/fs": "7.0.0",
+        "@visulima/path": "5.0.0",
         "jsonc-parser": "catalog:prod",
         "resolve-pkg-maps": "catalog:prod"
     },
