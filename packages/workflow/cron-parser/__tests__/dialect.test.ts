@@ -141,6 +141,16 @@ describe("the dialect option", () => {
         expect(() => CronExpressionParser.parse("0 0 1W * *", { dialect: "cron-parser", features: { nearestWeekday: true } })).not.toThrow();
     });
 
+    it("takes the cron spec's field count in strict mode, without padding", () => {
+        expect.hasAssertions();
+
+        expect(() => CronExpressionParser.parse("0 0 * * *", { strict: true })).not.toThrow();
+        expect(() => CronExpressionParser.parse("0 0 0 * * *", { strict: true })).not.toThrow();
+        expect(() => CronExpressionParser.parse("0 0 * *", { strict: true })).toThrow(CronParseError);
+        expect(() => CronExpressionParser.parse("0 0 * * *", { features: { seconds: "require" }, strict: true })).toThrow(CronParseError);
+        expect(() => CronExpressionParser.parse("0 0 0 * * *", { features: { seconds: "forbid" }, strict: true })).toThrow(CronParseError);
+    });
+
     it("rejects a dialect it does not know", () => {
         expect.hasAssertions();
 

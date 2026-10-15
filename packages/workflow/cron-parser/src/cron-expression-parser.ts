@@ -116,7 +116,7 @@ class CronExpressionParser {
      * Parses a cron expression and returns a CronExpression object.
      * @param expression The cron expression to parse.
      * @param [options] The options to use when parsing the expression.
-     * @param [options.strict] If true, will throw an error if the expression contains both dayOfMonth and dayOfWeek, or a hashed range or step the field cannot satisfy.
+     * @param [options.strict] If true, will throw an error if the expression contains both dayOfMonth and dayOfWeek, is shorter than the field count the grammar defines, or has a hashed range or step the field cannot satisfy.
      * @param [options.currentDate] The date to use when calculating the next/previous occurrence.
      * @param [options.dialect] The named grammar to hold the expression to; `extended` when none is given.
      * @param [options.features] Syntax to turn on or off on top of the dialect.
@@ -267,11 +267,16 @@ class CronExpressionParser {
         }
 
         const atoms = expression.trim().split(/\s+/);
-        // `strict` implies a sixth field, the way the reference implementation's strict mode does, but the
-        // `seconds` mode is the one place that rule lives.
-        const secondsMode = strict && features.seconds !== "forbid" ? "require" : features.seconds;
-        const maxFields = secondsMode === "forbid" ? 5 : 6;
-        const minFields = secondsMode === "require" ? 6 : 0;
+        const maxFields = features.seconds === "forbid" ? 5 : 6;
+        // A strict parse never pads. It takes the field count the grammar defines, the cron spec's five,
+        // or the six a required seconds field adds, and rejects anything shorter.
+        let minFields = 0;
+
+        if (features.seconds === "require") {
+            minFields = 6;
+        } else if (strict) {
+            minFields = 5;
+        }
 
         if (atoms.length > maxFields) {
             throw new CronParseError("Invalid cron expression, too many fields", { code: "FIELD_COUNT" });

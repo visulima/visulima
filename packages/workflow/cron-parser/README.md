@@ -73,16 +73,16 @@ const days = CronExpressionParser.parse("0 0 * * *", {
 
 ### Options
 
-| Option        | Description                                                                                                                           |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `currentDate` | Where iteration starts. A `Date`, epoch milliseconds, a date string or a `CronDate`. Defaults to now.                                 |
-| `startDate`   | Earliest allowed run. Used as `currentDate` when none is given.                                                                       |
-| `endDate`     | Latest allowed run. `next()` throws and iteration ends once it is passed.                                                             |
-| `tz`          | IANA time zone the expression is read in, such as `Europe/Berlin`. Defaults to the system zone.                                       |
-| `hashSeed`    | Seed for `H` (hashed) values, so the same seed always picks the same minute and hour.                                                 |
-| `strict`      | Reject an expression that sets both day of month and day of week, has fewer than six fields, or has an unsatisfiable `H` range.       |
-| `dialect`     | Hold the expression to another runtime's grammar: `extended` (the default), `cron-parser` or `cloudflare`. See [Dialects](#dialects). |
-| `features`    | Turn a single switch on or off on top of `dialect`, such as `{ hashed: false }`.                                                      |
+| Option        | Description                                                                                                                                                                           |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `currentDate` | Where iteration starts. A `Date`, epoch milliseconds, a date string or a `CronDate`. Defaults to now.                                                                                 |
+| `startDate`   | Earliest allowed run. Used as `currentDate` when none is given.                                                                                                                       |
+| `endDate`     | Latest allowed run. `next()` throws and iteration ends once it is passed.                                                                                                             |
+| `tz`          | IANA time zone the expression is read in, such as `Europe/Berlin`. Defaults to the system zone.                                                                                       |
+| `hashSeed`    | Seed for `H` (hashed) values, so the same seed always picks the same minute and hour.                                                                                                 |
+| `strict`      | Reject an expression that sets both day of month and day of week, is shorter than the field count the grammar defines (five, or six with seconds), or has an unsatisfiable `H` range. |
+| `dialect`     | Hold the expression to another runtime's grammar: `extended` (the default), `cron-parser` or `cloudflare`. See [Dialects](#dialects).                                                 |
+| `features`    | Turn a single switch on or off on top of `dialect`, such as `{ hashed: false }`.                                                                                                      |
 
 ### Expression syntax
 
