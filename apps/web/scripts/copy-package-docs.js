@@ -66,7 +66,7 @@ const CATEGORY_CONFIG = {
     email: { title: "Internationalization & Communication", packages: ["iso-locale", "disposable-email-domains", "email"] },
     "dev-tools": {
         title: "Dev Tools",
-        packages: ["dev-toolbar", "prisma-dmmf-transformer", "secret-scanner", "find-ai-runner", "task-runner", "vis"],
+        packages: ["cron-parser", "dev-toolbar", "prisma-dmmf-transformer", "secret-scanner", "find-ai-runner", "task-runner", "vis"],
     },
 };
 

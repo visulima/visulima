@@ -1,0 +1,33 @@
+---
+title: Introduction
+description: Parse cron expressions and walk their schedule, with time zone and DST support
+---
+
+# @visulima/cron-parser
+
+Parse cron expressions and walk their schedule, with time zone and DST support. It is ESM only, has no dependencies, and runs on Node.js, Deno, Bun and Cloudflare Workers. It calculates run times; it does not run anything.
+
+## Key Features
+
+- **Iteration** - `next()` and `prev()` move a cursor, and an interval is iterable
+- **Time zones and DST** - runs are real instants on the wall clock of the zone you name
+- **Seconds, `L`, `W`, `#` and `H`** - the extensions most schedulers have, each behind a switch
+- **Dialects** - hold an expression to the grammar of `cron-parser` or Cloudflare Workers Cron Triggers
+- **Typed errors** - a `CronParseError` with a code, the field and the token that failed
+- **Crontab files** - read a whole crontab in its own entry point
+
+## Quick Start
+
+```ts
+import { CronExpressionParser } from "@visulima/cron-parser";
+
+const interval = CronExpressionParser.parse("0 9 * * 1-5", {
+    currentDate: "2026-03-06T12:00:00Z",
+    tz: "America/New_York",
+});
+
+interval.next().toISOString(); // "2026-03-06T14:00:00.000Z"  (09:00 EST)
+interval.next().toISOString(); // "2026-03-09T13:00:00.000Z"  (09:00 EDT, after the DST change)
+```
+
+Continue with [Installation](/docs/packages/cron-parser/installation) or read the [Usage](/docs/packages/cron-parser/usage) guide.

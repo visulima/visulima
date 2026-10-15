@@ -83,6 +83,7 @@ const days = CronExpressionParser.parse("0 0 * * *", {
 | `strict`      | Reject an expression that sets both day of month and day of week, is shorter than the field count the grammar defines (five, or six with seconds), or has an unsatisfiable `H` range. |
 | `dialect`     | Hold the expression to another runtime's grammar: `extended` (the default), `cron-parser` or `cloudflare`. See [Dialects](#dialects).                                                 |
 | `features`    | Turn a single switch on or off on top of `dialect`, such as `{ hashed: false }`.                                                                                                      |
+| `seconds`     | Whether a sixth, seconds field is `"forbid"`, `"optional"` (the default) or `"require"`. Judged on the expression as written, so `@daily` has no seconds field.                       |
 
 ### Expression syntax
 
@@ -116,7 +117,7 @@ CronExpressionParser.parse("0 0 1W * *", { dialect: "cron-parser", features: { n
 // parses: the dialect turns `1W` off, the feature turns it back on
 ```
 
-`features` holds only the syntax an expression can be made of: `hashed`, `lastDayOfMonth`, `lastDayOfWeek`, `lastOffset`, `lastWeekday`, `nearestWeekday`, `nicknames`, `noSpecificTime`, `nthDayOfWeek`, `numberedLastDayOfMonth`, and `seconds` which is `"forbid"`, `"optional"` or `"require"` rather than a boolean. How a target _reads_ an expression — Cloudflare's weekday numbering, its step and list rules — belongs to the dialect rather than to `features`, so it is not a switch.
+`features` holds only the syntax an expression can be made of: `hashed`, `lastDayOfMonth`, `lastDayOfWeek`, `lastOffset`, `lastWeekday`, `nearestWeekday`, `nicknames`, `noSpecificTime`, `nthDayOfWeek`, `numberedLastDayOfMonth`. Seconds are not a switch: they have their own `seconds` option. How a target _reads_ an expression — Cloudflare's weekday numbering, its step and list rules — belongs to the dialect rather than to `features`, so it is not a switch.
 
 To read what an expression is actually made of, rather than constrain it, `usedFeatures` holds the extensions it uses:
 

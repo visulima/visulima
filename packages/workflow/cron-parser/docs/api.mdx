@@ -1,0 +1,88 @@
+---
+title: API reference
+description: The classes, options, types and errors exported by @visulima/cron-parser
+---
+
+# API reference
+
+## `CronExpressionParser`
+
+```ts
+CronExpressionParser.parse(expression: string, options?: CronExpressionOptions): CronExpression;
+```
+
+Parses an expression and returns a `CronExpression`. Throws a `CronParseError` when the expression is invalid or uses a syntax the chosen dialect turns off. `CronExpressionParser` is also the default export.
+
+## `CronExpression`
+
+| Member                       | Description                                                                                       |
+| ---------------------------- | ------------------------------------------------------------------------------------------------- |
+| `next()` / `prev()`          | Move the cursor to the closest run after or before it, and return that run as a `CronDate`.       |
+| `hasNext()` / `hasPrev()`    | Whether a run follows, or precedes, the cursor.                                                   |
+| `take(n)`                    | The next `n` runs, or the previous ones for a negative `n`. Stops at the end of the span.         |
+| `includesDate(date)`         | Whether a date is a run.                                                                          |
+| `reset(date?)`               | Move the cursor.                                                                                  |
+| `stringify(includeSeconds?)` | The expression in canonical form.                                                                 |
+| `toString()`                 | The expression as it was written, or as a nickname expanded it.                                   |
+| `fields`                     | The parsed `CronFieldCollection`: `second`, `minute`, `hour`, `dayOfMonth`, `month`, `dayOfWeek`. |
+| `usedFeatures`               | A `ReadonlySet<CronFeature>` of the extensions the expression uses.                               |
+
+An interval is iterable: `[...interval]` lists the runs up to `endDate`.
+
+## `CronExpressionOptions`
+
+| Option        | Type                                          | Description                                                            |
+| ------------- | --------------------------------------------- | ---------------------------------------------------------------------- |
+| `currentDate` | `Date \| string \| number \| CronDate`        | Where iteration starts. Defaults to now.                               |
+| `startDate`   | `Date \| string \| number \| CronDate`        | Earliest allowed run.                                                  |
+| `endDate`     | `Date \| string \| number \| CronDate`        | Latest allowed run.                                                    |
+| `tz`          | `string`                                      | IANA time zone the expression is read in. Defaults to the system zone. |
+| `hashSeed`    | `string`                                      | Seed for `H` values.                                                   |
+| `strict`      | `boolean`                                     | Reject ambiguous or under-specified expressions.                       |
+| `seconds`     | `"forbid" \| "optional" \| "require"`         | Whether a sixth, seconds field is allowed. Defaults to `"optional"`.   |
+| `dialect`     | `"extended" \| "cron-parser" \| "cloudflare"` | The grammar to hold the expression to. Defaults to `"extended"`.       |
+| `features`    | `Partial<Omit<CronFeatures, "seconds">>`      | Single syntax switches on top of `dialect`.                            |
+
+## `CronDate`
+
+The date type `next()` and `prev()` return. Besides the date accessors it exposes `getUTCOffset()`, `toISOString()` (UTC) and `toJSON()` (with the zone's own offset).
+
+## `CronFileParser`
+
+```ts
+CronFileParser.parseFile(filePath: string): Promise<CronFileParserResult>;
+CronFileParser.parseFileSync(filePath: string): CronFileParserResult;
+```
+
+Imported from `@visulima/cron-parser/file`. The result has `expressions` (the parsed `CronExpression`s), `variables` (`NAME=value` lines, quotes removed) and `errors` (the entries that failed, keyed by the entry text).
+
+## `CronParseError`
+
+An `Error` with these properties:
+
+| Property | Description                                                                                         |
+| -------- | --------------------------------------------------------------------------------------------------- |
+| `code`   | One of `CRON_PARSE_ERROR_CODES`, such as `FIELD_RANGE`, `FIELD_CHARACTER` or `UNSUPPORTED_FEATURE`. |
+| `field`  | The field the failure is in, such as `"hour"`, when it is in one.                                   |
+| `token`  | The part of the expression that failed, when there is one.                                          |
+
+```ts
+import { CronExpressionParser, CronParseError } from "@visulima/cron-parser";
+
+try {
+    CronExpressionParser.parse("10 ! 12 8 0");
+} catch (error) {
+    if (error instanceof CronParseError) {
+        error.code; // "FIELD_CHARACTER"
+        error.field; // "hour"
+        error.token; // "!"
+    }
+}
+```
+
+## Types
+
+- `CronDialect`: `"extended" | "cron-parser" | "cloudflare"`
+- `CronFeature`: the name of a switch in `CronFeatures`
+- `CronFeatures`: the on/off switches for each syntax extension
+- `CronSeconds`: `"forbid" | "optional" | "require"`
