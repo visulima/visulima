@@ -1,0 +1,59 @@
+---
+title: Dialects
+description: Hold an expression to the grammar of another runtime, and read which extensions it uses
+---
+
+# Dialects
+
+Every runtime reads a slightly different cron. `dialect` holds an expression to what a target's own parser accepts, and `features` turns a single switch on or off when the target is stricter than the named dialect.
+
+| Dialect       | What it keeps                                                                                                                                                                                     |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `extended`    | Everything in [Usage](/docs/packages/cron-parser/usage). The default.                                                                                                                             |
+| `cron-parser` | The grammar of `cron-parser` v5: `H`, `#`, `L` and `@nicknames`, but not the `W`, `LW` or `L-n` day of month extensions.                                                                          |
+| `cloudflare`  | Cloudflare Workers Cron Triggers: five fields, `L`, `W`, `LW`, `L-n` and `#` (with names), but not `H`, `?`, `@nicknames`, a seconds field, a day of month `5L` or a day of month text in a list. |
+
+```ts
+import { CronExpressionParser } from "@visulima/cron-parser";
+
+CronExpressionParser.parse("H * * * *", { dialect: "cloudflare" });
+// throws CronParseError: Unsupported feature "hashed" in the selected dialect
+
+CronExpressionParser.parse("0 0 1W * *", { dialect: "cron-parser", features: { nearestWeekday: true } });
+// parses: the dialect turns `1W` off, the feature turns it back on
+```
+
+## Features
+
+`features` holds only the syntax an expression can be made of: `hashed`, `lastDayOfMonth`, `lastDayOfWeek`, `lastOffset`, `lastWeekday`, `nearestWeekday`, `nicknames`, `noSpecificTime`, `nthDayOfWeek` and `numberedLastDayOfMonth`. Each is a boolean.
+
+Seconds are not a switch. They have their own `seconds` option. How a target _reads_ an expression, such as Cloudflare's weekday numbering or its step and list rules, belongs to the dialect, so it is not a switch either.
+
+## Reading what an expression uses
+
+To read what an expression is made of, rather than constrain it, `usedFeatures` holds the extensions it uses:
+
+```ts
+CronExpressionParser.parse("0 0 LW * *").usedFeatures; // Set { "lastWeekday" }
+CronExpressionParser.parse("0 0 0 * * *").usedFeatures; // Set { "seconds" }
+CronExpressionParser.parse("* * * * *").usedFeatures.has("hashed"); // false
+```
+
+## The Cloudflare dialect
+
+The `cloudflare` dialect was checked against the validator wrangler itself deploys through, `cron-triggers.cloudflareworkers.com` (backed by [`cloudflare/saffron`](https://github.com/cloudflare/saffron)). A few of its rules are easy to miss, and they are built in:
+
+- The weekdays run `1` (Sunday) to `7` (Saturday), and a weekday of `0` is rejected. So `0 0 * * 1` fires on Sunday, and `0 18 * * 6L` fires on the last Friday. The number before an `L` or a `#` follows the same scale. The three letter names always mean the day they name, and a bare `L` in the weekday field is Saturday.
+- A day of month text such as `LW`, `L-3` or `15W` has to stand alone. `1,15` parses, but `1W,LW` does not.
+- A step may not be as large as the field. `*/6` is a valid weekday step and `*/7` is not. Minutes allow `*/59` but not `*/60`.
+
+For a Cloudflare Worker, import the entry that has the dialect already applied:
+
+```ts
+import { CronExpressionParser } from "@visulima/cron-parser/cloudflare";
+
+CronExpressionParser.parse("0 0 * * 1").next(); // Sunday, not Monday
+CronExpressionParser.parse("H * * * *"); // throws: Cloudflare has no hashed values
+```
+
+It is the default entry with `{ dialect: "cloudflare" }` applied. A `dialect` you pass yourself still wins. It imports no `node:*` module, so it loads on Workers like the default entry does.

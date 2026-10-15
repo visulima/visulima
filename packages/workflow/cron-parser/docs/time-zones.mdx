@@ -1,0 +1,30 @@
+---
+title: Time zones and DST
+description: How runs behave around daylight saving time and other clock changes
+---
+
+# Time zones and DST
+
+An expression is read on the wall clock of its `tz`, and a run is a real instant whose wall clock time matches it. Around a clock change that gives these rules.
+
+- **A time that does not exist** (02:30 on the spring-forward day) runs after the gap, at the same minute of the first hour after it, when the expression names its hours. An every-hour schedule skips the missing hour, so it does not run twice. A day that never happened at all (Samoa lost 30 December 2011) is dropped rather than moved.
+
+    ```ts
+    CronExpressionParser.parse("30 2 * * *", { currentDate: "2021-03-13T12:00:00Z", tz: "America/New_York" }).next().toISOString();
+    // "2021-03-14T07:30:00.000Z"  (03:30 EDT)
+    ```
+
+- **A time that happens twice** (01:30 on the fall-back day) runs once, at the first pass, when the expression names its hours. An every-hour schedule runs at both passes. `next()`, `prev()` and `includesDate()` all follow the same rule.
+- Zones with 30 and 45 minute offsets, gaps that begin mid-hour and gaps of more than an hour are handled.
+
+`next()` and `prev()` do not step through DST. They list the wall clock times that match, using plain calendar arithmetic that skips whole months and days, and then turn each into the real instants it happens at. A schedule such as the fifth Wednesday of February is found directly, however far away it is.
+
+## Verification
+
+Everything zone related comes from one primitive: a zone's UTC offset at an instant. It comes from native `Temporal` where the runtime has it (Deno and Bun today) and from `Intl.DateTimeFormat` everywhere else. The test suite runs against both, and they give the same answers.
+
+The DST rules are checked against an independent brute-force model of the clock. That model scans a zone minute by minute and inverts it, across 14 zone and date windows, including Samoa's lost day, Troll's two hour jump, Chatham's mid-hour gap and a 1844 Manila offset with seconds in it. Away from clock changes, results are compared with the `cron-parser` package and must be identical.
+
+## CronDate
+
+`CronDate` is the date type `next()` and `prev()` return. It reads and moves a point in time on one zone's wall clock. Besides the usual date accessors, it exposes `getUTCOffset()` (the offset in minutes), `toISOString()` (always UTC) and `toJSON()` (with the zone's own offset).

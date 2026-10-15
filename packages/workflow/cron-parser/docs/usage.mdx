@@ -1,0 +1,86 @@
+---
+title: Usage
+description: Parse an expression, walk its schedule, and set the options
+---
+
+# Usage
+
+## Parse and walk
+
+`CronExpressionParser.parse` returns an interval. `next()` and `prev()` move a cursor, so they can be mixed:
+
+```ts
+import { CronExpressionParser } from "@visulima/cron-parser";
+
+const interval = CronExpressionParser.parse("0 9 * * 1-5", {
+    currentDate: "2026-03-06T12:00:00Z",
+    tz: "America/New_York",
+});
+
+interval.next().toISOString(); // "2026-03-06T14:00:00.000Z"
+interval.next().toISOString(); // "2026-03-09T13:00:00.000Z"
+interval.prev().toISOString(); // "2026-03-06T14:00:00.000Z"
+```
+
+`take(n)` returns the next `n` runs. A negative `n` walks backwards. The interval is also iterable:
+
+```ts
+const days = CronExpressionParser.parse("0 0 * * *", {
+    currentDate: "2026-01-01T00:00:00Z",
+    endDate: "2026-01-03T12:00:00Z",
+    tz: "UTC",
+});
+
+[...days].map((date) => date.toISOString());
+// ["2026-01-02T00:00:00.000Z", "2026-01-03T00:00:00.000Z"]
+```
+
+Other useful methods:
+
+```ts
+interval.hasNext(); // is there a run after the cursor?
+interval.includesDate(new Date("2026-03-09T13:00:00Z")); // true
+interval.reset(new Date("2026-06-01T00:00:00Z")); // move the cursor
+interval.stringify(); // "0 9 * * 1-5"
+interval.fields.hour.values; // [9]
+```
+
+## Options
+
+| Option        | Description                                                                                                                                                     |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `currentDate` | Where iteration starts. A `Date`, epoch milliseconds, a date string or a `CronDate`. Defaults to now.                                                           |
+| `startDate`   | Earliest allowed run. Used as `currentDate` when none is given.                                                                                                 |
+| `endDate`     | Latest allowed run. `next()` throws and iteration ends once it is passed.                                                                                       |
+| `tz`          | IANA time zone the expression is read in, such as `Europe/Berlin`. Defaults to the system zone.                                                                 |
+| `hashSeed`    | Seed for `H` (hashed) values, so the same seed always picks the same minute and hour.                                                                           |
+| `strict`      | Reject an expression that sets both day of month and day of week, is shorter than the field count the grammar defines, or has an unsatisfiable `H` range.       |
+| `seconds`     | Whether a sixth, seconds field is `"forbid"`, `"optional"` (the default) or `"require"`.                                                                        |
+| `dialect`     | Hold the expression to another runtime's grammar: `extended` (the default), `cron-parser` or `cloudflare`. See [Dialects](/docs/packages/cron-parser/dialects). |
+| `features`    | Turn a single syntax switch on or off on top of `dialect`, such as `{ hashed: false }`.                                                                         |
+
+## Expression syntax
+
+Five fields, or six with a leading seconds field: `second minute hour day-of-month month day-of-week`.
+
+- `*`, `?`, lists (`1,15`), ranges (`1-5`) and steps (`*/10`, `10-30/5`)
+- Month names (`JAN`-`DEC`) and weekday names (`SUN`-`SAT`); `0` and `7` are both Sunday
+- `L` for the last day of the month (`0 0 L * *`) and the last given weekday (`0 9 * * 5L`)
+- In the day of month field, from Quartz: `15W` (the weekday nearest the 15th, without leaving the month), `LW` (the last weekday of the month) and `L-3` (three days before the last day)
+- `#` for the nth weekday of the month (`0 9 * * 2#2` is the second Tuesday)
+- `H` for a hashed value: `H`, `H(0-29)`, `H/15`
+- `@yearly`, `@annually`, `@monthly`, `@weekly`, `@daily`, `@hourly`, `@minutely`, `@secondly`, `@weekdays`, `@weekends`
+
+When both day of month and day of week are set, a day matching either one runs, as in Vixie cron.
+
+## Crontab files
+
+Reading a crontab file needs `node:fs`, so it has its own entry point:
+
+```ts
+import { CronFileParser } from "@visulima/cron-parser/file";
+
+const { expressions, variables, errors } = await CronFileParser.parseFile("./crontab");
+```
+
+`parseFileSync` is the synchronous version. See the [API reference](/docs/packages/cron-parser/api) for the result shape.

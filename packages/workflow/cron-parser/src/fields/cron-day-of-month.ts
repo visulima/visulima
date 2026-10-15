@@ -1,4 +1,5 @@
 /* eslint-disable sonarjs/regex-complexity -- ported from the reference implementation, whose behaviour its tests pin; these style rules stay relaxed so the code remains easy to compare with the original (the search engine in schedule.ts, zone.ts and cron-expression.ts has no such exceptions) */
+import type { CronFieldName } from "../errors";
 import type { CronFieldOptions } from "./cron-field";
 import { CronField } from "./cron-field";
 import CronMonth from "./cron-month";
@@ -36,6 +37,10 @@ class CronDayOfMonth extends CronField {
         return new CronDayOfMonth(days.length > 0 ? days : values, options);
     }
 
+    public static override get fieldName(): CronFieldName {
+        return "dayOfMonth";
+    }
+
     public static override get min(): CronMin {
         return MIN_DAY;
     }
@@ -68,7 +73,7 @@ class CronDayOfMonth extends CronField {
      */
     // eslint-disable-next-line class-methods-use-this
     protected override isValidText(value: string): boolean {
-        return value === "L" || readDayOfMonthText(value) !== undefined;
+        return readDayOfMonthText(value) !== undefined;
     }
 
     /**

@@ -42,6 +42,10 @@
             "types": "./dist/index.d.ts",
             "default": "./dist/index.js"
         },
+        "./cloudflare": {
+            "types": "./dist/cloudflare.d.ts",
+            "default": "./dist/cloudflare.js"
+        },
         "./file": {
             "types": "./dist/file.d.ts",
             "default": "./dist/file.js"
