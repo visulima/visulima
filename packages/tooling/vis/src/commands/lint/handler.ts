@@ -16,7 +16,7 @@ import { detectAdapters } from "../../lint-fmt/detect";
 import { changedFilesSince, filterByExtensions, stagedFiles } from "../../lint-fmt/diff";
 import type { OutputSink } from "../../lint-fmt/output";
 import { resolveOutput } from "../../lint-fmt/output";
-import { adaptersByKind, registerAdapters } from "../../lint-fmt/registry";
+import { adaptersByKind, registerAdapters, warnUnknownAdapterIds } from "../../lint-fmt/registry";
 import { emitGitHub } from "../../lint-fmt/reporters/github";
 import { emitJUnit } from "../../lint-fmt/reporters/junit";
 import { emitSarif } from "../../lint-fmt/reporters/sarif";
@@ -40,6 +40,8 @@ const SOURCE_ADAPTERS = [
 const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Console, LintOptions>): Promise<void> => {
     const root = workspaceRoot ?? process.cwd();
     const lintConfig = visConfig?.lint;
+
+    warnUnknownAdapterIds(logger, "lint", lintConfig);
     const adapters = registerAdapters(SOURCE_ADAPTERS, lintConfig?.order);
     const detected = detectAdapters(root, adapters);
     const allEligible = adaptersByKind(detected, adapters, "lint");

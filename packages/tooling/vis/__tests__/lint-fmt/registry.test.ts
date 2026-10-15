@@ -1,7 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import type { AdapterId, AdapterKind, ToolAdapter, ToolPresence } from "../../src/lint-fmt/config-types";
-import { adaptersByKind, registerAdapters, routeFilesByExtension } from "../../src/lint-fmt/registry";
+import { adaptersByKind, registerAdapters, routeFilesByExtension, warnUnknownAdapterIds } from "../../src/lint-fmt/registry";
 
 const stubAdapter = (id: AdapterId, kind: AdapterKind, extensions: string[]): ToolAdapter => {
     return {
@@ -138,5 +138,29 @@ describe(routeFilesByExtension, () => {
         const grouped = routeFilesByExtension(["x.unknown"], [{ adapter: prettier, presence: presence("prettier") }]);
 
         expect(grouped.size).toBe(0);
+    });
+});
+
+describe(warnUnknownAdapterIds, () => {
+    it("warns once per id that no adapter answers to, including stale deno ids", () => {
+        expect.hasAssertions();
+
+        const warn = vi.fn();
+
+        warnUnknownAdapterIds({ warn }, "fmt", { adapters: { "deno-fmt": { enabled: false } }, order: ["biome", "deno-fmt", "deno-fmt"] });
+
+        expect(warn).toHaveBeenCalledTimes(1);
+        expect(warn).toHaveBeenCalledWith("vis.config fmt: unknown adapter \"deno-fmt\" is ignored.");
+    });
+
+    it("stays silent for known ids and missing config", () => {
+        expect.hasAssertions();
+
+        const warn = vi.fn();
+
+        warnUnknownAdapterIds({ warn }, "lint", { order: ["oxlint", "eslint"] });
+        warnUnknownAdapterIds({ warn }, "lint", undefined);
+
+        expect(warn).not.toHaveBeenCalled();
     });
 });

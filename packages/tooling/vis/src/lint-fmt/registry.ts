@@ -187,3 +187,26 @@ const resolveAdapterForExtension = (
 
     return undefined;
 };
+
+/**
+ * Warn about `order` / `adapters` entries that name no adapter vis knows.
+ * Those keys are otherwise skipped without a word, so a leftover such as
+ * `deno-fmt` after the Deno removal quietly falls back to the defaults.
+ * @param logger Console-like sink for the warning.
+ * @param scope Config section the entries came from, for the message.
+ * @param config The `lint` or `fmt` config section, if any.
+ */
+export const warnUnknownAdapterIds = (
+    logger: Pick<Console, "warn">,
+    scope: "fmt" | "lint",
+    config: { adapters?: Partial<Record<string, unknown>>; order?: ReadonlyArray<string> } | undefined,
+): void => {
+    const known = new Set<string>(ADAPTER_ORDER);
+    const named = new Set([...(config?.order ?? []), ...Object.keys(config?.adapters ?? {})]);
+
+    for (const id of named) {
+        if (!known.has(id)) {
+            logger.warn(`vis.config ${scope}: unknown adapter "${id}" is ignored.`);
+        }
+    }
+};

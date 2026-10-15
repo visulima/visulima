@@ -13,7 +13,7 @@ import { detectAdapters } from "../../lint-fmt/detect";
 import { changedFilesSince, stagedFiles } from "../../lint-fmt/diff";
 import type { OutputSink } from "../../lint-fmt/output";
 import { resolveOutput } from "../../lint-fmt/output";
-import { adaptersByKind, registerAdapters, routeFilesByExtension } from "../../lint-fmt/registry";
+import { adaptersByKind, registerAdapters, routeFilesByExtension, warnUnknownAdapterIds } from "../../lint-fmt/registry";
 import { emitGitHub } from "../../lint-fmt/reporters/github";
 import { emitJUnit } from "../../lint-fmt/reporters/junit";
 import { emitSarif } from "../../lint-fmt/reporters/sarif";
@@ -28,6 +28,8 @@ const FORMAT_ADAPTERS = [oxfmtAdapter, biomeAdapter, dprintAdapter, prettierAdap
 const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Console, FmtOptions>): Promise<void> => {
     const root = workspaceRoot ?? process.cwd();
     const fmtConfig = visConfig?.fmt;
+
+    warnUnknownAdapterIds(logger, "fmt", fmtConfig);
     const adapters = registerAdapters(FORMAT_ADAPTERS, fmtConfig?.order);
     const detected = detectAdapters(root, adapters);
     const allEligible = adaptersByKind(detected, adapters, "fmt");
