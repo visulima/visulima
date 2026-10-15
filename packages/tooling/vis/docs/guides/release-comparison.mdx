@@ -74,12 +74,11 @@ Where can the version-PR and tag/release creation live? Tracks changesets [#879]
 
 Which package registries can each tool publish to natively?
 
-| Registry             | vis release                         | changesets                                                             | semantic-release    | release-please |
-| -------------------- | ----------------------------------- | ---------------------------------------------------------------------- | ------------------- | -------------- |
-| npm                  | ✅                                  | ✅                                                                     | ✅                  | ⚠ via wiring   |
-| JSR                  | ✅ (`versionActions: "jsr"`)        | ❌ (see [#1318](https://github.com/changesets/changesets/issues/1318)) | ⚠ via custom plugin | ❌             |
-| Maven (JVM packages) | ✅ ([guide](./release-maven.mdx))   | ❌                                                                     | ⚠ via custom plugin | ⚠ partial      |
-| Native addons (NAPI) | ✅ (auto-detected via `napi` field) | ❌                                                                     | ⚠ custom plugin     | ❌             |
+| Registry             | vis release                         | changesets | semantic-release    | release-please |
+| -------------------- | ----------------------------------- | ---------- | ------------------- | -------------- |
+| npm                  | ✅                                  | ✅         | ✅                  | ⚠ via wiring   |
+| Maven (JVM packages) | ✅ ([guide](./release-maven.mdx))   | ❌         | ⚠ via custom plugin | ⚠ partial      |
+| Native addons (NAPI) | ✅ (auto-detected via `napi` field) | ❌         | ⚠ custom plugin     | ❌             |
 
 ### Commit-history hygiene
 
