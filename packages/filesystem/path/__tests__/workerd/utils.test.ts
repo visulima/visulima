@@ -101,8 +101,8 @@ describe("workerd platform independence", () => {
     });
 
     /**
-     * Sandboxed runtimes (workerd behind some flag combinations, Deno without
-     * `--allow-sys`) expose `process.cwd` but throw when it is called. `resolve()`
+     * Sandboxed runtimes (workerd behind some flag combinations) expose
+     * `process.cwd` but throw when it is called. `resolve()`
      * already documents that it "handles relative paths to be safe (might happen
      * when process.cwd() fails)" — so the failure must be absorbed, not rethrown.
      */

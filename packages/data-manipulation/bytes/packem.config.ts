@@ -15,12 +15,5 @@ export default defineConfig({
             builtinNodeModules: true,
         },
     },
-    validation: {
-        dependencies: {
-            hoisted: {
-                exclude: ["@jsr/std__bytes"],
-            },
-        },
-    },
     transformer,
 }) as BuildConfig;

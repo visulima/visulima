@@ -90,12 +90,6 @@ describe(expandShortcut, () => {
         expect(expandShortcut(makeConfig("node:script")).command).toBe("node --run script");
     });
 
-    it("should expand deno:task to deno task task", () => {
-        expect.assertions(1);
-
-        expect(expandShortcut(makeConfig("deno:task")).command).toBe("deno task task");
-    });
-
     it("should preserve trailing arguments", () => {
         expect.assertions(1);
 
@@ -338,116 +332,6 @@ describe(expandWildcard, () => {
         const configs = result as ConcurrentCommandConfig[];
 
         expect(configs[0]!.name).toBe("my-name");
-    });
-
-    it("should expand deno task wildcards from deno.json", () => {
-        expect.assertions(3);
-
-        writeFileSync(
-            join(fixtureDir, "deno.json"),
-            JSON.stringify({
-                tasks: {
-                    build: "deno compile",
-                    "dev-api": "deno run api.ts",
-                    "dev-web": "deno run web.ts",
-                },
-            }),
-        );
-
-        const result = expandWildcard({ command: "deno task dev-*", cwd: fixtureDir });
-
-        expect(Array.isArray(result)).toBe(true);
-
-        const configs = result as ConcurrentCommandConfig[];
-
-        expect(configs).toHaveLength(2);
-
-        const commands = configs.map((c) => c.command).sort();
-
-        expect(commands).toStrictEqual(["deno task dev-api", "deno task dev-web"]);
-    });
-
-    it("should expand deno task wildcards from deno.jsonc", () => {
-        expect.assertions(2);
-
-        writeFileSync(
-            join(fixtureDir, "deno.jsonc"),
-            `{
-                // This is a comment
-                "tasks": {
-                    "test-unit": "deno test unit/",
-                    "test-e2e": "deno test e2e/"
-                }
-            }`,
-        );
-
-        const result = expandWildcard({ command: "deno task test-*", cwd: fixtureDir });
-
-        expect(Array.isArray(result)).toBe(true);
-
-        const configs = result as ConcurrentCommandConfig[];
-
-        expect(configs).toHaveLength(2);
-    });
-
-    it("should handle deno.jsonc with URLs in string values", () => {
-        expect.assertions(3);
-
-        writeFileSync(
-            join(fixtureDir, "deno.jsonc"),
-            `{
-                // Import map
-                "imports": { "std/": "https://deno.land/std/" },
-                "tasks": {
-                    "dev-serve": "deno run --allow-net https://example.com/server.ts"
-                }
-            }`,
-        );
-
-        const result = expandWildcard({ command: "deno task dev-*", cwd: fixtureDir });
-
-        expect(Array.isArray(result)).toBe(true);
-
-        const configs = result as ConcurrentCommandConfig[];
-
-        expect(configs).toHaveLength(1);
-        expect(configs[0]!.command).toContain("dev-serve");
-    });
-
-    it("should give deno.json tasks precedence over package.json scripts", () => {
-        expect.assertions(3);
-
-        writeFileSync(join(fixtureDir, "deno.json"), JSON.stringify({ tasks: { "dev-app": "deno run app.ts" } }));
-        writeFileSync(join(fixtureDir, "package.json"), JSON.stringify({ scripts: { "dev-app": "node app.js" } }));
-
-        const result = expandWildcard({ command: "deno task dev-*", cwd: fixtureDir });
-
-        expect(Array.isArray(result)).toBe(true);
-
-        const configs = result as ConcurrentCommandConfig[];
-
-        expect(configs).toHaveLength(1);
-        // deno.json task should win over package.json script
-        expect(configs[0]!.command).toContain("dev-app");
-    });
-
-    it("should merge deno.json tasks with package.json scripts for deno", () => {
-        expect.assertions(3);
-
-        writeFileSync(join(fixtureDir, "deno.json"), JSON.stringify({ tasks: { "dev-deno": "deno run main.ts" } }));
-        writeFileSync(join(fixtureDir, "package.json"), JSON.stringify({ scripts: { "dev-node": "node main.js" } }));
-
-        const result = expandWildcard({ command: "deno task dev-*", cwd: fixtureDir });
-
-        expect(Array.isArray(result)).toBe(true);
-
-        const configs = result as ConcurrentCommandConfig[];
-
-        expect(configs).toHaveLength(2);
-
-        const names = configs.map((c) => c.name).sort();
-
-        expect(names).toStrictEqual(["dev-deno", "dev-node"]);
     });
 });
 

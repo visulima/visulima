@@ -1,30 +1,16 @@
 import CompletionError from "../errors/completion-error";
 import type { Command as ICommand, EnvDefinition, OptionDefinition } from "../types/command";
 import type { Toolbox as IToolbox } from "../types/toolbox";
+import { hasBun } from "../util/general/runtime-process";
 
 const validShells = ["bash", "zsh", "fish", "powershell"];
-const validRuntimes = ["node", "bun", "deno"];
-
-/**
- * Type guard to check if Deno is available in global scope.
- */
-const hasDeno = (global: typeof globalThis): global is typeof globalThis & { Deno: unknown } => "Deno" in global;
-
-/**
- * Type guard to check if Bun is available in global scope.
- */
-const hasBun = (global: typeof globalThis): global is typeof globalThis & { Bun: unknown } => "Bun" in global;
+const validRuntimes = ["node", "bun"];
 
 /**
  * Detects the current JavaScript runtime.
- * @returns The detected runtime (node, bun, or deno)
+ * @returns The detected runtime (node or bun)
  */
 const detectRuntime = (): string => {
-    // Check for Deno
-    if (hasDeno(globalThis)) {
-        return "deno";
-    }
-
     // Check for Bun
     if (hasBun(globalThis)) {
         return "bun";
@@ -203,7 +189,7 @@ const printUsageInstructions = (logger: Console, cliName: string): void => {
     logger.error("Could not detect current shell");
 
     const usageInfo = [
-        `Usage: ${cliName} completion --shell=<bash|zsh|fish|powershell> [--runtime=<node|bun|deno>]`,
+        `Usage: ${cliName} completion --shell=<bash|zsh|fish|powershell> [--runtime=<node|bun>]`,
         "",
         "Examples:",
         `  # Install completions for zsh:`,
@@ -323,7 +309,7 @@ const completionCommand: ICommand = {
         } satisfies OptionDefinition<string>,
         {
             defaultValue: detectRuntime(),
-            description: "JavaScript runtime (node, bun, deno). Defaults to current runtime if detected.",
+            description: "JavaScript runtime (node, bun). Defaults to current runtime if detected.",
             name: "runtime",
             type: String,
             typeLabel: "{underline runtime}",

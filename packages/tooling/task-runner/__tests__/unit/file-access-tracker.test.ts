@@ -272,7 +272,7 @@ describe(FileAccessTracker, () => {
     // `#activeProcesses` set, and the seccomp path fails fast through
     // the accept watchdog. It is NOT covered by an automated test here:
     // a real-process test (spawn `sleep`, abort, assert fast return)
-    // proved non-deterministically flaky across the node/bun/deno ×
+    // proved non-deterministically flaky across the node/bun ×
     // ubuntu/macos/windows matrix — a `sh -c` grandchild can retain the
     // stdio pipes, so the spawn doesn't report completion even after the
     // kill, and the dispatch path (seccomp vs strace vs no-tracking)

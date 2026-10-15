@@ -13,7 +13,7 @@ shape you can hand to a bot or an AI agent — which can then reply through the 
 outbound provider.
 
 Like the [webhook verifiers](/docs/webhooks), every receiver uses Web Crypto only, so it runs
-on Cloudflare Workers, Deno, Bun and other edge runtimes. Receivers are framework-agnostic:
+on Cloudflare Workers, Bun and other edge runtimes. Receivers are framework-agnostic:
 each exposes a single `handle(request: Request) => Promise<Response>` built on the web
 standard `Request`/`Response`.
 
@@ -23,7 +23,7 @@ standard `Request`/`Response`.
 import { createSlackReceiver } from "@visulima/notification/providers/slack";
 
 // Read the secret however your runtime exposes it: an `env` binding on
-// Cloudflare Workers, `Deno.env.get`, `process.env` on Node. Hard-coding
+// Cloudflare Workers, `process.env` on Node. Hard-coding
 // `process.env` here would break the edge runtimes listed below.
 declare const signingSecret: string;
 
@@ -44,7 +44,7 @@ const slack = createSlackReceiver({
     },
 });
 
-// Any web-standard server: Cloudflare Workers, Deno, Bun, Hono, Next.js route handlers…
+// Any web-standard server: Cloudflare Workers, Bun, Hono, Next.js route handlers…
 export default { fetch: (request: Request) => slack.handle(request) };
 ```
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { cargo, goMod, gradleProperties, jsr, pomXml, pyproject } from "../../src/release/presets";
+import { cargo, goMod, gradleProperties, pomXml, pyproject } from "../../src/release/presets";
 
 /**
  * Multi-language preset helpers. Each preset returns a
@@ -10,34 +10,6 @@ import { cargo, goMod, gradleProperties, jsr, pomXml, pyproject } from "../../sr
  * We exercise the rule shape here; the actual regex substitution is
  * tested in extra-files.test.ts.
  */
-
-describe("presets: jsr", () => {
-    it("wires jsr versionActions + jsrConfigPath, no jsrPublishArgs by default", () => {
-        expect.hasAssertions();
-
-        const config = jsr();
-
-        expect(config.versionActions).toBe("jsr");
-        expect(config.jsrConfigPath).toBe("jsr.json");
-        expect(config.jsrPublishArgs).toBeUndefined();
-    });
-
-    it("maps allowSlowTypes → --allow-slow-types and merges publishArgs", () => {
-        expect.hasAssertions();
-
-        const config = jsr({ allowSlowTypes: true, publishArgs: ["--no-provenance"] });
-
-        expect(config.jsrPublishArgs).toStrictEqual(["--allow-slow-types", "--no-provenance"]);
-    });
-
-    it("points jsrConfigPath at a custom manifest", () => {
-        expect.hasAssertions();
-
-        const config = jsr({ manifestPath: "deno.json" });
-
-        expect(config.jsrConfigPath).toBe("deno.json");
-    });
-});
 
 describe("presets: cargo", () => {
     it("emits a Cargo.toml rule under the package root by default", () => {

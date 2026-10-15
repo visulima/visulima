@@ -525,7 +525,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
 
     // Default to current directory; workspace root used only for PM detection
     const cwd = process.cwd();
-    const runtime = resolveCommandRuntime({ logger, options, visConfig }, wsRoot ?? cwd);
+    const runtime = resolveCommandRuntime({ options, visConfig }, wsRoot ?? cwd);
     const pm = resolveInstaller(wsRoot ?? cwd, {
         backend: runtimeInstallerBackend(runtime),
         configBackend: visConfig?.install?.backend,

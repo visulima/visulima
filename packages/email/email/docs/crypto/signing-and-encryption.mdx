@@ -105,7 +105,7 @@ const dkimSigner = createDkimSigner({
     keySelector: "default",
     // Private key can be:
     // - Direct key content: "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"
-    // - File path (Node.js, Bun, Deno): "file:///path/to/private-key.pem"
+    // - File path (Node.js, Bun): "file:///path/to/private-key.pem"
     privateKey: "file:///path/to/private-key.pem",
     passphrase: "optional-passphrase",
 
@@ -127,7 +127,6 @@ Prefer `relaxed` for both: SMTP hops routinely re-wrap whitespace, which `simple
 
 - **Node.js**: Full support including file-based keys (`file://` paths)
 - **Bun**: Full support including file-based keys (`file://` paths)
-- **Deno**: Full support including file-based keys (`file://` paths)
 - **Cloudflare Workers/workerd**: Full support - requires `nodejs_compat` flag and key content as strings (no file paths). Uses `unenv` polyfills for `node:crypto` compatibility ([unenv](https://github.com/unjs/unenv)).
 - **Other environments**: Provide key content directly (no file support)
 
@@ -200,7 +199,6 @@ const result = await mail.send(message);
 
 - **Node.js 20+**: Full support including encrypted private keys (PBES2/PBKDF2). Uses Node.js crypto APIs.
 - **Bun**: Full support via Node.js compatibility layer. Encrypted keys require Node.js crypto.
-- **Deno**: Full support via Node.js compatibility layer. Encrypted keys require Node.js crypto.
 - **Cloudflare Workers/workerd**: Not supported - requires `node:fs/promises` for file reading and `node:crypto` for key handling. Code would need modification to accept strings instead of file paths.
 
 ## Encrypting Messages
@@ -243,7 +241,6 @@ const result = await mail.send(message);
 
 - **Node.js 20+**: Full support. Uses Node.js crypto APIs and Web Crypto API.
 - **Bun**: Full support via Node.js compatibility layer and Web Crypto API.
-- **Deno**: Full support via Node.js compatibility layer and Web Crypto API.
 - **Cloudflare Workers/workerd**: Not supported - requires `node:fs/promises` for file reading. Code would need modification to accept strings instead of file paths.
 
 **Encryption Algorithms**:
@@ -298,20 +295,20 @@ const result = await mail.send(message);
 
 5. **Encrypted Private Keys**:
     - **Node.js**: Full support for encrypted private keys (PBES2/PBKDF2). Simply provide the `passphrase` option. Node.js crypto automatically handles encrypted PKCS#8 and PKCS#1 keys.
-    - **Bun/Deno**: Encrypted keys work via Node.js compatibility layer. If compatibility is not available, decrypt the key externally or use Node.js for automatic decryption.
+    - **Bun**: Encrypted keys work via Node.js compatibility layer. If compatibility is not available, decrypt the key externally or use Node.js for automatic decryption.
     - **Cloudflare Workers/workerd**: Full support for encrypted keys via `unenv` polyfills. Provide the `passphrase` option just like in Node.js ([unenv](https://github.com/unjs/unenv)).
 
 ## Platform Compatibility
 
-| Feature           | Node.js | Bun    | Deno   | Cloudflare Workers |
-| ----------------- | ------- | ------ | ------ | ------------------ |
-| DKIM Signing      | ✅      | ✅     | ✅     | ✅\*               |
-| S/MIME Signing    | ✅\*\*  | ✅\*\* | ✅\*\* | ❌\*\*\*           |
-| S/MIME Encryption | ✅\*\*  | ✅\*\* | ✅\*\* | ❌\*\*\*           |
+| Feature           | Node.js | Bun    | Cloudflare Workers |
+| ----------------- | ------- | ------ | ------------------ |
+| DKIM Signing      | ✅      | ✅     | ✅\*               |
+| S/MIME Signing    | ✅\*\*  | ✅\*\* | ❌\*\*\*           |
+| S/MIME Encryption | ✅\*\*  | ✅\*\* | ❌\*\*\*           |
 
 \* DKIM in Cloudflare Workers: Full support - requires `nodejs_compat` flag and key content as strings (no file paths). Uses `unenv` polyfills for `node:crypto` compatibility ([unenv](https://github.com/unjs/unenv)). All required functions (`createHash`, `createSign`, `createPrivateKey`) are available.
 
-\*\* S/MIME requires Web Crypto API (Node.js 20+, Bun, Deno) and pkijs/asn1js packages. All runtimes use Node.js APIs via compatibility layers where available.
+\*\* S/MIME requires Web Crypto API (Node.js 20+, Bun) and pkijs/asn1js packages. All runtimes use Node.js APIs via compatibility layers where available.
 
 \*\*\* S/MIME in Cloudflare Workers: Not supported - requires `node:fs/promises` for file reading. Current implementation expects file paths, not strings. Code would need modification to accept strings instead of file paths.
 
@@ -333,7 +330,7 @@ const mail = createMail(
         dkim: {
             domainName: "example.com",
             keySelector: "default",
-            // Use a file:// path (Node.js, Bun, Deno) …
+            // Use a file:// path (Node.js, Bun) …
             privateKey: "file:///path/to/dkim-private-key.pem",
             // … or read it yourself and pass the content:
             // privateKey: readFileSync("/path/to/dkim-private-key.pem", "utf-8"),

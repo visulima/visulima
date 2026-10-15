@@ -92,7 +92,7 @@ const rest = new Rest({ storage });
 app.use("/files", rest.handle);
 ```
 
-### Hono / Cloudflare Workers / Bun / Deno
+### Hono / Cloudflare Workers / Bun
 
 ```ts
 import { Hono } from "hono";
@@ -157,7 +157,7 @@ Consumer providers (user OAuth or service-credential, all peer-dep gated):
 The `Files` facade is intentionally small. Features below live on the adapter and the framework around it:
 
 - **Upload protocols** — multipart-form, raw REST, chunked REST, TUS resumable.
-- **HTTP handlers** — Node, Fetch, Hono, Next.js, SolidStart, Nuxt, Bun, Deno, Cloudflare, Edge.
+- **HTTP handlers** — Node, Fetch, Hono, Next.js, SolidStart, Nuxt, Bun, Cloudflare, Edge.
 - **Image / video / audio transformers** — Sharp + Mediabunny, URL-query or programmatic, with caching.
 - **Retry + backoff** — exponential retry baked into every adapter, plus custom `shouldRetry`.
 - **Observability** — built-in metrics and OpenTelemetry spans.

@@ -1080,7 +1080,7 @@ const executeCatalogUpdate = async (
 
 const executePmWrapper = async (
     workspaceRoot: string,
-    packageManager: "aube" | "bun" | "deno" | "npm" | "pnpm" | "yarn",
+    packageManager: "aube" | "bun" | "npm" | "pnpm" | "yarn",
     version: string,
     options: Record<string, unknown>,
     argument: string[],
@@ -1606,7 +1606,7 @@ const execute = async ({ argument: rawArgument, logger, options, visConfig, work
         // Non-catalog updates honor `install.backend` so users who opted
         // into aube get `aube update` instead of the lockfile-detected PM.
         const installer = resolveInstaller(workspaceRoot, {
-            backend: runtimeInstallerBackend(resolveCommandRuntime({ logger, options, visConfig }, workspaceRoot)),
+            backend: runtimeInstallerBackend(resolveCommandRuntime({ options, visConfig }, workspaceRoot)),
             configBackend: visConfig?.install?.backend,
             configCorepack: visConfig?.install?.corepack,
         });

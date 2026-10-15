@@ -3,7 +3,7 @@ const hasBuffer = globalThis.Buffer !== undefined;
 
 /**
  * Converts content to a base64-encoded string.
- * Works across Node.js, Deno, Bun, and Workers.
+ * Works across Node.js, Bun, and Workers.
  * @param content The content to convert (string, Buffer, Uint8Array, or ArrayLike&lt;number>).
  * @returns The base64-encoded string.
  */

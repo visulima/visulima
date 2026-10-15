@@ -134,7 +134,7 @@ import { Rest } from "@visulima/storage/handler/http/fetch";
 
 const rest = new Rest({ storage });
 
-// Any Fetch-API runtime: Hono, Bun, Deno, Next.js route handlers, …
+// Any Fetch-API runtime: Hono, Bun, Next.js route handlers, …
 export const handler = (request: Request): Promise<Response> => rest.fetch(request);
 ```
 

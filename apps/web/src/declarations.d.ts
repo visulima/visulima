@@ -1,7 +1,6 @@
 declare module "@icons-pack/react-simple-icons/icons/SiAstro.mjs";
 declare module "@icons-pack/react-simple-icons/icons/SiBun.mjs";
 declare module "@icons-pack/react-simple-icons/icons/SiCloudflare.mjs";
-declare module "@icons-pack/react-simple-icons/icons/SiDeno.mjs";
 declare module "@icons-pack/react-simple-icons/icons/SiDiscord.mjs";
 declare module "@icons-pack/react-simple-icons/icons/SiExpress.mjs";
 declare module "@icons-pack/react-simple-icons/icons/SiGithub.mjs";

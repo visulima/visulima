@@ -10,8 +10,6 @@ export type AdapterKind = "both" | "fmt" | "lint";
 
 export type AdapterId
     = | "biome"
-        | "deno-fmt"
-        | "deno-lint"
         | "dprint"
         | "eslint"
         | "markdownlint"
@@ -25,10 +23,10 @@ export type AdapterId
         | "typecheck";
 
 /** Adapter IDs that can format (adapter `kind` is `"fmt"` or `"both"`). */
-export type FmtAdapterId = "biome" | "deno-fmt" | "dprint" | "oxfmt" | "prettier" | "ruff-fmt";
+export type FmtAdapterId = "biome" | "dprint" | "oxfmt" | "prettier" | "ruff-fmt";
 
 /** Adapter IDs that can lint (adapter `kind` is `"lint"` or `"both"`). */
-export type LintAdapterId = "biome" | "deno-lint" | "eslint" | "markdownlint" | "oxlint" | "ruff-check" | "shellcheck" | "stylelint" | "typecheck";
+export type LintAdapterId = "biome" | "eslint" | "markdownlint" | "oxlint" | "ruff-check" | "shellcheck" | "stylelint" | "typecheck";
 
 export type FindingSeverity = "error" | "info" | "warning";
 

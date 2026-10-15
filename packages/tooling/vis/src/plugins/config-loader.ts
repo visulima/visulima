@@ -3,6 +3,7 @@ import { createInterface } from "node:readline";
 
 import type { Plugin } from "@visulima/cerebro";
 import { bold, cyan, red, yellow } from "@visulima/colorize";
+import { isAccessibleSync } from "@visulima/fs";
 import { findMonorepoRootSync } from "@visulima/package";
 import { join, resolve } from "@visulima/path";
 import isInCi from "is-in-ci";
@@ -11,6 +12,27 @@ import { satisfies, validRange } from "semver";
 import { findVisConfigFile, loadVisConfig } from "../config/config";
 import type { VisConfig } from "../config/workspace";
 import getPackageVersion from "../util/package-version";
+
+const DENO_FILES = ["deno.json", "deno.jsonc", "deno.lock"];
+const JS_LOCKFILES = ["bun.lock", "bun.lockb", "npm-shrinkwrap.json", "package-lock.json", "pnpm-lock.yaml", "yarn.lock"];
+
+/**
+ * Deno is no longer a runtime or package manager vis supports. A Deno-only
+ * project has no JS lockfile, so the installer falls back to pnpm; say so
+ * instead of doing it silently.
+ * @param logger Console-like sink for the warning.
+ * @param root Workspace root to inspect (only that directory, not its parents).
+ */
+const warnIfDenoOnlyProject = (logger: Pick<Console, "warn">, root: string): void => {
+    const hasDeno = DENO_FILES.some((file) => isAccessibleSync(join(root, file)));
+    const hasJsLockfile = JS_LOCKFILES.some((file) => isAccessibleSync(join(root, file)));
+
+    if (hasDeno && !hasJsLockfile) {
+        logger.warn(
+            `Deno is no longer supported. ${root} has Deno files but no JavaScript lockfile, so vis falls back to pnpm. Add your package manager's lockfile or pass --installer.`,
+        );
+    }
+};
 
 const configLoaderPlugin: Plugin = {
     beforeCommand: async (toolbox) => {
@@ -31,6 +53,8 @@ const configLoaderPlugin: Plugin = {
             }
 
             toolbox.workspaceRoot = workspaceRoot;
+
+            warnIfDenoOnlyProject(toolbox.logger, workspaceRoot);
 
             // --config wins over discovery: resolve against cwd so users
             // can point at any file regardless of workspaceRoot.

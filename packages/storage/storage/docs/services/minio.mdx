@@ -131,7 +131,7 @@ app.use("/files", new Tus({ storage }).handle);
 ```
 
 ```ts
-// Fetch (Bun, Deno, Hono, …)
+// Fetch (Bun, Hono, …)
 import { Rest } from "@visulima/storage/handler/http/fetch";
 
 const rest = new Rest({ storage });

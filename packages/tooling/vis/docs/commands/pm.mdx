@@ -37,7 +37,7 @@ Some subcommands move between namespaces or were removed entirely depending on t
 | Subcommand                            | Substitution                                                               |
 | ------------------------------------- | -------------------------------------------------------------------------- |
 | `pkg` (bun)                           | rewrites to `bun pm pkg`                                                   |
-| `pkg` (yarn, deno)                    | falls back to `npm pkg` (it only edits `package.json`)                     |
+| `pkg` (yarn)                          | falls back to `npm pkg` (it only edits `package.json`)                     |
 | `whoami` (pnpm 11)                    | falls back to `npm whoami` (pnpm 11 removed `whoami`)                      |
 | `whoami` (yarn berry)                 | rewrites to `yarn npm whoami`                                              |
 | `whoami` (bun)                        | rewrites to `bun pm whoami`                                                |
@@ -51,18 +51,6 @@ Some subcommands move between namespaces or were removed entirely depending on t
 | `ping` / `search` / `token` (pnpm 11) | falls back to `npm <sub>` (pnpm 11 removed each)                           |
 | `config delete` (yarn berry)          | rewrites to `yarn config unset`                                            |
 | `plugin` (anything but yarn berry)    | warn + exit 0                                                              |
-| `prune` (yarn / bun / deno)           | warn + exit 0 (pruning happens on install)                                 |
-| `rebuild` (yarn 1 / bun / deno)       | warn + exit 0                                                              |
-| `config` (bun / deno)                 | warn + exit 0 (no config CLI; edit `bunfig.toml` / `.npmrc` / `deno.json`) |
-
-## Deno
-
-Deno has no umbrella `pm` command, so vis maps the common subcommands to deno's nearest equivalents:
-
-| Subcommand          | Deno equivalent                                                     |
-| ------------------- | ------------------------------------------------------------------- |
-| `cache <dir>`       | `deno info` (cache management lives in `--reload` / `DENO_DIR` env) |
-| `list`              | `deno info`                                                         |
-| `pack`              | `deno publish --dry-run`                                            |
-| `view` / `info`     | `deno info npm:<pkg>`                                               |
-| `prune` / `rebuild` | unsupported — vis emits a warning                                   |
+| `prune` (yarn / bun)                  | warn + exit 0 (pruning happens on install)                                 |
+| `rebuild` (yarn 1 / bun)              | warn + exit 0                                                              |
+| `config` (bun)                        | warn + exit 0 (no config CLI; edit `bunfig.toml` / `.npmrc`)               |

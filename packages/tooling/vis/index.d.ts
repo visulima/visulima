@@ -132,7 +132,7 @@ export interface CleanResult {
 export declare function cleanWorkspace(root: string, removeLockfile: boolean): CleanResult;
 
 export interface DetectedPackageManager {
-    /** The package manager name: "pnpm", "npm", "yarn", "bun", or "deno" */
+    /** The package manager name: "pnpm", "npm", "yarn", or "bun" */
     name: string;
     /** The version string from packageManager field, or None if unknown */
     version?: string;

@@ -61,7 +61,7 @@ const ciOptionDefinitions = {
     "skip-toolchain": {
         defaultValue: false,
         description:
-                "Skip the toolchain pre-flight (no auto-install for any pinned tool: node / pnpm / yarn / npm / bun / deno / go / python / ruby / rust)",
+                "Skip the toolchain pre-flight (no auto-install for any pinned tool: node / pnpm / yarn / npm / bun / go / python / ruby / rust)",
         type: Boolean,
     },
     upstream: {

@@ -376,7 +376,7 @@ describe("utilities", () => {
         it("should return a valid runtime name or undefined", () => {
             expect.assertions(2);
 
-            const validRuntimes: RuntimeName[] = ["bun", "deno", "edge-light", "fastly", "lagon", "netlify", "node", "workerd"];
+            const validRuntimes: RuntimeName[] = ["bun", "edge-light", "fastly", "lagon", "netlify", "node", "workerd"];
 
             expect(runtime === undefined || typeof runtime === "string").toBe(true);
 

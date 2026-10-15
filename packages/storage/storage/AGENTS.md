@@ -14,7 +14,7 @@ Each provider implements `BaseStorage` (see `src/storage/storage.ts`). Available
 
 ### HTTP handlers (`src/handler/http/`)
 
-Runtime adapters for upload endpoints: `node`, `fetch` (re-used by `bun`/`cloudflare`/`deno`/`edge`), `hono`, `nextjs`, `solid-start`. Protocol handlers under `src/handler/` itself: `tus/`, `multipart/`, `rest/` (chunked REST), plus shared `base/` and `services/`.
+Runtime adapters for upload endpoints: `node`, `fetch` (re-used by `bun`/`cloudflare`/`edge`), `hono`, `nextjs`, `solid-start`. Protocol handlers under `src/handler/` itself: `tus/`, `multipart/`, `rest/` (chunked REST), plus shared `base/` and `services/`.
 
 ### Top-level features
 

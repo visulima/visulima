@@ -186,7 +186,7 @@ The `.` entry point picks a build from the export conditions your runtime or bun
 
 | Runtime                                     | Condition matched        | Build                   | Default reporter       |
 | ------------------------------------------- | ------------------------ | ----------------------- | ---------------------- |
-| Node.js, Bun, Deno (Node compat)            | `import`                 | `dist/index.server.js`  | Pretty (stdout/stderr) |
+| Node.js, Bun (Node compat)                  | `import`                 | `dist/index.server.js`  | Pretty (stdout/stderr) |
 | Browsers and bundlers targeting the browser | `browser`                | `dist/index.browser.js` | JSON (console)         |
 | Cloudflare Workers, Vercel Edge             | `workerd` / `edge-light` | `dist/index.browser.js` | JSON (console)         |
 

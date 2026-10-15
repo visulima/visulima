@@ -759,43 +759,6 @@ describe("inference", () => {
             expect(result.targets["test"]?.command).toBe("vitest run");
         });
 
-        it("should infer deno test/lint/fmt/check from deno.json", () => {
-            expect.assertions(4);
-
-            writeFile("deno.json", "{}");
-
-            const result = inferProjectTargets({
-                pkg: {},
-                projectDirectory: "packages/lib",
-                projectRoot: tmp,
-            });
-
-            expect(result.targets["test"]?.command).toBe("deno test");
-            expect(result.targets["lint"]?.command).toBe("deno lint");
-            expect(result.targets["fmt"]?.command).toBe("deno fmt");
-            expect(result.targets["check"]?.command).toBe("deno check **/*.ts");
-        });
-
-        it("should let eslint and vitest beat deno on lint and test", () => {
-            expect.assertions(4);
-
-            writeFile("eslint.config.ts", "export default []");
-            writeFile("vitest.config.ts", "export default {}");
-            writeFile("deno.json", "{}");
-
-            const result = inferProjectTargets({
-                pkg: {},
-                projectDirectory: "packages/lib",
-                projectRoot: tmp,
-            });
-
-            expect(result.targets["lint"]?.command).toBe("eslint .");
-            expect(result.targets["test"]?.command).toBe("vitest run");
-            // deno still uniquely owns fmt and check
-            expect(result.targets["fmt"]?.command).toBe("deno fmt");
-            expect(result.targets["check"]?.command).toBe("deno check **/*.ts");
-        });
-
         it("should infer typedoc docs from typedoc.json", () => {
             expect.assertions(2);
 

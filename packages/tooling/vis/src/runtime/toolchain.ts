@@ -29,7 +29,7 @@ export const SUPPORTED_MANAGERS = ["proto", "mise", "fnm", "volta", "asdf", "nvm
 
 export type VersionManagerName = "asdf" | "corepack" | "fnm" | "mise" | "none" | "nvm" | "proto" | "self-activate" | "volta";
 
-export type RuntimeTool = "aube" | "bun" | "deno" | "go" | "node" | "npm" | "pnpm" | "python" | "ruby" | "rust" | "yarn";
+export type RuntimeTool = "aube" | "bun" | "go" | "node" | "npm" | "pnpm" | "python" | "ruby" | "rust" | "yarn";
 
 /**
  * Where an expected version came from, in priority order. Higher-indexed
@@ -121,15 +121,15 @@ const MANAGER_CAPABILITIES: Record<DetectableManager, ReadonlyArray<RuntimeTool>
     // them in resolveManagerFor (the manager just won't have a config
     // file referencing them), so listing them here is safe and matches
     // the "asdf is catch-all" docstring above.
-    asdf: ["bun", "deno", "go", "node", "npm", "pnpm", "python", "ruby", "rust", "yarn"],
+    asdf: ["bun", "go", "node", "npm", "pnpm", "python", "ruby", "rust", "yarn"],
     corepack: ["npm", "pnpm", "yarn"],
     fnm: ["node"],
     // mise installs aube via the official `aube` registry entry (the
     // recommended install path per the aube docs). proto/asdf don't have
     // a published plugin yet — list mise only.
-    mise: ["aube", "bun", "deno", "go", "node", "npm", "pnpm", "python", "ruby", "rust", "yarn"],
+    mise: ["aube", "bun", "go", "node", "npm", "pnpm", "python", "ruby", "rust", "yarn"],
     nvm: ["node"],
-    proto: ["bun", "deno", "go", "node", "npm", "pnpm", "python", "ruby", "rust", "yarn"],
+    proto: ["bun", "go", "node", "npm", "pnpm", "python", "ruby", "rust", "yarn"],
     volta: ["node", "npm", "pnpm", "yarn"],
 };
 
@@ -604,9 +604,6 @@ const normalizeToolName = (raw: string): RuntimeTool | undefined => {
         case "bun": {
             return "bun";
         }
-        case "deno": {
-            return "deno";
-        }
         case "go":
         case "golang": {
             return "go";
@@ -760,7 +757,6 @@ export const parseExpectedTools = (workspaceRoot: string, config?: ToolchainConf
 const TOOL_VERSION_QUERY: Record<RuntimeTool, { args: ReadonlyArray<string>; binaries: ReadonlyArray<string> }> = {
     aube: { args: ["--version"], binaries: ["aube"] },
     bun: { args: ["--version"], binaries: ["bun"] },
-    deno: { args: ["--version"], binaries: ["deno"] },
     go: { args: ["version"], binaries: ["go"] },
     node: { args: ["--version"], binaries: ["node"] },
     npm: { args: ["--version"], binaries: ["npm"] },

@@ -1,3 +1,3 @@
-type PackageManagerName = "bun" | "deno" | "npm" | "pnpm" | "yarn";
+type PackageManagerName = "bun" | "npm" | "pnpm" | "yarn";
 
 export type { PackageManagerName };

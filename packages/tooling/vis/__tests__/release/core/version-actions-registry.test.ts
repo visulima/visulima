@@ -8,7 +8,6 @@ import { GemVersionActions } from "../../../src/release/core/version-actions/gem
 import { GoVersionActions } from "../../../src/release/core/version-actions/go";
 import { GradleVersionActions } from "../../../src/release/core/version-actions/gradle";
 import { HexVersionActions } from "../../../src/release/core/version-actions/hex";
-import { JsrVersionActions } from "../../../src/release/core/version-actions/jsr";
 import { MavenVersionActions } from "../../../src/release/core/version-actions/maven";
 import { NativeAddonVersionActions } from "../../../src/release/core/version-actions/native-addon";
 import { NpmVersionActions } from "../../../src/release/core/version-actions/npm";
@@ -30,7 +29,6 @@ describe(createVersionActions, () => {
         ["go", GoVersionActions],
         ["gradle", GradleVersionActions],
         ["hex", HexVersionActions],
-        ["jsr", JsrVersionActions],
         ["maven", MavenVersionActions],
         ["native-addon", NativeAddonVersionActions],
         ["nuget", NuGetVersionActions],

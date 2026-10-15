@@ -23,7 +23,7 @@ export interface RequestOptions {
 }
 
 /**
- * Makes an HTTP request using Fetch API (compatible with Node.js 20.19+, Deno, Bun, Cloudflare Workers).
+ * Makes an HTTP request using Fetch API (compatible with Node.js 20.19+, Bun, Cloudflare Workers).
  * @param url The URL to make the request to.
  * @param options Request options including method, headers, and timeout.
  * @param data Optional request body data (string, Buffer, or Uint8Array).

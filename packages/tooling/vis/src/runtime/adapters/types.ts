@@ -3,13 +3,15 @@
  * `rfc/design-runtime-multitool.md`). Phase 0 defines the identity +
  * detection metadata; Phase 1 extends adapters with the spawn-building
  * methods (`runFile` / `runScript` / `install` / `exec`) that route through
- * `pm-runner`. Deno is a planned third adapter — deliberately not a
- * `RuntimeId` yet (it carries permission + no-`node_modules` semantics that
- * the first cut omits).
+ * `pm-runner`.
  */
 
-/** JS runtimes vis can target today. `"deno"` is deferred. */
-export type RuntimeId = "bun" | "node";
+export const RUNTIME_IDS = ["bun", "node"] as const;
+
+/** JS runtimes vis can target today. */
+export type RuntimeId = (typeof RUNTIME_IDS)[number];
+
+export const isRuntimeId = (value: string): value is RuntimeId => (RUNTIME_IDS as ReadonlyArray<string>).includes(value);
 
 export interface RuntimeAdapter {
     /** Stable runtime identifier. */
@@ -24,10 +26,4 @@ export interface RuntimeAdapter {
      * detectors never disagree.
      */
     readonly lockfiles: ReadonlyArray<string>;
-
-    /**
-     * File that declares runnable scripts for this runtime. `package.json`
-     * for both Node and Bun; `deno.json` when the Deno adapter lands.
-     */
-    readonly scriptSource: "package.json";
 }

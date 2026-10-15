@@ -25,7 +25,7 @@ interface OnoJsonError {
 
 /** Structured, JSON-serializable representation of a rendered error. */
 interface OnoJson {
-    /** Detected runtime (node, bun, deno, workerd, …) or undefined when unknown. */
+    /** Detected runtime (node, bun, workerd, …) or undefined when unknown. */
     runtime?: string;
     /** Suggested solution found by the configured solution finders, if any. */
     solution?: { body: string; header: string };

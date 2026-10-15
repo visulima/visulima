@@ -1,7 +1,7 @@
 <div align="center">
   <h3>Visulima cron-parser</h3>
   <p>
-  Parse cron expressions and walk their schedule, with time zone and DST support. ESM only, zero dependencies, runs on Node.js, Deno, Bun and Cloudflare Workers. It calculates run times; it does not run anything.
+  Parse cron expressions and walk their schedule, with time zone and DST support. ESM only, zero dependencies, runs on Node.js, Bun and Cloudflare Workers. It calculates run times; it does not run anything.
   </p>
 </div>
 
@@ -194,7 +194,7 @@ An expression is read on the wall clock of its `tz`, and a run is a real instant
 
 `next()` and `prev()` do not step through DST. They list the wall clock times that match, with plain calendar arithmetic that skips whole months and days, and then turn each into the real instants it happens at. A schedule such as the fifth Wednesday of February is found directly, however far away it is.
 
-Everything zone related comes from one primitive, a zone's UTC offset at an instant. It comes from native `Temporal` where the runtime has it (Deno and Bun do today) and from `Intl.DateTimeFormat` everywhere else. Both give the same answers: the test suite runs against each. The DST rules are checked against an independent brute-force model of the clock (it scans a zone minute by minute and inverts it) in 14 zone and date windows, including Samoa's lost day, Troll's two hour jump, Chatham's mid-hour gap and a 1844 Manila offset with seconds in it. Away from clock changes the results are compared with the `cron-parser` package and have to be identical. Native `Temporal` is also the faster backend where it exists: about 2 times the throughput of `Intl` on Bun and about 1.6 to 1.8 times on Deno.
+Everything zone related comes from one primitive, a zone's UTC offset at an instant. It comes from native `Temporal` where the runtime has it (Bun does today) and from `Intl.DateTimeFormat` everywhere else. Both give the same answers: the test suite runs against each. The DST rules are checked against an independent brute-force model of the clock (it scans a zone minute by minute and inverts it) in 14 zone and date windows, including Samoa's lost day, Troll's two hour jump, Chatham's mid-hour gap and a 1844 Manila offset with seconds in it. Away from clock changes the results are compared with the `cron-parser` package and have to be identical. Native `Temporal` is also the faster backend where it exists: about 2 times the throughput of `Intl` on Bun.
 
 `CronDate` is the date type `next()` and `prev()` return. It reads and moves a point in time on one zone's wall clock, and also exposes `getUTCOffset()`, `toISOString()` (UTC) and `toJSON()` (with the zone's own offset):
 
@@ -212,7 +212,7 @@ Date strings may be ISO 8601 / SQL, RFC 2822 or HTTP dates. A string without an 
 
 ## Runtimes and size
 
-The main entry uses only `Intl`, optionally `Temporal`, and plain JavaScript, so it runs unchanged on Node.js, Deno, Bun and Cloudflare Workers. `@visulima/cron-parser/cloudflare` is the same entry with the Cloudflare dialect applied, and `@visulima/cron-parser/file` is the one that needs `node:fs`. It is ESM only, side-effect free, and has no dependencies.
+The main entry uses only `Intl`, optionally `Temporal`, and plain JavaScript, so it runs unchanged on Node.js, Bun and Cloudflare Workers. `@visulima/cron-parser/cloudflare` is the same entry with the Cloudflare dialect applied, and `@visulima/cron-parser/file` is the one that needs `node:fs`. It is ESM only, side-effect free, and has no dependencies.
 
 Bundled and minified, `CronExpressionParser.parse(...).next()` is about 31 KB (11 KB gzipped), and a bare `CronDate` is about 10 KB (4 KB gzipped). The same import through `cron-parser` and `luxon` is about 100 KB (31 KB gzipped). `pnpm run build:prod && pnpm run size` prints the figures for this package. Iteration is also faster than that package; `__bench__` compares it with `croner`, `cron-schedule` and `cron-fast` too.
 
@@ -272,7 +272,7 @@ When the day of week field is also set, a day matching either field runs, as wit
 
 A "this run" accessor and shorter `stringify()` output for stepped ranges are requests upstream has not implemented and this package does not either. Switching the non-standard extensions off is covered by the `dialect` and `features` options above.
 
-The `temporal-polyfill` package has wrong offsets for `Africa/Casablanca` (Morocco's negative DST); native `Temporal` in Bun and Deno agrees with `Intl` there. The DST model above does not depend on the polyfill's data, but the comparison with `cron-parser` skips that zone when running on the polyfill.
+The `temporal-polyfill` package has wrong offsets for `Africa/Casablanca` (Morocco's negative DST); native `Temporal` in Bun agrees with `Intl` there. The DST model above does not depend on the polyfill's data, but the comparison with `cron-parser` skips that zone when running on the polyfill.
 
 ## Supported Node.js Versions
 

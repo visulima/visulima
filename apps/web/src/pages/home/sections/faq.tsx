@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 
 const faqs = [
     {
-        answer: "Visulima is a collection of 40+ production-ready, MIT-licensed TypeScript packages for Node.js, Bun, Deno, and edge runtimes. It provides tools for bundling, logging, CLI development, file system operations, error handling, API building, and more.",
+        answer: "Visulima is a collection of 40+ production-ready, MIT-licensed TypeScript packages for Node.js, Bun, and edge runtimes. It provides tools for bundling, logging, CLI development, file system operations, error handling, API building, and more.",
         question: "What is Visulima?",
     },
     {
@@ -19,7 +19,7 @@ const faqs = [
         question: "Is Visulima free to use?",
     },
     {
-        answer: "Visulima packages are designed for cross-runtime compatibility. They work with Node.js, Bun, Deno, and edge runtimes like Cloudflare Workers and Vercel Edge Functions.",
+        answer: "Visulima packages are designed for cross-runtime compatibility. They work with Node.js, Bun, and edge runtimes like Cloudflare Workers and Vercel Edge Functions.",
         question: "What runtimes does Visulima support?",
     },
     {

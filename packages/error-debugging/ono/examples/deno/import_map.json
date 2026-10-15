@@ -1,6 +1,0 @@
-{
-    "imports": {
-        "@visulima/ono": "../../src/index.ts",
-        "@visulima/ono/": "../../src/"
-    }
-}

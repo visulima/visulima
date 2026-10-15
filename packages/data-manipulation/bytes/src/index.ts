@@ -40,7 +40,7 @@ interface ToUint8ArrayOptions {
 const hasBuffer = (): boolean => typeof Buffer === "function";
 
 // Shared, stateless coder instances — `TextEncoder`/`TextDecoder` are standard
-// in every modern runtime (Node, Deno, browsers, edge) and cheap to reuse.
+// in every modern runtime (Node, browsers, edge) and cheap to reuse.
 const textEncoder = new TextEncoder();
 const utf8Decoder = new TextDecoder("utf-8");
 
@@ -171,7 +171,7 @@ const asciiToUint8Array = (txt: TemplateStringsArray | string | [string], ...sub
 /**
  * Converts a UTF-8 string, array of strings, or template literal to a Uint8Array.
  *
- * Cross-runtime: uses the standard `TextEncoder`, so it works in browsers, Deno
+ * Cross-runtime: uses the standard `TextEncoder`, so it works in browsers
  * and edge runtimes as well as Node. The returned `Uint8Array` owns its backing
  * `ArrayBuffer` (no shared Buffer pool exposure).
  * @param txt The input string, array of strings, or template strings array.
@@ -448,5 +448,4 @@ export {
     utf8ToUint8Array,
 };
 
-// eslint-disable-next-line import/no-extraneous-dependencies
-export * from "@std/bytes";
+export { concat, copy, endsWith, equals, includesNeedle, indexOfNeedle, lastIndexOfNeedle, repeat, startsWith } from "./std-bytes";
