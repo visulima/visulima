@@ -64,10 +64,12 @@ export const getVersions = (): Record<string, string> => {
     // Bun exposes a Node-compatible `process.versions`; augment it with the
     // Bun-specific version read from the `Bun` global.
     if (hasBun(globalThis)) {
+        const { Bun } = globalThis as { Bun?: { version?: string } };
+
         const versions: Record<string, string> = { ...(process as { versions: Record<string, string> }).versions };
 
-        if (globalThis.Bun?.version) {
-            versions.bun = globalThis.Bun.version;
+        if (Bun?.version) {
+            versions.bun = Bun.version;
         }
 
         return versions;
