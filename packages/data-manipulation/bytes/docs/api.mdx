@@ -7,6 +7,282 @@ description: "Complete API documentation for @visulima/bytes"
 
 Complete reference for all functions in the `@visulima/bytes` package.
 
+## Array Operations
+
+### concat
+
+Concatenates an array of byte slices into a single slice.
+
+**Signature:**
+
+```typescript
+function concat(arrays: Uint8Array[]): Uint8Array;
+```
+
+**Parameters:**
+
+- `arrays` (`Uint8Array[]`) - Array of Uint8Arrays to concatenate
+
+**Returns:** `Uint8Array` - A new Uint8Array containing all bytes from the input arrays
+
+**Example:**
+
+```typescript
+import { concat } from "@visulima/bytes";
+
+const result = concat([new Uint8Array([0, 1, 2]), new Uint8Array([3, 4, 5])]);
+console.log(result); // Uint8Array([0, 1, 2, 3, 4, 5])
+```
+
+---
+
+### copy
+
+Copies bytes from the source array to the destination array and returns the number of bytes copied.
+
+**Signature:**
+
+```typescript
+function copy(src: Uint8Array, dst: Uint8Array, offset?: number): number;
+```
+
+**Parameters:**
+
+- `src` (`Uint8Array`) - Source array to copy from
+- `dst` (`Uint8Array`) - Destination array to copy into
+- `offset` (`number`, optional) - Position in destination to start copying to. Default: `0`
+
+**Returns:** `number` - Number of bytes copied
+
+**Example:**
+
+```typescript
+import { copy } from "@visulima/bytes";
+
+const src = new Uint8Array([9, 8, 7]);
+const dst = new Uint8Array([0, 1, 2, 3, 4, 5]);
+
+const copied = copy(src, dst);
+console.log(copied); // 3
+console.log(dst); // Uint8Array([9, 8, 7, 3, 4, 5])
+```
+
+---
+
+### equals
+
+Checks if two byte slices are equal.
+
+**Signature:**
+
+```typescript
+function equals(a: Uint8Array, b: Uint8Array): boolean;
+```
+
+**Parameters:**
+
+- `a` (`Uint8Array`) - First array to compare
+- `b` (`Uint8Array`) - Second array to compare
+
+**Returns:** `boolean` - `true` if arrays are equal, `false` otherwise
+
+**Example:**
+
+```typescript
+import { equals } from "@visulima/bytes";
+
+const a = new Uint8Array([1, 2, 3]);
+const b = new Uint8Array([1, 2, 3]);
+
+console.log(equals(a, b)); // true
+```
+
+---
+
+### repeat
+
+Returns a new byte slice composed of count repetitions of the source array.
+
+**Signature:**
+
+```typescript
+function repeat(source: Uint8Array, count: number): Uint8Array;
+```
+
+**Parameters:**
+
+- `source` (`Uint8Array`) - Array to repeat
+- `count` (`number`) - Number of times to repeat (must be ≥ 0)
+
+**Returns:** `Uint8Array` - New array with repeated bytes
+
+**Example:**
+
+```typescript
+import { repeat } from "@visulima/bytes";
+
+const result = repeat(new Uint8Array([0, 1, 2]), 3);
+console.log(result); // Uint8Array([0, 1, 2, 0, 1, 2, 0, 1, 2])
+```
+
+---
+
+## Search Functions
+
+### indexOfNeedle
+
+Returns the index of the first occurrence of the needle array in the source array, or -1 if not present.
+
+**Signature:**
+
+```typescript
+function indexOfNeedle(source: Uint8Array, needle: Uint8Array, start?: number): number;
+```
+
+**Parameters:**
+
+- `source` (`Uint8Array`) - Array to search in
+- `needle` (`Uint8Array`) - Sequence to search for
+- `start` (`number`, optional) - Index to start searching from. Default: `0`
+
+**Returns:** `number` - Index of first occurrence, or `-1` if not found
+
+**Example:**
+
+```typescript
+import { indexOfNeedle } from "@visulima/bytes";
+
+const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
+const needle = new Uint8Array([1, 2]);
+
+console.log(indexOfNeedle(source, needle)); // 1
+console.log(indexOfNeedle(source, needle, 2)); // 3
+```
+
+---
+
+### lastIndexOfNeedle
+
+Returns the index of the last occurrence of the needle array in the source array, or -1 if not present.
+
+**Signature:**
+
+```typescript
+function lastIndexOfNeedle(source: Uint8Array, needle: Uint8Array, start?: number): number;
+```
+
+**Parameters:**
+
+- `source` (`Uint8Array`) - Array to search in
+- `needle` (`Uint8Array`) - Sequence to search for
+- `start` (`number`, optional) - Index to search backwards from. Default: `source.length - 1`
+
+**Returns:** `number` - Index of last occurrence, or `-1` if not found
+
+**Example:**
+
+```typescript
+import { lastIndexOfNeedle } from "@visulima/bytes";
+
+const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
+const needle = new Uint8Array([1, 2]);
+
+console.log(lastIndexOfNeedle(source, needle)); // 5
+```
+
+---
+
+### includesNeedle
+
+Determines whether the source array contains the needle array.
+
+**Signature:**
+
+```typescript
+function includesNeedle(source: Uint8Array, needle: Uint8Array, start?: number): boolean;
+```
+
+**Parameters:**
+
+- `source` (`Uint8Array`) - Array to search in
+- `needle` (`Uint8Array`) - Sequence to search for
+- `start` (`number`, optional) - Index to start searching from. Default: `0`
+
+**Returns:** `boolean` - `true` if needle is found, `false` otherwise
+
+**Example:**
+
+```typescript
+import { includesNeedle } from "@visulima/bytes";
+
+const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
+const needle = new Uint8Array([1, 2]);
+
+console.log(includesNeedle(source, needle)); // true
+```
+
+---
+
+### startsWith
+
+Returns true if the prefix array appears at the start of the source array, false otherwise.
+
+**Signature:**
+
+```typescript
+function startsWith(source: Uint8Array, prefix: Uint8Array): boolean;
+```
+
+**Parameters:**
+
+- `source` (`Uint8Array`) - Array to check
+- `prefix` (`Uint8Array`) - Prefix to look for
+
+**Returns:** `boolean` - `true` if source starts with prefix, `false` otherwise
+
+**Example:**
+
+```typescript
+import { startsWith } from "@visulima/bytes";
+
+const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
+const prefix = new Uint8Array([0, 1, 2]);
+
+console.log(startsWith(source, prefix)); // true
+```
+
+---
+
+### endsWith
+
+Returns true if the suffix array appears at the end of the source array, false otherwise.
+
+**Signature:**
+
+```typescript
+function endsWith(source: Uint8Array, suffix: Uint8Array): boolean;
+```
+
+**Parameters:**
+
+- `source` (`Uint8Array`) - Array to check
+- `suffix` (`Uint8Array`) - Suffix to look for
+
+**Returns:** `boolean` - `true` if source ends with suffix, `false` otherwise
+
+**Example:**
+
+```typescript
+import { endsWith } from "@visulima/bytes";
+
+const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
+const suffix = new Uint8Array([1, 2, 3]);
+
+console.log(endsWith(source, suffix)); // true
+```
+
+---
+
 ## Type Conversion
 
 ### bufferToUint8Array
@@ -196,6 +472,15 @@ try {
 
 | Function             | Category         | Description                       |
 | -------------------- | ---------------- | --------------------------------- |
+| `concat`             | Array Operations | Concatenate multiple byte arrays  |
+| `copy`               | Array Operations | Copy bytes between arrays         |
+| `equals`             | Array Operations | Compare arrays for equality       |
+| `repeat`             | Array Operations | Repeat byte sequence              |
+| `indexOfNeedle`      | Search           | Find first occurrence of sequence |
+| `lastIndexOfNeedle`  | Search           | Find last occurrence of sequence  |
+| `includesNeedle`     | Search           | Check if array contains sequence  |
+| `startsWith`         | Search           | Check if array starts with prefix |
+| `endsWith`           | Search           | Check if array ends with suffix   |
 | `bufferToUint8Array` | Conversion       | Convert Buffer to Uint8Array      |
 | `isUint8Array`       | Conversion       | Type check for Uint8Array         |
 | `asciiToUint8Array`  | Conversion       | Convert ASCII string to bytes     |

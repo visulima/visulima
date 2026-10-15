@@ -7,6 +7,237 @@ description: "Learn how to use all @visulima/bytes functions with detailed examp
 
 Learn how to use all functions from the `@visulima/bytes` package with detailed examples.
 
+## Array Operations
+
+### Concatenate Byte Arrays
+
+Combine multiple Uint8Arrays into a single array:
+
+```typescript
+import { concat } from "@visulima/bytes";
+
+const a = new Uint8Array([0, 1, 2]);
+const b = new Uint8Array([3, 4, 5]);
+const c = new Uint8Array([6, 7, 8]);
+
+const result = concat([a, b, c]);
+console.log(result); // Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8])
+```
+
+Works with empty arrays:
+
+```typescript
+import { concat } from "@visulima/bytes";
+
+const empty = new Uint8Array([]);
+const data = new Uint8Array([1, 2, 3]);
+
+console.log(concat([empty, data])); // Uint8Array([1, 2, 3])
+console.log(concat([data, empty])); // Uint8Array([1, 2, 3])
+```
+
+### Copy Bytes Between Arrays
+
+Copy bytes from one array to another:
+
+```typescript
+import { copy } from "@visulima/bytes";
+
+const src = new Uint8Array([9, 8, 7]);
+const dst = new Uint8Array([0, 1, 2, 3, 4, 5]);
+
+const bytesCopied = copy(src, dst);
+console.log(bytesCopied); // 3
+console.log(dst); // Uint8Array([9, 8, 7, 3, 4, 5])
+```
+
+Copy with offset to control destination position:
+
+```typescript
+import { copy } from "@visulima/bytes";
+
+const src = new Uint8Array([1, 1, 1, 1]);
+const dst = new Uint8Array([0, 0, 0, 0]);
+
+const bytesCopied = copy(src, dst, 1); // Start at index 1
+console.log(bytesCopied); // 3 (only 3 bytes fit)
+console.log(dst); // Uint8Array([0, 1, 1, 1])
+```
+
+### Repeat Byte Sequences
+
+Create repetitions of a byte array:
+
+```typescript
+import { repeat } from "@visulima/bytes";
+
+const source = new Uint8Array([0, 1, 2]);
+
+console.log(repeat(source, 3));
+// Uint8Array([0, 1, 2, 0, 1, 2, 0, 1, 2])
+
+console.log(repeat(source, 1));
+// Uint8Array([0, 1, 2])
+
+console.log(repeat(source, 0));
+// Uint8Array([])
+```
+
+### Compare Arrays for Equality
+
+Check if two byte arrays are identical:
+
+```typescript
+import { equals } from "@visulima/bytes";
+
+const a = new Uint8Array([1, 2, 3]);
+const b = new Uint8Array([1, 2, 3]);
+const c = new Uint8Array([4, 5, 6]);
+
+console.log(equals(a, b)); // true
+console.log(equals(a, c)); // false
+```
+
+Works with different lengths:
+
+```typescript
+import { equals } from "@visulima/bytes";
+
+const a = new Uint8Array([1, 2]);
+const b = new Uint8Array([1, 2, 3]);
+
+console.log(equals(a, b)); // false
+```
+
+## Search and Pattern Matching
+
+### Find First Occurrence
+
+Find the index of the first occurrence of a byte sequence:
+
+```typescript
+import { indexOfNeedle } from "@visulima/bytes";
+
+const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
+const needle = new Uint8Array([1, 2]);
+
+console.log(indexOfNeedle(source, needle)); // 1
+```
+
+Start searching from a specific position:
+
+```typescript
+import { indexOfNeedle } from "@visulima/bytes";
+
+const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
+const needle = new Uint8Array([1, 2]);
+
+console.log(indexOfNeedle(source, needle, 2)); // 3
+console.log(indexOfNeedle(source, needle, 6)); // -1 (not found)
+```
+
+Pattern not found returns -1:
+
+```typescript
+import { indexOfNeedle } from "@visulima/bytes";
+
+const source = new Uint8Array([0, 1, 2, 3]);
+const needle = new Uint8Array([5, 6]);
+
+console.log(indexOfNeedle(source, needle)); // -1
+```
+
+### Find Last Occurrence
+
+Find the index of the last occurrence of a byte sequence:
+
+```typescript
+import { lastIndexOfNeedle } from "@visulima/bytes";
+
+const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
+const needle = new Uint8Array([1, 2]);
+
+console.log(lastIndexOfNeedle(source, needle)); // 5
+```
+
+Search backwards from a specific position:
+
+```typescript
+import { lastIndexOfNeedle } from "@visulima/bytes";
+
+const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
+const needle = new Uint8Array([1, 2]);
+
+console.log(lastIndexOfNeedle(source, needle, 2)); // 1
+console.log(lastIndexOfNeedle(source, needle, 6)); // 5
+```
+
+### Check if Array Contains Sequence
+
+Determine if a byte array contains a specific sequence:
+
+```typescript
+import { includesNeedle } from "@visulima/bytes";
+
+const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
+const needle = new Uint8Array([1, 2]);
+
+console.log(includesNeedle(source, needle)); // true
+console.log(includesNeedle(source, new Uint8Array([5, 6]))); // false
+```
+
+Start checking from a specific position:
+
+```typescript
+import { includesNeedle } from "@visulima/bytes";
+
+const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
+const needle = new Uint8Array([1, 2]);
+
+console.log(includesNeedle(source, needle, 3)); // true
+console.log(includesNeedle(source, needle, 6)); // false
+```
+
+### Check Start Pattern
+
+Verify if an array starts with a specific prefix:
+
+```typescript
+import { startsWith } from "@visulima/bytes";
+
+const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
+const prefix = new Uint8Array([0, 1, 2]);
+
+console.log(startsWith(source, prefix)); // true
+console.log(startsWith(source, new Uint8Array([1, 2]))); // false
+```
+
+Empty prefix always matches:
+
+```typescript
+import { startsWith } from "@visulima/bytes";
+
+const source = new Uint8Array([1, 2, 3]);
+const empty = new Uint8Array([]);
+
+console.log(startsWith(source, empty)); // true
+```
+
+### Check End Pattern
+
+Verify if an array ends with a specific suffix:
+
+```typescript
+import { endsWith } from "@visulima/bytes";
+
+const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
+const suffix = new Uint8Array([1, 2, 3]);
+
+console.log(endsWith(source, suffix)); // true
+console.log(endsWith(source, new Uint8Array([2, 3]))); // true
+console.log(endsWith(source, new Uint8Array([0, 1]))); // false
+```
+
 ## Type Conversion
 
 ### Convert Node.js Buffer to Uint8Array
@@ -172,6 +403,88 @@ try {
 // - objects
 // - undefined
 // - arrays with non-number elements
+```
+
+## Real-World Examples
+
+### Validate Binary File Headers
+
+Check file types by examining their headers:
+
+```typescript
+import { startsWith } from "@visulima/bytes";
+
+function isPNG(data: Uint8Array): boolean {
+    const pngHeader = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
+    return startsWith(data, pngHeader);
+}
+
+function isJPEG(data: Uint8Array): boolean {
+    const jpegHeader = new Uint8Array([0xff, 0xd8, 0xff]);
+    return startsWith(data, jpegHeader);
+}
+
+const fileData = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10 /* ... */]);
+console.log(isPNG(fileData)); // true
+console.log(isJPEG(fileData)); // false
+```
+
+### Build Binary Protocol Messages
+
+Construct messages for binary protocols:
+
+```typescript
+import { concat } from "@visulima/bytes";
+
+function createMessage(type: number, payload: Uint8Array): Uint8Array {
+    const header = new Uint8Array([
+        0xff,
+        0xff, // Magic number
+        type, // Message type
+        payload.length >> 8, // Length high byte
+        payload.length & 0xff, // Length low byte
+    ]);
+
+    return concat([header, payload]);
+}
+
+const payload = new Uint8Array([1, 2, 3, 4]);
+const message = createMessage(0x01, payload);
+console.log(message);
+// Uint8Array([255, 255, 1, 0, 4, 1, 2, 3, 4])
+```
+
+### Process Streaming Data
+
+Handle chunked binary data:
+
+```typescript
+import { concat, indexOfNeedle } from "@visulima/bytes";
+
+const delimiter = new Uint8Array([0x0a]); // newline
+let buffer = new Uint8Array([]);
+
+function processChunk(chunk: Uint8Array): string[] {
+    buffer = concat([buffer, chunk]);
+
+    const messages: string[] = [];
+    let pos: number;
+
+    while ((pos = indexOfNeedle(buffer, delimiter)) !== -1) {
+        const message = buffer.slice(0, pos);
+        messages.push(new TextDecoder().decode(message));
+        buffer = buffer.slice(pos + 1);
+    }
+
+    return messages;
+}
+
+// Simulate receiving chunks
+const chunk1 = new Uint8Array([72, 101, 108, 108, 111, 0x0a, 87]); // "Hello\nW"
+const chunk2 = new Uint8Array([111, 114, 108, 100, 0x0a]); // "orld\n"
+
+console.log(processChunk(chunk1)); // ["Hello"]
+console.log(processChunk(chunk2)); // ["World"]
 ```
 
 ## Next Steps

@@ -23,7 +23,7 @@ Install the package using your preferred package manager:
 Import specific functions you need:
 
 ```typescript
-import { toUint8Array, utf8ToUint8Array } from "@visulima/bytes";
+import { concat, equals, toUint8Array } from "@visulima/bytes";
 ```
 
 Import everything:
@@ -31,7 +31,7 @@ Import everything:
 ```typescript
 import * as bytes from "@visulima/bytes";
 
-bytes.toUint8Array("hello");
+bytes.concat([...]);
 ```
 
 ### CommonJS
@@ -39,7 +39,7 @@ bytes.toUint8Array("hello");
 For CommonJS environments:
 
 ```javascript
-const { toUint8Array, utf8ToUint8Array } = require("@visulima/bytes");
+const { concat, equals, toUint8Array } = require("@visulima/bytes");
 ```
 
 ## Requirements
@@ -52,11 +52,11 @@ const { toUint8Array, utf8ToUint8Array } = require("@visulima/bytes");
 Verify the package works correctly:
 
 ```typescript
-import { utf8ToUint8Array } from "@visulima/bytes";
+import { concat } from "@visulima/bytes";
 
-const result = utf8ToUint8Array("hi");
+const result = concat([new Uint8Array([1, 2]), new Uint8Array([3, 4])]);
 
-console.log(result); // Uint8Array([104, 105])
+console.log(result); // Uint8Array([1, 2, 3, 4])
 ```
 
 If you see the expected output, installation was successful!
@@ -66,9 +66,11 @@ If you see the expected output, installation was successful!
 The package includes full TypeScript type definitions. No additional `@types` packages are needed.
 
 ```typescript
-import { toUint8Array } from "@visulima/bytes";
+import { concat } from "@visulima/bytes";
 
-const result: Uint8Array = toUint8Array(new Uint8Array([1, 2]));
+const arrays: Uint8Array[] = [new Uint8Array([1, 2]), new Uint8Array([3, 4])];
+
+const result: Uint8Array = concat(arrays);
 ```
 
 ## Next Steps

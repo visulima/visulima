@@ -447,3 +447,5 @@ export {
     uint8ArrayToUtf8,
     utf8ToUint8Array,
 };
+
+export { concat, copy, endsWith, equals, includesNeedle, indexOfNeedle, lastIndexOfNeedle, repeat, startsWith } from "./std-bytes";
