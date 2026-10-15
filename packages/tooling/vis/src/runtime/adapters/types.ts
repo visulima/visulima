@@ -7,7 +7,11 @@
  */
 
 /** JS runtimes vis can target today. */
-export type RuntimeId = "bun" | "node";
+export const RUNTIME_IDS = ["bun", "node"] as const;
+
+export type RuntimeId = (typeof RUNTIME_IDS)[number];
+
+export const isRuntimeId = (value: string): value is RuntimeId => (RUNTIME_IDS as ReadonlyArray<string>).includes(value);
 
 export interface RuntimeAdapter {
     /** Stable runtime identifier. */

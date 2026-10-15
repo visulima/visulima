@@ -20,13 +20,14 @@ import { dirname, join, parse as parsePath } from "@visulima/path";
 import { bunAdapter } from "./adapters/bun";
 import { nodeAdapter } from "./adapters/node";
 import type { RuntimeAdapter, RuntimeId } from "./adapters/types";
+import { isRuntimeId, RUNTIME_IDS } from "./adapters/types";
 
 const ADAPTERS: Readonly<Record<RuntimeId, RuntimeAdapter>> = {
     bun: bunAdapter,
     node: nodeAdapter,
 };
 
-const SUPPORTED: ReadonlyArray<RuntimeId> = ["node", "bun"];
+const SUPPORTED: ReadonlyArray<RuntimeId> = RUNTIME_IDS;
 
 /** Lockfile → runtime, built from each adapter's declared lockfiles. */
 const LOCKFILE_RUNTIME: ReadonlyArray<readonly [string, RuntimeId]> = SUPPORTED.flatMap((id) => ADAPTERS[id].lockfiles.map((file) => [file, id] as const));
@@ -53,7 +54,7 @@ export interface ResolveRuntimeOverride {
 
 /** Parse an explicit runtime request, hard-erroring on unknown values. */
 const parseExplicit = (value: string, origin: string): RuntimeId => {
-    if (value === "node" || value === "bun") {
+    if (isRuntimeId(value)) {
         return value;
     }
 

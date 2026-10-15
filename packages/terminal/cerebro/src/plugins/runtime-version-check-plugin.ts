@@ -1,5 +1,5 @@
 import type { Plugin } from "../types/plugin";
-import { exitProcess, getEnv, getVersions } from "../util/general/runtime-process";
+import { exitProcess, getEnv, getVersions, hasBun } from "../util/general/runtime-process";
 
 /**
  * Safely parse major version from a version string.
@@ -39,21 +39,16 @@ const extractNodeVersion = (processVersion: string | undefined): string => {
  * Detect the current JavaScript runtime and its version.
  */
 const detectRuntime = (): { major: number; type: RuntimeType; version: string } => {
-    // Check for Bun
-    // @ts-expect-error - Bun is a global in Bun runtime
-    if (typeof Bun !== "undefined") {
-        // @ts-expect-error - Bun.version exists in Bun runtime
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        const version = (Bun.version as string) || "";
-        const major = parseMajorVersion(version);
+    const versions = getVersions();
 
-        return { major, type: "bun", version };
+    if (hasBun(globalThis)) {
+        const version = versions.bun ?? "";
+
+        return { major: parseMajorVersion(version), type: "bun", version };
     }
 
     // Default to Node.js - use runtime abstraction
-    const versions = getVersions();
-    const nodeVersion = versions.node ?? "";
-    const version = extractNodeVersion(nodeVersion);
+    const version = extractNodeVersion(versions.node);
     const major = parseMajorVersion(version);
 
     return { major, type: "node", version };
