@@ -119,7 +119,7 @@ const getDomainSet = (): Set<string> => {
  * loader entirely.
  *
  * Call this once at startup in edge/browser/bundled runtimes (Cloudflare Workers,
- * Next.js middleware/edge, Deno, etc.) where `node:fs` is unavailable or the dist
+ * Next.js middleware/edge, etc.) where `node:fs` is unavailable or the dist
  * file path cannot be resolved. The recommended source is the statically
  * importable list:
  *

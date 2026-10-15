@@ -1080,7 +1080,7 @@ const executeCatalogUpdate = async (
 
 const executePmWrapper = async (
     workspaceRoot: string,
-    packageManager: "aube" | "bun" | "deno" | "npm" | "pnpm" | "yarn",
+    packageManager: "aube" | "bun" | "npm" | "pnpm" | "yarn",
     version: string,
     options: Record<string, unknown>,
     argument: string[],

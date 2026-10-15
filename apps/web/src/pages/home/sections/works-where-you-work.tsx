@@ -1,7 +1,6 @@
 import SiAstro from "@icons-pack/react-simple-icons/icons/SiAstro.mjs";
 import SiBun from "@icons-pack/react-simple-icons/icons/SiBun.mjs";
 import SiCloudflare from "@icons-pack/react-simple-icons/icons/SiCloudflare.mjs";
-import SiDeno from "@icons-pack/react-simple-icons/icons/SiDeno.mjs";
 import SiExpress from "@icons-pack/react-simple-icons/icons/SiExpress.mjs";
 import SiGooglecloud from "@icons-pack/react-simple-icons/icons/SiGooglecloud.mjs";
 import SiNestjs from "@icons-pack/react-simple-icons/icons/SiNestjs.mjs";
@@ -40,7 +39,6 @@ const platforms = [
     { icon: SiVercel, label: "Vercel" },
     { icon: SiNetlify, label: "Netlify" },
     { icon: SiCloudflare, label: "Cloudflare" },
-    { icon: SiDeno, label: "Deno Deploy" },
     { icon: SiGooglecloud, label: "Google Cloud" },
 ];
 

@@ -264,11 +264,11 @@ fn x_uses_bun_when_a_bun_lockfile_is_present() {
 #[test]
 fn x_rejects_an_unsupported_explicit_runtime() {
     let output =
-        binary().args(["x", "--runtime=deno", "app.ts"]).env_remove("VIS_RUNTIME").output().expect("run binary");
+        binary().args(["x", "--runtime=python", "app.ts"]).env_remove("VIS_RUNTIME").output().expect("run binary");
 
     assert_eq!(output.status.code(), Some(1));
     assert!(
-        String::from_utf8_lossy(&output.stderr).contains("unsupported runtime 'deno'"),
+        String::from_utf8_lossy(&output.stderr).contains("unsupported runtime 'python'"),
         "stderr: {}",
         String::from_utf8_lossy(&output.stderr)
     );

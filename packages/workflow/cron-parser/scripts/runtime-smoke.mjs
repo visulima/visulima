@@ -1,9 +1,9 @@
-// Runs the built package on whichever runtime executes this file: `node`, `bun run`, or `deno run`.
+// Runs the built package on whichever runtime executes this file: `node` or `bun run`.
 // It uses no test framework so the same file works everywhere.
 import { CronDate, CronExpressionParser } from "../dist/index.js";
 import { CronFileParser } from "../dist/file.js";
 
-const runtime = globalThis.Deno ? `deno ${Deno.version.deno}` : globalThis.Bun ? `bun ${Bun.version}` : `node ${process.version}`;
+const runtime = globalThis.Bun ? `bun ${Bun.version}` : `node ${process.version}`;
 
 const expectEqual = (label, actual, expected) => {
     if (actual !== expected) {

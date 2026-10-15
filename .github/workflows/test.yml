@@ -82,7 +82,7 @@ jobs:
 
     test:
         name: >-
-          Test (node-${{ matrix.node_version }}, ${{ matrix.os }}${{ matrix.deno_version && format(', deno {0}', matrix.deno_version) || '' }}${{ matrix.bun_version && format(', bun {0}', matrix.bun_version) || '' }})
+          Test (node-${{ matrix.node_version }}, ${{ matrix.os }}${{ matrix.bun_version && format(', bun {0}', matrix.bun_version) || '' }})
         if: "needs.files-changed.outputs.packages == 'true'"
         needs: "files-changed"
         # "Wait for Build Native workflow" routinely burns 17-22 min on this
@@ -96,9 +96,9 @@ jobs:
                 # PRs: ubuntu node-24 (the coverage leg), node-26, macOS, Windows.
                 # Pushes to main: drop ubuntu node-24 - coverage-baseline.yml runs the
                 # full suite on that setup and saves the same Nx cache - and add the
-                # bun / deno legs. Those only add a binary to PATH (the suite still runs
-                # on Node via vitest), so they run post-merge instead of on every PR.
-                include: "${{ fromJSON(format('[{0}{1}]', '{\"os\":\"ubuntu-latest\",\"node_version\":\"26\"},{\"os\":\"macos-15\",\"node_version\":\"24\"},{\"os\":\"windows-latest\",\"node_version\":\"24\"}', github.event_name == 'push' && ',{\"os\":\"ubuntu-latest\",\"node_version\":\"24\",\"bun_version\":\"latest\"},{\"os\":\"ubuntu-latest\",\"node_version\":\"24\",\"deno_version\":\"lts\"}' || ',{\"os\":\"ubuntu-latest\",\"node_version\":\"24\"}')) }}"
+                # bun leg. It only adds a binary to PATH (the suite still runs
+                # on Node via vitest), so it runs post-merge instead of on every PR.
+                include: "${{ fromJSON(format('[{0}{1}]', '{\"os\":\"ubuntu-latest\",\"node_version\":\"26\"},{\"os\":\"macos-15\",\"node_version\":\"24\"},{\"os\":\"windows-latest\",\"node_version\":\"24\"}', github.event_name == 'push' && ',{\"os\":\"ubuntu-latest\",\"node_version\":\"24\",\"bun_version\":\"latest\"}' || ',{\"os\":\"ubuntu-latest\",\"node_version\":\"24\"}')) }}"
             fail-fast: false
         runs-on: "${{ matrix.os }}"
         env:
@@ -137,17 +137,6 @@ jobs:
                   run-signatures-audit: false
                   run-npm-audit: false
 
-            - name: "Setup Deno"
-              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 24 && matrix.deno_version"
-              uses: "denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed" # v2.0.5
-              with:
-                  deno-version: "${{ matrix.deno_version }}"
-                  # cache: true would tell the action's post-step to save
-                  # $DENO_DIR, but nothing in this job actually invokes deno
-                  # (the matrix entry only makes the binary available — tests
-                  # still run via node/vitest). The empty cache path then
-                  # fails Post Setup Deno with "Path Validation Error".
-                  cache: false
             - name: "Setup Bun"
               if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 24 && matrix.bun_version"
               uses: "oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6" # v2.2.0
@@ -182,9 +171,9 @@ jobs:
               uses: "actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9" # v6.1.0
               with:
                   path: ".nx/cache"
-                  key: "nx-test-${{ runner.os }}${{ matrix.bun_version && '-bun' || '' }}${{ matrix.deno_version && '-deno' || '' }}-node${{ matrix.node_version }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+                  key: "nx-test-${{ runner.os }}${{ matrix.bun_version && '-bun' || '' }}-node${{ matrix.node_version }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
                   restore-keys: |
-                      nx-test-${{ runner.os }}${{ matrix.bun_version && '-bun' || '' }}${{ matrix.deno_version && '-deno' || '' }}-node${{ matrix.node_version }}-
+                      nx-test-${{ runner.os }}${{ matrix.bun_version && '-bun' || '' }}-node${{ matrix.node_version }}-
 
             - name: "Build"
               run: "pnpm run build:affected:packages"
@@ -194,7 +183,7 @@ jobs:
               run: |
                   # Coverage only on the leg that uploads it. Decide in the expression layer:
                   # rendered `false` is a non-empty string, so `[[ false ]]` would be true.
-                  if [[ "${{ matrix.os == 'ubuntu-latest' && matrix.node_version == '24' && !matrix.deno_version && !matrix.bun_version }}" == "true" ]]; then
+                  if [[ "${{ matrix.os == 'ubuntu-latest' && matrix.node_version == '24' && !matrix.bun_version }}" == "true" ]]; then
                       pnpm run test:affected:coverage
                   else
                       pnpm run test:affected
@@ -218,7 +207,7 @@ jobs:
             # config-only PRs where no coverage was produced.
             # Tracking upstream fix at anolilab/workflows#397.
             - name: "Validate codecov.yml"
-              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 24 && !matrix.deno_version && !matrix.bun_version && github.event_name != 'push' && needs.files-changed.outputs.codecov == 'true'"
+              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 24 && !matrix.bun_version && github.event_name != 'push' && needs.files-changed.outputs.codecov == 'true'"
               shell: "bash"
               run: "curl --fail-with-body --data-binary @codecov.yml https://codecov.io/validate"
 
@@ -230,7 +219,7 @@ jobs:
             # PRs only: on release-branch pushes this run is affected-only, so it
             # would upload a partial base. coverage-baseline.yml uploads the full one.
             - name: "Upload code coverage to codecov"
-              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 24 && !matrix.deno_version && !matrix.bun_version && github.event_name != 'push'"
+              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 24 && !matrix.bun_version && github.event_name != 'push'"
               continue-on-error: true
               uses: "./.github/actions/codecov-upload"
               with:

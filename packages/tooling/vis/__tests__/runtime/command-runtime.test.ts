@@ -1,14 +1,13 @@
 /**
  * Tests for the command ↔ runtime bridge (Phase 1). Verifies that the global
- * `--runtime` flag and `runtime:` config steer the resolution, that a resolved
- * `bun` runtime forces the bun installer backend, and that a detected deferred
- * runtime (deno.lock) warns on the logger rather than silently falling back.
+ * `--runtime` flag and `runtime:` config steer the resolution, and that a
+ * resolved `bun` runtime forces the bun installer backend.
  */
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { resolveCommandRuntime, runtimeInstallerBackend } from "../../src/runtime/command-runtime";
 
@@ -57,23 +56,5 @@ describe("command runtime bridge", () => {
         const resolution = resolveCommandRuntime({ visConfig: { runtime: "bun" } }, root);
 
         expect(resolution.runtime).toBe("bun");
-    });
-
-    it("warns and falls back to node when a deno project is detected", () => {
-        expect.hasAssertions();
-
-        writeFileSync(join(root, "deno.lock"), "");
-        const warn = vi.fn();
-
-        const resolution = resolveCommandRuntime({ logger: { warn }, options: {} }, root);
-
-        expect(resolution.runtime).toBe("node");
-        expect(warn).toHaveBeenCalledWith(expect.stringMatching(/deno/i));
-    });
-
-    it("hard-errors on an explicit deno request", () => {
-        expect.hasAssertions();
-
-        expect(() => resolveCommandRuntime({ options: { runtime: "deno" } }, root)).toThrow(/not supported yet/i);
     });
 });

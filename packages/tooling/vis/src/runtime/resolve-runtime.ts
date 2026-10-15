@@ -13,10 +13,6 @@
  *   3. `runtime:` in vis config
  *   4. lockfile walk (bun.lock(b) → bun; npm/pnpm/yarn → node)
  *   5. default → node   (zero regression for existing users)
- *
- * Deno is deferred: an explicit request (flag/env/config) hard-errors with a
- * pointer to the RFC; a detected `deno.lock` returns node + a `deferredNotice`
- * the caller should surface (an explicit "not yet" rather than a silent fallback).
  */
 import { isAccessibleSync } from "@visulima/fs";
 import { dirname, join, parse as parsePath } from "@visulima/path";
@@ -32,30 +28,14 @@ const ADAPTERS: Readonly<Record<RuntimeId, RuntimeAdapter>> = {
 
 const SUPPORTED: ReadonlyArray<RuntimeId> = ["node", "bun"];
 
-/**
- * Lockfiles that map to a runtime vis can't target yet. Detecting one is an
- * explicit "not yet supported" rather than a silent fall-through to node.
- */
-const DEFERRED_LOCKFILES: Readonly<Record<string, string>> = {
-    "deno.lock": "deno",
-};
-
 /** Lockfile → runtime, built from each adapter's declared lockfiles. */
 const LOCKFILE_RUNTIME: ReadonlyArray<readonly [string, RuntimeId]> = SUPPORTED.flatMap((id) => ADAPTERS[id].lockfiles.map((file) => [file, id] as const));
-
-const DEFERRED_HINT = "Deno is not supported yet (deferred — see rfc/design-runtime-multitool.md).";
 
 export type RuntimeSource = "config" | "default" | "env" | "flag" | "lockfile";
 
 export interface RuntimeResolution {
     /** The resolved adapter. */
     adapter: RuntimeAdapter;
-
-    /**
-     * Set when a deferred runtime (e.g. Deno) was *detected* (not explicitly
-     * requested). The caller should warn; resolution falls back to node.
-     */
-    deferredNotice?: string;
     /** The chosen runtime id. */
     runtime: RuntimeId;
     /** Which precedence rule decided it (for `--why` / diagnostics). */
@@ -71,43 +51,33 @@ export interface ResolveRuntimeOverride {
     flag?: string;
 }
 
-/** Parse an explicit runtime request, hard-erroring on unknown/deferred values. */
+/** Parse an explicit runtime request, hard-erroring on unknown values. */
 const parseExplicit = (value: string, origin: string): RuntimeId => {
     if (value === "node" || value === "bun") {
         return value;
-    }
-
-    if (value in DEFERRED_LOCKFILES || value === "deno") {
-        throw new Error(`${origin} requested runtime "${value}", but ${DEFERRED_HINT}`);
     }
 
     throw new Error(`${origin} requested unknown runtime "${value}". Supported: ${SUPPORTED.join(", ")}.`);
 };
 
 /**
- * Walk up from `cwd` looking for a lockfile. Returns the matched runtime, or a
- * deferred marker, or undefined if none found before the filesystem root.
+ * Walk up from `cwd` looking for a lockfile. Returns the matched runtime, or
+ * undefined if none found before the filesystem root.
  */
-const detectFromLockfile = (cwd: string): { deferred?: string; runtime?: RuntimeId } => {
+const detectFromLockfile = (cwd: string): RuntimeId | undefined => {
     let dir = cwd;
 
     for (;;) {
         for (const [file, runtime] of LOCKFILE_RUNTIME) {
             if (isAccessibleSync(join(dir, file))) {
-                return { runtime };
-            }
-        }
-
-        for (const file of Object.keys(DEFERRED_LOCKFILES)) {
-            if (isAccessibleSync(join(dir, file))) {
-                return { deferred: DEFERRED_LOCKFILES[file] };
+                return runtime;
             }
         }
 
         const parent = dirname(dir);
 
         if (parent === dir || parsePath(dir).root === dir) {
-            return {};
+            return undefined;
         }
 
         dir = parent;
@@ -117,10 +87,9 @@ const detectFromLockfile = (cwd: string): { deferred?: string; runtime?: Runtime
 export const resolveRuntime = (cwd: string, override: ResolveRuntimeOverride = {}): RuntimeResolution => {
     const env = override.env ?? process.env;
 
-    const make = (runtime: RuntimeId, source: RuntimeSource, deferredNotice?: string): RuntimeResolution => {
+    const make = (runtime: RuntimeId, source: RuntimeSource): RuntimeResolution => {
         return {
             adapter: ADAPTERS[runtime],
-            deferredNotice,
             runtime,
             source,
         };
@@ -142,12 +111,8 @@ export const resolveRuntime = (cwd: string, override: ResolveRuntimeOverride = {
 
     const detected = detectFromLockfile(cwd);
 
-    if (detected.runtime !== undefined) {
-        return make(detected.runtime, "lockfile");
-    }
-
-    if (detected.deferred !== undefined) {
-        return make("node", "default", `Detected a ${detected.deferred} project but ${DEFERRED_HINT} Falling back to node.`);
+    if (detected !== undefined) {
+        return make(detected, "lockfile");
     }
 
     return make("node", "default");

@@ -4,7 +4,6 @@ import { relative } from "@visulima/path";
 
 import { resolveSharedCacheDirectory } from "../../cache/cache-directory";
 import { biomeAdapter } from "../../lint-fmt/adapters/biome";
-import { denoFmtAdapter } from "../../lint-fmt/adapters/deno";
 import { dprintAdapter } from "../../lint-fmt/adapters/dprint";
 import { oxfmtAdapter } from "../../lint-fmt/adapters/oxfmt";
 import { prettierAdapter } from "../../lint-fmt/adapters/prettier";
@@ -24,7 +23,7 @@ import { runAdaptersParallel } from "../../lint-fmt/runner";
 import { runWatchLoop } from "../../lint-fmt/watch-loop";
 import type { FmtOptions } from "./index";
 
-const FORMAT_ADAPTERS = [oxfmtAdapter, biomeAdapter, dprintAdapter, prettierAdapter, ruffFmtAdapter, denoFmtAdapter];
+const FORMAT_ADAPTERS = [oxfmtAdapter, biomeAdapter, dprintAdapter, prettierAdapter, ruffFmtAdapter];
 
 const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Console, FmtOptions>): Promise<void> => {
     const root = workspaceRoot ?? process.cwd();
@@ -35,7 +34,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Co
     const eligible = allEligible.filter(({ adapter }) => fmtConfig?.adapters?.[adapter.id as FmtAdapterId]?.enabled !== false);
 
     if (eligible.length === 0) {
-        logger.warn("vis fmt: no formatter detected in this workspace (looked for: oxfmt, biome, dprint, prettier, ruff, deno-fmt).");
+        logger.warn("vis fmt: no formatter detected in this workspace (looked for: oxfmt, biome, dprint, prettier, ruff).");
 
         return;
     }

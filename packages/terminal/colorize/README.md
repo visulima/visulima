@@ -38,7 +38,7 @@
 
 - Supports both **ESM** and **CommonJS**
 - **TypeScript** support out of the box
-- Supports **Deno**, **Next.JS** runtimes and **Browser** (not only chrome) (currently multi nesting is not supported)
+- Supports **Next.JS** runtimes and **Browser** (not only chrome) (currently multi nesting is not supported)
 - [Standard API](#base-colors) compatible with **Chalk**, switch from **Chalk** to **Colorize** without changing your code
 
 ```diff
@@ -700,7 +700,7 @@ Since **Node.js v22**, the built-in [`util.styleText()`](https://nodejs.org/api/
 
 ✅ Works on **Node.js v20.19+**\
 ✅ Works in Chromium-based browsers and Safari (useful for shared utils)\
-✅ Works in **Deno** and **Next.JS** runtimes\
+✅ Works in **Next.JS** runtimes\
 ⚠️ **Firefox DevTools** don't render ANSI escape sequences.
 
 **styleText**

@@ -110,12 +110,11 @@ describe("page/types guards", () => {
 
     describe("runtime detection constants", () => {
         it("exposes boolean feature flags and a node version marker", () => {
-            expect.assertions(4);
+            expect.assertions(3);
 
             expect([true, false]).toContain(runtime.hasNativeRequest);
             expect([true, false]).toContain(runtime.hasNativeHeaders);
             expect([true, false]).toContain(runtime.isBun);
-            expect([true, false]).toContain(runtime.isDeno);
         });
     });
 });

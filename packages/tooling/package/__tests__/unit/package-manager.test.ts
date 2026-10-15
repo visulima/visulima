@@ -251,7 +251,7 @@ describe("package-manager", () => {
 
             temporaryDirectory = mkdtempSync(join(tmpdir(), "visulima-package-"));
 
-            writeFileSync(join(temporaryDirectory, "package.json"), JSON.stringify({ name: "root", packageManager: "deno@1.0.0", version: "1.0.0" }));
+            writeFileSync(join(temporaryDirectory, "package.json"), JSON.stringify({ name: "root", packageManager: "unknown-pm@1.0.0", version: "1.0.0" }));
 
             // eslint-disable-next-line vitest/no-conditional-in-test
             if (name === "findPackageManager") {
@@ -369,7 +369,7 @@ describe("package-manager", () => {
 
             expect(() => {
                 generateMissingPackagesInstallMessage("test-package", ["lodash"], {
-                    packageManagers: ["deno" as never],
+                    packageManagers: ["unknown-pm" as never],
                 });
             }).toThrow("Unknown package manager");
         });

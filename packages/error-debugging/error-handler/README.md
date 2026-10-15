@@ -157,23 +157,6 @@ export default {
         }
     },
 };
-```
-
-```ts
-// Deno
-import fetchHandler from "@visulima/error-handler/handler/fetch";
-
-Deno.serve(async (request: Request) => {
-    try {
-        throw new Error("Boom");
-    } catch (error) {
-        const handler = fetchHandler(error as Error, {
-            showTrace: process.env.NODE_ENV !== "production",
-        });
-        return handler(request);
-    }
-});
-```
 
 ## Content Negotiation
 
@@ -229,7 +212,7 @@ The factory is synchronous and returns the `(req, res)` request handler — do n
 
 ### fetchHandler(error, options?) => (request) => Promise<Response>
 
-Fetch API handler for Cloudflare Workers, Deno, Bun, and other Fetch-based runtimes.
+Fetch API handler for Cloudflare Workers, Bun, and other Fetch-based runtimes.
 Like `httpHandler`, the factory is synchronous — do not `await` it.
 
 **Parameters:**
@@ -346,9 +329,6 @@ This package provides additional exports for different use cases:
 For convenience, you can also import runtime-specific handlers:
 
 ```ts
-// Deno
-import fetchHandler from "@visulima/error-handler/handler/http/deno";
-
 // Bun
 import fetchHandler from "@visulima/error-handler/handler/http/bun";
 

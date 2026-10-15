@@ -9,7 +9,7 @@ This guide documents breaking changes and migration steps for the `@visulima/sto
 - **`GET` no longer lists files by default.** Pass `allowList: true` to a handler to get the old behaviour back.
 - **`PUT` only creates files under ids made of letters, digits, `_` and `-`.** Updating an existing file is unchanged.
 - **Malformed `Content-Length`, `X-Total-Size` and `X-Chunk-Offset` headers are rejected** instead of being half-parsed.
-- **New:** the fetch handlers (Hono, Next.js, SolidStart, Bun, Deno, Cloudflare) now serve `GET` for files. They answered `500` before.
+- **New:** the fetch handlers (Hono, Next.js, SolidStart, Bun, Cloudflare) now serve `GET` for files. They answered `500` before.
 
 If you never listed files over HTTP and never created files with `PUT` under ids containing dots (apart from the file extension), there is nothing to change.
 
@@ -55,7 +55,7 @@ const handler = createSolidStartHandler({ allowList: true, storage, type: "rest"
 // Hono
 createStorageHandler(app, { allowList: true, path: "/files", storage, type: "rest" });
 
-// Fetch runtimes (Bun, Deno, Cloudflare)
+// Fetch runtimes (Bun, Cloudflare)
 const rest = new Rest({ allowList: true, storage }); // from "@visulima/storage/handler/http/fetch"
 ```
 

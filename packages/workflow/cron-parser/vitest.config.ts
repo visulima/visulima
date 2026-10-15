@@ -1,6 +1,6 @@
 import { getVitestConfig } from "../../../tools/get-vitest-config";
 
-// The suite runs once per zone backend: `Intl` (what Node, Deno and Bun use today) and `Temporal`
+// The suite runs once per zone backend: `Intl` (what Node and Bun use today) and `Temporal`
 // (what runtimes with native Temporal use). Both must agree on every DST edge.
 const config = getVitestConfig({
     test: {

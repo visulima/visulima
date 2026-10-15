@@ -50,17 +50,6 @@ const detectRuntime = (): { major: number; type: RuntimeType; version: string } 
         return { major, type: "bun", version };
     }
 
-    // Check for Deno
-    // @ts-expect-error - Deno is a global in Deno runtime
-    if (typeof Deno !== "undefined") {
-        // @ts-expect-error - Deno.version exists in Deno runtime
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        const version = (Deno.version?.deno as string) || "";
-        const major = parseMajorVersion(version);
-
-        return { major, type: "deno", version };
-    }
-
     // Default to Node.js - use runtime abstraction
     const versions = getVersions();
     const nodeVersion = versions.node ?? "";
@@ -70,7 +59,7 @@ const detectRuntime = (): { major: number; type: RuntimeType; version: string } 
     return { major, type: "node", version };
 };
 
-export type RuntimeType = "bun" | "deno" | "node";
+export type RuntimeType = "bun" | "node";
 
 export type RuntimeVersionRequirement = {
     /** Minimum version required */
@@ -82,15 +71,13 @@ export type RuntimeVersionCheckOptions = {
     runtimes?: {
         /** Minimum Bun version requirement */
         bun?: RuntimeVersionRequirement;
-        /** Minimum Deno version requirement */
-        deno?: RuntimeVersionRequirement;
         /** Minimum Node.js version requirement */
         node?: RuntimeVersionRequirement;
     };
 };
 
 /**
- * Create a runtime version check plugin that supports Node.js, Bun, and Deno.
+ * Create a runtime version check plugin that supports Node.js and Bun.
  * @param options Configuration for runtime version requirements
  * @returns Plugin instance that validates runtime version on initialization
  */
@@ -103,7 +90,6 @@ export const runtimeVersionCheckPlugin = (options: RuntimeVersionCheckOptions = 
             // Get minimum version for detected runtime
             const defaultMinVersions: Record<RuntimeType, number> = {
                 bun: 1,
-                deno: 1,
                 node: 18,
             };
 

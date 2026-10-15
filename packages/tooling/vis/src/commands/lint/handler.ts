@@ -4,7 +4,6 @@ import { relative } from "@visulima/path";
 
 import { resolveSharedCacheDirectory } from "../../cache/cache-directory";
 import { biomeAdapter } from "../../lint-fmt/adapters/biome";
-import { denoLintAdapter } from "../../lint-fmt/adapters/deno";
 import { eslintAdapter } from "../../lint-fmt/adapters/eslint";
 import { markdownlintAdapter } from "../../lint-fmt/adapters/markdownlint";
 import { oxlintAdapter } from "../../lint-fmt/adapters/oxlint";
@@ -35,7 +34,6 @@ const SOURCE_ADAPTERS = [
     ruffCheckAdapter,
     markdownlintAdapter,
     shellcheckAdapter,
-    denoLintAdapter,
     typecheckAdapter,
 ];
 
@@ -60,7 +58,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Co
     }
 
     if (eligible.length === 0) {
-        logger.warn("vis lint: no linter detected in this workspace (looked for: oxlint, biome, eslint, stylelint, ruff, markdownlint, shellcheck, deno; typecheck runs only when enabled).");
+        logger.warn("vis lint: no linter detected in this workspace (looked for: oxlint, biome, eslint, stylelint, ruff, markdownlint, shellcheck; typecheck runs only when enabled).");
 
         return;
     }

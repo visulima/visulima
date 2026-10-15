@@ -144,7 +144,6 @@ const commands = parseCommands([
     "pnpm:test", // -> pnpm run test
     '"quoted command"', // -> quoted command (quotes stripped)
     "npm run watch-*", // -> expands to all matching scripts in package.json
-    "deno task dev-*", // -> expands from deno.json/deno.jsonc tasks
 ]);
 
 await runConcurrently(commands);

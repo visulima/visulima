@@ -27,7 +27,7 @@ const loadNodeGzip = async (): Promise<((input: string) => Uint8Array) | undefin
 /**
  * Compresses data using gzip compression.
  *
- * Prefers the Web-standard `CompressionStream` (browsers, Cloudflare Workers, Deno,
+ * Prefers the Web-standard `CompressionStream` (browsers, Cloudflare Workers,
  * modern Node) and falls back to `node:zlib` only when it is absent.
  * @param data The data to compress as a string
  * @returns A Promise that resolves to the compressed data as Uint8Array

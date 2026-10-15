@@ -8,7 +8,7 @@
  *
  *   - the subcommand was removed from a PM (pnpm 11 dropped `whoami`,
  *     `owner`, `ping`, `search`, `token`);
- *   - the PM never had it (`bun login`, `deno owner`, `yarn 1 plugin`);
+ *   - the PM never had it (`bun login`, `yarn 1 plugin`);
  *   - the PM has it but under a different namespace (yarn berry's
  *     `yarn npm &lt;sub>`, bun's `bun pm &lt;sub>`).
  *
@@ -32,7 +32,6 @@
  *   - yarn berry CLI docs (registry ops live under `yarn npm &lt;sub>`;
  *     `yarn npm tag` uses `remove`, not `rm`)
  *   - bun pm docs (whoami/cache/pack/ls live under `bun pm &lt;sub>`)
- *   - deno CLI (no registry-auth surface; JSR uses browser OAuth)
  */
 
 import { coerce, gte } from "semver";
@@ -68,7 +67,7 @@ export const dispatchSubcommand = (pm: Pick<InstallerInfo, "name" | "version">, 
         case "audit": {
             // yarn berry: registry-side audit is `yarn npm audit`; bare
             // `yarn audit` doesn't exist in berry. Every other PM has a
-            // top-level `audit` (npm, pnpm, yarn1, bun, deno).
+            // top-level `audit` (npm, pnpm, yarn1, bun).
             if (isYarnBerry(pm)) {
                 return { args: ["npm", "audit", ...args], bin: "yarn", kind: "rewrite" };
             }
@@ -78,7 +77,7 @@ export const dispatchSubcommand = (pm: Pick<InstallerInfo, "name" | "version">, 
 
         case "config": {
             // yarn berry uses `config unset` instead of `config delete`.
-            // bun has no config CLI; deno has no registry-config CLI.
+            // bun has no config CLI.
             if (isYarnBerry(pm)) {
                 const [sub, ...rest] = args;
 
@@ -96,10 +95,6 @@ export const dispatchSubcommand = (pm: Pick<InstallerInfo, "name" | "version">, 
 
             if (pm.name === "bun") {
                 return { kind: "skip", warning: "bun has no `config` CLI. Edit bunfig.toml or .npmrc directly." };
-            }
-
-            if (pm.name === "deno") {
-                return { kind: "skip", warning: "deno has no registry-config CLI. Edit deno.json directly." };
             }
 
             return { kind: "passthrough" };
@@ -122,7 +117,7 @@ export const dispatchSubcommand = (pm: Pick<InstallerInfo, "name" | "version">, 
                 return { args: ["npm", "tag", ...rewriteRmToRemove(args)], bin: "yarn", kind: "rewrite" };
             }
 
-            if (pm.name === "bun" || pm.name === "deno") {
+            if (pm.name === "bun") {
                 return { kind: "skip", warning: `${pm.name} has no \`dist-tag\`. Use \`npm dist-tag\` instead.` };
             }
 
@@ -142,10 +137,6 @@ export const dispatchSubcommand = (pm: Pick<InstallerInfo, "name" | "version">, 
                     kind: "rewrite",
                     warning: `bun has no \`${subcommand}\`; falling back to \`npm ${subcommand}\` (writes ~/.npmrc, which bun reads).`,
                 };
-            }
-
-            if (pm.name === "deno") {
-                return { kind: "skip", warning: `deno has no \`${subcommand}\`. JSR uses browser OAuth via \`deno publish\`.` };
             }
 
             return { kind: "passthrough" };
@@ -179,10 +170,6 @@ export const dispatchSubcommand = (pm: Pick<InstallerInfo, "name" | "version">, 
                 };
             }
 
-            if (pm.name === "deno") {
-                return { kind: "skip", warning: "deno has no `owner`. JSR uses scope-member roles via the web UI." };
-            }
-
             return { kind: "passthrough" };
         }
 
@@ -212,7 +199,7 @@ export const dispatchSubcommand = (pm: Pick<InstallerInfo, "name" | "version">, 
                 return { args: ["pm", "pkg", ...args], bin: "bun", kind: "rewrite" };
             }
 
-            if (pm.name === "yarn" || pm.name === "deno") {
+            if (pm.name === "yarn") {
                 return {
                     args: ["pkg", ...args],
                     bin: "npm",
@@ -244,7 +231,7 @@ export const dispatchSubcommand = (pm: Pick<InstallerInfo, "name" | "version">, 
                 return { kind: "skip", warning: "yarn berry has no `prune`. Use `yarn workspaces focus --production` instead." };
             }
 
-            if (pm.name === "bun" || pm.name === "deno") {
+            if (pm.name === "bun") {
                 return { kind: "skip", warning: `${pm.name} has no \`prune\`. Pruning happens automatically on install.` };
             }
 
@@ -266,10 +253,6 @@ export const dispatchSubcommand = (pm: Pick<InstallerInfo, "name" | "version">, 
 
             if (pm.name === "bun") {
                 return { kind: "skip", warning: "bun has no `rebuild`. Use `bun install --force` instead." };
-            }
-
-            if (pm.name === "deno") {
-                return { kind: "skip", warning: "deno has no `rebuild`." };
             }
 
             return { kind: "passthrough" };
@@ -319,10 +302,6 @@ export const dispatchSubcommand = (pm: Pick<InstallerInfo, "name" | "version">, 
 
             if (pm.name === "bun") {
                 return { args: ["pm", "whoami", ...args], bin: "bun", kind: "rewrite" };
-            }
-
-            if (pm.name === "deno") {
-                return { kind: "skip", warning: "deno has no `whoami`. JSR uses browser auth." };
             }
 
             return { kind: "passthrough" };

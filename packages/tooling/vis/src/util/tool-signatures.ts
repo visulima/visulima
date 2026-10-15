@@ -30,12 +30,6 @@ export const TOOL_SIGNATURES = {
         configFiles: ["biome.json", "biome.jsonc"],
         packageNames: ["@biomejs/biome"],
     },
-    deno: {
-        // No npm package — Deno is a runtime. Detection is purely
-        // config-based via `deno.json` / `deno.jsonc`.
-        configFiles: ["deno.json", "deno.jsonc"],
-        packageNames: [],
-    },
     dprint: {
         configFiles: ["dprint.json", "dprint.jsonc", ".dprint.json", ".dprint.jsonc"],
         packageNames: ["dprint"],

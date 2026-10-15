@@ -6,7 +6,7 @@
 
 </a>
 
-<h3 align="center">A delightful toolkit for building cross-runtime CLIs for Node.js, Deno, and Bun.</h3>
+<h3 align="center">A delightful toolkit for building cross-runtime CLIs for Node.js and Bun.</h3>
 
 <!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 
@@ -135,7 +135,7 @@ cli.addCommand({
 await cli.run();
 ```
 
-Now you can run your CLI with `node index.js` (or `deno run index.js`, `bun index.js`). Here are some example usages:
+Now you can run your CLI with `node index.js` (or `bun index.js`). Here are some example usages:
 
 ```bash
 # Show help
@@ -237,7 +237,7 @@ When your command's `execute` function is called, it receives a toolbox object w
 - **`args`**: Named positional arguments (camelCase keys) from the command's `arguments: [ ... ]` definitions; empty when none are declared
 - **`env`**: Environment variables (camelCase keys) processed from the command's `env: [...]` definitions
 - **`fs`**: Injected filesystem adapter (subset of `node:fs/promises`). Swap via `CliOptions.fs` for tests or sandboxed runtimes.
-- **`process`**: Runtime snapshot — `cwd`, `env`, `argv`, `stdin`, `exit`, `platform`, `arch`. Prefer this over the global `process` so commands stay portable across Node, Deno, Bun, and mocked test runtimes.
+- **`process`**: Runtime snapshot — `cwd`, `env`, `argv`, `stdin`, `exit`, `platform`, `arch`. Prefer this over the global `process` so commands stay portable across Node, Bun, and mocked test runtimes.
 - **`runtime`**: Reference to the CLI instance
 - **`argv`**: Original command-line arguments array
 
@@ -287,7 +287,7 @@ cli.addCommand({
 
 ## Runtime Injection
 
-Commands receive an injected `{ fs, console, process }` context on the toolbox. Prefer reading from these over reaching for `node:fs/promises`, the global `console`, or the global `process` — commands written against the injected context stay testable, portable across Node/Deno/Bun, and ready to run inside sandboxed environments like MCP servers.
+Commands receive an injected `{ fs, console, process }` context on the toolbox. Prefer reading from these over reaching for `node:fs/promises`, the global `console`, or the global `process` — commands written against the injected context stay testable, portable across Node/Bun, and ready to run inside sandboxed environments like MCP servers.
 
 ```ts
 import { Cerebro } from "@visulima/cerebro";
@@ -513,7 +513,7 @@ yarn add @bomb.sh/tab
 Import and add the completion command to your CLI. The completion command supports two options:
 
 - **`--shell`**: Shell type (bash, zsh, fish, powershell) - auto-detected by default
-- **`--runtime`**: JavaScript runtime (node, bun, deno) - auto-detected by default
+- **`--runtime`**: JavaScript runtime (node, bun) - auto-detected by default
 
 ```ts
 import { Cerebro } from "@visulima/cerebro";
@@ -621,7 +621,6 @@ If completions don't work:
 Cerebro supports multiple JavaScript runtimes:
 
 - **Node.js**: >=20.19 <=25.x (follows [Node.js' release schedule](https://github.com/nodejs/release#release-schedule))
-- **Deno**: 1.0+
 - **Bun**: 1.0+
 
 The library uses runtime-agnostic APIs to ensure compatibility across all supported runtimes. Here's [a post on why we think tracking Node.js releases is important](https://medium.com/the-node-js-collection/maintainers-should-consider-following-node-js-release-schedule-ab08ed4de71a).

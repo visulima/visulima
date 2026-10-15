@@ -87,7 +87,7 @@ describe("detectPackageManager — Corepack packageManager field", () => {
     it("falls through to lockfile when packageManager value is unrecognised", async () => {
         expect.hasAssertions();
 
-        writePkg(cwd, { name: "x", packageManager: "deno@1.0.0" });
+        writePkg(cwd, { name: "x", packageManager: "unknown-pm@1.0.0" });
         writeLockfile(cwd, "pnpm-lock.yaml");
 
         const result = await detectPackageManager(cwd, new MockRunner());

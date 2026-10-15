@@ -354,7 +354,6 @@ Works in all modern environments:
 
 - Node.js 18+
 - Browsers (Chrome, Firefox, Safari, Edge)
-- Deno
 - Bun
 - Edge Functions (Vercel, Cloudflare Workers)
 - React Native

@@ -2,10 +2,9 @@
  * Bridges the runtime resolver into command handlers (Phase 1 of the
  * cross-runtime multi-tool — see `rfc/design-runtime-multitool.md`).
  *
- * Reads the global `--runtime` flag and `vis.config.ts` `runtime:`, resolves
- * the target runtime (flag → VIS_RUNTIME → config → lockfile → node), and
- * surfaces the deferred-runtime notice (e.g. a detected Deno project) on the
- * logger. The `--runtime`/`VIS_RUNTIME` env precedence is handled inside
+ * Reads the global `--runtime` flag and `vis.config.ts` `runtime:`, and
+ * resolves the target runtime (flag → VIS_RUNTIME → config → lockfile → node).
+ * The `--runtime`/`VIS_RUNTIME` env precedence is handled inside
  * `resolveRuntime`.
  */
 import type { RuntimeId } from "./adapters/types";
@@ -32,15 +31,8 @@ const readRuntimeFlag = (options: unknown): string | undefined => {
     return undefined;
 };
 
-export const resolveCommandRuntime = (context: RuntimeCommandContext, cwd: string): RuntimeResolution => {
-    const resolution = resolveRuntime(cwd, { config: context.visConfig?.runtime, flag: readRuntimeFlag(context.options) });
-
-    if (resolution.deferredNotice !== undefined) {
-        context.logger?.warn?.(resolution.deferredNotice);
-    }
-
-    return resolution;
-};
+export const resolveCommandRuntime = (context: RuntimeCommandContext, cwd: string): RuntimeResolution =>
+    resolveRuntime(cwd, { config: context.visConfig?.runtime, flag: readRuntimeFlag(context.options) });
 
 /**
  * The installer backend a resolved runtime forces. Today the mapping is

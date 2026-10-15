@@ -212,10 +212,6 @@
             "types": "./dist/handler/http/fetch/index.d.ts",
             "import": "./dist/handler/http/fetch/index.js"
         },
-        "./handler/http/deno": {
-            "types": "./dist/handler/http/fetch/index.d.ts",
-            "import": "./dist/handler/http/fetch/index.js"
-        },
         "./handler/http/nextjs": {
             "types": "./dist/handler/http/nextjs/index.d.ts",
             "import": "./dist/handler/http/nextjs/index.js"

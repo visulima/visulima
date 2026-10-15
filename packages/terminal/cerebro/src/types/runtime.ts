@@ -20,7 +20,7 @@ export interface CerebroFs {
  * buffer for tests and sandbox runtimes.
  *
  * Prefer reading these from the toolbox over reaching for global `process` so
- * commands stay portable across Node, Deno, Bun, and mocked test runtimes.
+ * commands stay portable across Node, Bun, and mocked test runtimes.
  */
 export interface CerebroProcess {
     /** CPU architecture, e.g. "x64", "arm64". */

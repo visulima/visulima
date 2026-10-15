@@ -5,7 +5,7 @@ import { whichBin } from "#native";
 
 /**
  * Runtime-version mismatch finding. vis doesn't manage runtimes directly,
- * but it can warn when the currently running Node/Bun/Deno doesn't match
+ * but it can warn when the currently running Node/Bun doesn't match
  * whatever the repo has declared — usually a sign the user forgot to
  * switch runtimes for this workspace.
  */

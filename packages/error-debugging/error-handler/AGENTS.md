@@ -4,7 +4,7 @@ This file provides guidance to AI coding agents when working with code in this d
 
 ## Overview
 
-`@visulima/error-handler` ships content-negotiating error handlers for HTTP servers and CLIs. The default `createNegotiatedErrorHandler` inspects the `Accept` header and dispatches to one of: HTML, JSON, JSON:API, Problem-JSON (RFC 7807), JSONP, XML, or plain text. Runtime adapters wrap the same formatters for Node `http`, Fetch-based runtimes (Hono, Bun, Cloudflare, Deno, Edge), and CLI output.
+`@visulima/error-handler` ships content-negotiating error handlers for HTTP servers and CLIs. The default `createNegotiatedErrorHandler` inspects the `Accept` header and dispatches to one of: HTML, JSON, JSON:API, Problem-JSON (RFC 7807), JSONP, XML, or plain text. Runtime adapters wrap the same formatters for Node `http`, Fetch-based runtimes (Hono, Bun, Cloudflare, Edge), and CLI output.
 
 ## Architecture
 
@@ -12,7 +12,7 @@ This file provides guidance to AI coding agents when working with code in this d
 
 - `./handler/cli` — CLI error handler.
 - `./handler/http/node` — Node.js `http.IncomingMessage`/`ServerResponse` handler.
-- `./handler/http/{hono,bun,cloudflare,deno,edge}` and `./handler/fetch` — all alias the same `fetch-handler.js`; choose the one that best documents intent.
+- `./handler/http/{hono,bun,cloudflare,edge}` and `./handler/fetch` — all alias the same `fetch-handler.js`; choose the one that best documents intent.
 - `./error-handler/{html,json,jsonapi,jsonp,problem,text,xml}` — individual formatters; each accepts an options bag and returns a handler function. Extensible via regex matching on `Accept`.
 
 ### Formatter pattern

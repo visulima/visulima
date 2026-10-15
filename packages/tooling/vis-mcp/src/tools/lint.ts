@@ -30,7 +30,7 @@ export const registerLint = ({ server }: ToolDeps, context: ToolContext): void =
             annotations: { readOnlyHint: true },
             description:
                 "Run the vis lint orchestrator in check-only mode via `vis lint --format json`. Auto-detects every installed "
-                + "linter (oxlint, biome, eslint, stylelint, ruff, markdownlint, shellcheck, deno-lint) and returns the merged "
+                + "linter (oxlint, biome, eslint, stylelint, ruff, markdownlint, shellcheck) and returns the merged "
                 + "{ findings, runs } payload. The `typecheck` adapter (tsc) is opt-in via `lint.adapters.typecheck.enabled`: it checks "
                 + "the whole project even when `files` is set (skipped when none of `files` is TypeScript), and is never cached. "
                 + "This tool never applies fixes — invoke `vis lint --fix` directly for that.",

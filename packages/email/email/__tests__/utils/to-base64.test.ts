@@ -105,7 +105,7 @@ describe(toBase64, () => {
 
         beforeEach(() => {
             originalBuffer = globalThis.Buffer;
-            // Simulate a runtime without Node's Buffer (Deno/Workers) so the module
+            // Simulate a runtime without Node's Buffer (e.g. Workers) so the module
             // re-evaluates hasBuffer === false and uses the TextEncoder/btoa path.
             (globalThis as { Buffer?: typeof globalThis.Buffer }).Buffer = undefined;
             vi.resetModules();

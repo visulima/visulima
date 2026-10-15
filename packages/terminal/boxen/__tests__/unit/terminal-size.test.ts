@@ -38,7 +38,7 @@ describe("vendored terminalSize", () => {
     it("returns the documented fallback on a runtime with no Node builtins", () => {
         expect.assertions(1);
 
-        // No `getBuiltinModule`: the shape a Worker/Deno-Deploy style runtime presents.
+        // No `getBuiltinModule`: the shape a Worker-style runtime presents.
         vi.stubGlobal("process", { env: {}, stderr: {}, stdout: {} });
 
         expect(terminalSize()).toStrictEqual({ columns: DEFAULT_COLUMNS, rows: DEFAULT_ROWS });

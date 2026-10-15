@@ -1,7 +1,7 @@
 import type { RuntimeAdapter } from "./types";
 
 /**
- * Node.js adapter. The default runtime — selected when no bun/deno signal is
+ * Node.js adapter. The default runtime — selected when no bun signal is
  * present, so its lockfile set is the npm/pnpm/yarn family. Detection walks up
  * for any of these; resolution otherwise falls back to node.
  */
