@@ -18,8 +18,6 @@ type CronExpressionOptions = {
     startDate?: Date | string | number | CronDate;
     strict?: boolean;
     tz?: string;
-    /** Set by `CronExpressionParser.parse`: the extensions the expression is made of. */
-    usedFeatures?: CronFeature[];
 };
 
 /**
@@ -54,6 +52,9 @@ class CronExpression {
 
     readonly #spec: ScheduleSpec;
 
+    /** The syntax extensions the expression is made of, set by the parser when it builds one. */
+    readonly #usedFeatures: ReadonlySet<CronFeature>;
+
     /**
      * Builds an expression from fields that were parsed or edited elsewhere.
      * @param fields The cron fields the expression is made of.
@@ -68,9 +69,11 @@ class CronExpression {
      * Creates a new CronExpression instance.
      * @param fields The parsed fields.
      * @param options Where to start, the time zone and the bounds.
+     * @param usedFeatures The syntax extensions the expression is made of, when it was parsed.
      */
-    public constructor(fields: CronFieldCollection, options: CronExpressionOptions) {
+    public constructor(fields: CronFieldCollection, options: CronExpressionOptions, usedFeatures?: Iterable<CronFeature>) {
         this.#options = options;
+        this.#usedFeatures = new Set(usedFeatures);
         this.#tz = options.tz;
         this.#fields = fields;
         this.#spec = CronExpression.#toSpec(fields);
@@ -100,8 +103,8 @@ class CronExpression {
      * expression built by hand rather than by `CronExpressionParser.parse`.
      * @returns The extensions used.
      */
-    public get usedFeatures(): CronFeature[] {
-        return this.#options.usedFeatures ?? [];
+    public get usedFeatures(): ReadonlySet<CronFeature> {
+        return this.#usedFeatures;
     }
 
     /**

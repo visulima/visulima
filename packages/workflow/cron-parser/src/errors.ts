@@ -25,13 +25,19 @@ const CRON_PARSE_ERROR_CODES = [
 
 type CronParseErrorCode = (typeof CRON_PARSE_ERROR_CODES)[number];
 
+/**
+ * The name of one of the six fields, as the options and the errors spell it. Six fields only: the
+ * seconds field is a real field, while the nicknames and the whole expression are not.
+ */
+type CronFieldName = "dayOfMonth" | "dayOfWeek" | "hour" | "minute" | "month" | "second";
+
 type CronParseErrorOptions = {
     /** The underlying cause, when there is one. */
     cause?: unknown;
     /** See {@link CronParseErrorCode}. */
     code: CronParseErrorCode;
     /** Which of the six fields the failure is in, when it is in one, as `dayOfMonth` and the like. */
-    field?: string;
+    field?: CronFieldName;
     /** The atom of the expression that failed, when the failure has one. */
     token?: string;
 };
@@ -39,10 +45,10 @@ type CronParseErrorOptions = {
 /** `CronDayOfMonth` and the like, as the option and field names spell it. */
 const CRON_PREFIX = /^Cron/;
 
-const fieldNameOf = (constructorName: string): string => {
+const fieldNameOf = (constructorName: string): CronFieldName => {
     const withoutPrefix = constructorName.replace(CRON_PREFIX, "");
 
-    return withoutPrefix.charAt(0).toLowerCase() + withoutPrefix.slice(1);
+    return (withoutPrefix.charAt(0).toLowerCase() + withoutPrefix.slice(1)) as CronFieldName;
 };
 
 /**
@@ -54,7 +60,7 @@ class CronParseError extends Error {
     public readonly code: CronParseErrorCode;
 
     /** Which field the failure is in, as `dayOfMonth` and the like, when it is in one. */
-    public readonly field?: string;
+    public readonly field?: CronFieldName;
 
     /** The atom of the expression that failed, when the failure has one. */
     public readonly token?: string;
@@ -69,4 +75,4 @@ class CronParseError extends Error {
 }
 
 export { CRON_PARSE_ERROR_CODES, CronParseError, fieldNameOf };
-export type { CronParseErrorCode, CronParseErrorOptions };
+export type { CronFieldName, CronParseErrorCode, CronParseErrorOptions };

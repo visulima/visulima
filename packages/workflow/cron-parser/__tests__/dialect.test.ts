@@ -98,10 +98,20 @@ describe("the dialect option", () => {
     it("does not rewrite the digits of a step", () => {
         expect.hasAssertions();
 
-        // `10` has to stay a step, not be read as the weekday `0`. `sundayIsOne` on its own, without the
-        // `cloudflare` step cap, so the step digits are the only thing under test.
-        expect(daysOfWeek("0 0 * * 1-7/10", { features: { sundayIsOne: true } })).toStrictEqual([0]);
-        expect(daysOfWeek("0 0 * * */12", { features: { sundayIsOne: true } })).toStrictEqual([0]);
+        // `10` has to stay a step, not be read as the weekday `0`: the step being too large is what the
+        // error names. A corrupting rewrite would fail earlier with a `FIELD_RANGE` on the `0`.
+        let thrown: unknown;
+
+        try {
+            CronExpressionParser.parse("0 0 * * 1-7/10", { dialect: "cloudflare" });
+        } catch (error) {
+            thrown = error;
+        }
+
+        expect(thrown).toBeInstanceOf(CronParseError);
+        expect((thrown as CronParseError).code).toBe("INVALID_STEP");
+        expect((thrown as CronParseError).token).toBe("10");
+
         expect(daysOfWeek("0 0 * * 1-7/2", { dialect: "cloudflare" })).toStrictEqual([0, 2, 4, 6]);
     });
 
@@ -149,19 +159,19 @@ describe("the dialect option", () => {
     it("reports the extensions an expression is made of", () => {
         expect.hasAssertions();
 
-        expect(CronExpressionParser.parse("* * * * *").usedFeatures).toStrictEqual([]);
-        expect(CronExpressionParser.parse("H * * * *").usedFeatures).toStrictEqual(["hashed"]);
-        expect(CronExpressionParser.parse("@daily").usedFeatures).toStrictEqual(["nicknames"]);
-        expect(CronExpressionParser.parse("0 0 0 * * *").usedFeatures).toStrictEqual(["seconds"]);
-        expect(CronExpressionParser.parse("0 0 * * *").usedFeatures).toStrictEqual([]);
-        expect(CronExpressionParser.parse("0 0 LW * *").usedFeatures).toStrictEqual(["lastWeekday"]);
-        expect(CronExpressionParser.parse("0 0 L-3 * *").usedFeatures).toStrictEqual(["lastOffset"]);
-        expect(CronExpressionParser.parse("0 0 15W * *").usedFeatures).toStrictEqual(["nearestWeekday"]);
-        expect(CronExpressionParser.parse("0 0 L * *").usedFeatures).toStrictEqual(["lastDayOfMonth"]);
-        expect(CronExpressionParser.parse("0 0 5L * *").usedFeatures).toStrictEqual(["numberedLastDayOfMonth"]);
-        expect(CronExpressionParser.parse("0 9 * * 5L").usedFeatures).toStrictEqual(["lastDayOfWeek"]);
-        expect(CronExpressionParser.parse("0 9 * * 2#2").usedFeatures).toStrictEqual(["nthDayOfWeek"]);
-        expect(CronExpressionParser.parse("0 0 ? * *").usedFeatures).toStrictEqual(["noSpecificTime"]);
-        expect(CronExpressionParser.parse("H 0 LW * *").usedFeatures).toStrictEqual(["hashed", "lastWeekday"]);
+        expect(CronExpressionParser.parse("* * * * *").usedFeatures).toStrictEqual(new Set());
+        expect(CronExpressionParser.parse("H * * * *").usedFeatures).toStrictEqual(new Set(["hashed"]));
+        expect(CronExpressionParser.parse("@daily").usedFeatures).toStrictEqual(new Set(["nicknames"]));
+        expect(CronExpressionParser.parse("0 0 0 * * *").usedFeatures).toStrictEqual(new Set(["seconds"]));
+        expect(CronExpressionParser.parse("0 0 * * *").usedFeatures).toStrictEqual(new Set());
+        expect(CronExpressionParser.parse("0 0 LW * *").usedFeatures).toStrictEqual(new Set(["lastWeekday"]));
+        expect(CronExpressionParser.parse("0 0 L-3 * *").usedFeatures).toStrictEqual(new Set(["lastOffset"]));
+        expect(CronExpressionParser.parse("0 0 15W * *").usedFeatures).toStrictEqual(new Set(["nearestWeekday"]));
+        expect(CronExpressionParser.parse("0 0 L * *").usedFeatures).toStrictEqual(new Set(["lastDayOfMonth"]));
+        expect(CronExpressionParser.parse("0 0 5L * *").usedFeatures).toStrictEqual(new Set(["numberedLastDayOfMonth"]));
+        expect(CronExpressionParser.parse("0 9 * * 5L").usedFeatures).toStrictEqual(new Set(["lastDayOfWeek"]));
+        expect(CronExpressionParser.parse("0 9 * * 2#2").usedFeatures).toStrictEqual(new Set(["nthDayOfWeek"]));
+        expect(CronExpressionParser.parse("0 0 ? * *").usedFeatures).toStrictEqual(new Set(["noSpecificTime"]));
+        expect(CronExpressionParser.parse("H 0 LW * *").usedFeatures).toStrictEqual(new Set(["hashed", "lastWeekday"]));
     });
 });

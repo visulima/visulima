@@ -4,9 +4,8 @@ import { CronParseError } from "./errors";
 type CronSeconds = "forbid" | "optional" | "require";
 
 /**
- * The syntax this package understands on top of the five plain fields. A `dialect` picks a whole
- * group of these, and `features` overrides single entries of it, so an expression can be held to what
- * a runtime's own cron parser accepts without giving up the parser here.
+ * The syntax an expression can be made of beyond the five plain fields, each phrased as "may this
+ * appear?". `parse` takes a partial one to turn single extensions on or off on top of a `dialect`.
  */
 type CronFeatures = {
     /** `H`, `H(0-29)` and `H/15`: a value drawn from the field's range by a seed. */
@@ -19,12 +18,6 @@ type CronFeatures = {
     lastOffset: boolean;
     /** `LW` in the day of month field: the last weekday of the month. */
     lastWeekday: boolean;
-
-    /**
-     * A day of month text such as `LW`, `L-3` or `15W` may share the field with another atom, as in
-     * `1,15W`. Cloudflare turns this off: a text in its day of month field has to stand alone.
-     */
-    mixedDayOfMonthText: boolean;
     /** `15W` in the day of month field: the weekday nearest the 15th that is still in the month. */
     nearestWeekday: boolean;
     /** `@daily` and the other nicknames. */
@@ -41,8 +34,25 @@ type CronFeatures = {
     numberedLastDayOfMonth: boolean;
     /** Whether a leading seconds field, that is a six field expression, is forbidden, allowed or required. */
     seconds: CronSeconds;
-    /** Whether a step may be as large as the field itself: Cloudflare rejects a weekday step of 7 and a minute step of 60. */
-    stepSmallerThanField: boolean;
+};
+
+/** An extension an expression can use, as reported by `CronExpression#usedFeatures`. */
+type CronFeature = keyof CronFeatures;
+
+/**
+ * What a dialect does beyond allowing or rejecting syntax: how it reads an expression and which shapes
+ * it considers legal. These are properties of the target, so they belong to the dialect rather than to
+ * the `features` a caller passes.
+ */
+type CronRules = {
+    /** A step may reach the size of the field. Cloudflare turns this off. */
+    largeSteps: boolean;
+
+    /**
+     * A day of month text such as `LW`, `L-3` or `15W` may share the field with another atom, as in
+     * `1,15W`. Cloudflare turns this off: a text in its day of month field has to stand alone.
+     */
+    mixedDayOfMonthText: boolean;
 
     /**
      * Reads the weekdays as Cloudflare does: `0` is invalid and `1` is Sunday through `7` Saturday,
@@ -53,18 +63,10 @@ type CronFeatures = {
     sundayIsOne: boolean;
 };
 
-/**
- * The switches that change what is accepted or how it is read, rather than what an expression is made
- * of, so they are not reported by `CronExpression#usedFeatures`.
- */
-type CronModeFeature = "mixedDayOfMonthText" | "stepSmallerThanField" | "sundayIsOne";
+/** The features and rules one parse runs with. */
+type ResolvedFeatures = CronFeatures & CronRules;
 
-/**
- * A syntax extension an expression can actually use, as reported by `CronExpression#usedFeatures`.
- */
-type CronFeature = Exclude<keyof CronFeatures, CronModeFeature>;
-
-/** A named grammar. `extended` is everything this package knows, and is the default. */
+/** A named grammar: `extended` is everything this package knows, and is the default. */
 type CronDialect = "cloudflare" | "cron-parser" | "extended";
 
 /** Everything this package understands, the grammar of an expression with no dialect chosen. */
@@ -74,15 +76,12 @@ const EXTENDED_FEATURES: CronFeatures = {
     lastDayOfWeek: true,
     lastOffset: true,
     lastWeekday: true,
-    mixedDayOfMonthText: true,
     nearestWeekday: true,
     nicknames: true,
     noSpecificTime: true,
     nthDayOfWeek: true,
     numberedLastDayOfMonth: true,
     seconds: "optional",
-    stepSmallerThanField: false,
-    sundayIsOne: false,
 };
 
 /**
@@ -100,54 +99,48 @@ const CRON_PARSER_FEATURES: CronFeatures = {
  * What Cloudflare Workers Cron Triggers accept, as checked against the live validator wrangler posts
  * to (`cron-triggers.cloudflareworkers.com`, backed by `cloudflare/saffron`): five fields over UTC,
  * `L`, `W`, `LW`, `L-n`, `#` and the three letter names, but not `H`, `?`, `@nicknames`, a seconds
- * field or a day of month `5L`. Note two things a validator misses: the weekdays run 1 (Sunday) to 7
- * (Saturday), so `sundayIsOne` rewrites them, and the number before an `L` or `#` follows the same
- * scale.
+ * field or a day of month `5L`.
  */
 const CLOUDFLARE_FEATURES: CronFeatures = {
     ...EXTENDED_FEATURES,
     hashed: false,
-    lastOffset: true,
-    mixedDayOfMonthText: false,
     nicknames: false,
     noSpecificTime: false,
     numberedLastDayOfMonth: false,
     seconds: "forbid",
-    stepSmallerThanField: true,
-    sundayIsOne: true,
 };
 
-const DIALECTS: Record<CronDialect, CronFeatures> = {
-    cloudflare: CLOUDFLARE_FEATURES,
-    "cron-parser": CRON_PARSER_FEATURES,
-    extended: EXTENDED_FEATURES,
+const EXTENDED_RULES: CronRules = { largeSteps: true, mixedDayOfMonthText: true, sundayIsOne: false };
+
+/** Cloudflare's reading and validation rules, the quirks a docs reading misses. */
+const CLOUDFLARE_RULES: CronRules = { largeSteps: false, mixedDayOfMonthText: false, sundayIsOne: true };
+
+const DIALECTS: Record<CronDialect, { features: CronFeatures; rules: CronRules }> = {
+    cloudflare: { features: CLOUDFLARE_FEATURES, rules: CLOUDFLARE_RULES },
+    "cron-parser": { features: CRON_PARSER_FEATURES, rules: EXTENDED_RULES },
+    extended: { features: EXTENDED_FEATURES, rules: EXTENDED_RULES },
 };
 
 /**
- * Folds a dialect and per-feature overrides into the set of features to parse with.
+ * Folds a dialect and per-feature overrides into the features and rules to parse with. The dialect's
+ * rules always win: a caller can turn syntax on or off, but not change how a target reads it.
  * @param dialect The named grammar, `extended` when none is given.
- * @param features Entries to turn on or off on top of the dialect.
- * @returns The effective features.
+ * @param features Syntax to turn on or off on top of the dialect.
+ * @returns The resolved features and rules.
  * @throws {CronParseError} When the dialect is not one of the named ones.
  */
-const resolveFeatures = (dialect?: CronDialect, features?: Partial<CronFeatures>): CronFeatures => {
-    let base = EXTENDED_FEATURES;
+const resolveFeatures = (dialect?: CronDialect, features?: Partial<CronFeatures>): ResolvedFeatures => {
+    const preset = (DIALECTS as Record<string, { features: CronFeatures; rules: CronRules } | undefined>)[dialect ?? "extended"];
 
-    if (dialect !== undefined) {
-        const preset = (DIALECTS as Record<string, CronFeatures | undefined>)[dialect];
-
-        if (preset === undefined) {
-            throw new CronParseError(`Unknown dialect: ${dialect}, expected one of ${Object.keys(DIALECTS).join(", ")}`, {
-                code: "UNKNOWN_DIALECT",
-                token: dialect,
-            });
-        }
-
-        base = preset;
+    if (preset === undefined) {
+        throw new CronParseError(`Unknown dialect: ${String(dialect)}, expected one of ${Object.keys(DIALECTS).join(", ")}`, {
+            code: "UNKNOWN_DIALECT",
+            token: String(dialect),
+        });
     }
 
-    return features === undefined ? base : { ...base, ...features };
+    return { ...preset.rules, ...preset.features, ...features };
 };
 
-export { DIALECTS, EXTENDED_FEATURES, resolveFeatures };
-export type { CronDialect, CronFeature, CronFeatures, CronSeconds };
+export { resolveFeatures };
+export type { CronDialect, CronFeature, CronFeatures, CronRules, CronSeconds, ResolvedFeatures };
