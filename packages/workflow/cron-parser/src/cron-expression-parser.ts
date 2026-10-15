@@ -2,7 +2,7 @@
 import type { CronExpressionOptions } from "./cron-expression";
 import { CronExpression } from "./cron-expression";
 import { CronFieldCollection } from "./cron-field-collection";
-import type { CronFeatures } from "./dialect";
+import type { CronFeature, CronFeatures } from "./dialect";
 import { resolveFeatures } from "./dialect";
 import { CronParseError } from "./errors";
 import type { CronConstraints, DayOfMonthRange, DayOfWeekRange, HourRange, MonthRange, ParseRangeResponse, SixtyRange } from "./fields";
@@ -115,6 +115,7 @@ class CronExpressionParser {
         const { hashSeed, strict = false } = options;
         const features = resolveFeatures(options.dialect, options.features);
         const rand = seededRandom(hashSeed);
+        const used = new Set<CronFeature>();
 
         const predefined = PredefinedExpressions[expression as keyof typeof PredefinedExpressions] as string | undefined;
 
@@ -123,7 +124,11 @@ class CronExpressionParser {
                 throw CronExpressionParser.#unsupported("nicknames", undefined, expression);
             }
 
+            used.add("nicknames");
             expression = predefined;
+        } else if (expression.trim() !== "" && expression.trim().split(/\s+/).length === 6) {
+            // A seconds field, judged on what was written rather than on a nickname's expansion.
+            used.add("seconds");
         }
 
         const rawFields = CronExpressionParser.#getRawFields(expression, strict, features);
@@ -132,10 +137,26 @@ class CronExpressionParser {
             throw new CronParseError("Cannot use both dayOfMonth and dayOfWeek together in strict mode!", { code: "STRICT_DAY_FIELDS" });
         }
 
-        const second = CronExpressionParser.#parseField(CronUnit.Second, rawFields.second, CronSecond.constraints, rand, strict, features) as SixtyRange[];
-        const minute = CronExpressionParser.#parseField(CronUnit.Minute, rawFields.minute, CronMinute.constraints, rand, strict, features) as SixtyRange[];
-        const hour = CronExpressionParser.#parseField(CronUnit.Hour, rawFields.hour, CronHour.constraints, rand, strict, features) as HourRange[];
-        const month = CronExpressionParser.#parseField(CronUnit.Month, rawFields.month, CronMonth.constraints, rand, strict, features) as MonthRange[];
+        const second = CronExpressionParser.#parseField(
+            CronUnit.Second,
+            rawFields.second,
+            CronSecond.constraints,
+            rand,
+            strict,
+            features,
+            used,
+        ) as SixtyRange[];
+        const minute = CronExpressionParser.#parseField(
+            CronUnit.Minute,
+            rawFields.minute,
+            CronMinute.constraints,
+            rand,
+            strict,
+            features,
+            used,
+        ) as SixtyRange[];
+        const hour = CronExpressionParser.#parseField(CronUnit.Hour, rawFields.hour, CronHour.constraints, rand, strict, features, used) as HourRange[];
+        const month = CronExpressionParser.#parseField(CronUnit.Month, rawFields.month, CronMonth.constraints, rand, strict, features, used) as MonthRange[];
         const dayOfMonth = CronExpressionParser.#parseField(
             CronUnit.DayOfMonth,
             rawFields.dayOfMonth,
@@ -143,10 +164,19 @@ class CronExpressionParser {
             rand,
             strict,
             features,
+            used,
         ) as DayOfMonthRange[];
-        const { dayOfWeek: _dayOfWeek, nthDayOfWeek } = CronExpressionParser.#parseNthDay(rawFields.dayOfWeek, features);
+        const { dayOfWeek: _dayOfWeek, nthDayOfWeek } = CronExpressionParser.#parseNthDay(rawFields.dayOfWeek, features, used);
         const dayOfWeekConstraints: CronConstraints = features.sundayIsOne ? { ...CronDayOfWeek.constraints, max: 6 } : CronDayOfWeek.constraints;
-        const dayOfWeek = CronExpressionParser.#parseField(CronUnit.DayOfWeek, _dayOfWeek, dayOfWeekConstraints, rand, strict, features) as DayOfWeekRange[];
+        const dayOfWeek = CronExpressionParser.#parseField(
+            CronUnit.DayOfWeek,
+            _dayOfWeek,
+            dayOfWeekConstraints,
+            rand,
+            strict,
+            features,
+            used,
+        ) as DayOfWeekRange[];
 
         const fields = new CronFieldCollection({
             dayOfMonth: CronDayOfMonth.fromMonth(month, dayOfMonth, { rawValue: rawFields.dayOfMonth }),
@@ -157,7 +187,7 @@ class CronExpressionParser {
             second: new CronSecond(second, { rawValue: rawFields.second }),
         });
 
-        return new CronExpression(fields, { ...options, expression });
+        return new CronExpression(fields, { ...options, expression, usedFeatures: [...used] });
     }
 
     /**
@@ -226,14 +256,16 @@ class CronExpressionParser {
         }
 
         const atoms = expression.trim().split(/\s+/);
-        const fieldCount = features.seconds ? 6 : 5;
+        const maxFields = features.seconds === "forbid" ? 5 : 6;
+        // A sixth field is required by `require` and, as before, by `strict` (unless seconds are forbidden).
+        const minFields = features.seconds === "require" || strict ? maxFields : 0;
 
-        if (strict && atoms.length < fieldCount) {
-            throw new CronParseError(`Invalid cron expression, expected ${fieldCount} fields`, { code: "FIELD_COUNT" });
+        if (atoms.length > maxFields) {
+            throw new CronParseError("Invalid cron expression, too many fields", { code: "FIELD_COUNT" });
         }
 
-        if (atoms.length > fieldCount) {
-            throw new CronParseError("Invalid cron expression, too many fields", { code: "FIELD_COUNT" });
+        if (atoms.length < minFields) {
+            throw new CronParseError(`Invalid cron expression, expected ${minFields} fields`, { code: "FIELD_COUNT" });
         }
 
         const defaults = ["0", "*", "*", "*", "*", "*"];
@@ -255,17 +287,30 @@ class CronExpressionParser {
      * @param rand The random number generator to use.
      * @param strict If true, will throw an error on an unusable hashed range or step.
      * @param features The syntax the chosen dialect allows.
+     * @param used Collects the extensions the expression is made of.
      * @private
      * @returns The parsed field.
      */
-    static #parseField(field: CronUnit, value: string, constraints: CronConstraints, rand: PRNG, strict: boolean, features: CronFeatures): (number | string)[] {
+    static #parseField(
+        field: CronUnit,
+        value: string,
+        constraints: CronConstraints,
+        rand: PRNG,
+        strict: boolean,
+        features: CronFeatures,
+        used: Set<CronFeature>,
+    ): (number | string)[] {
         // A bare `*` or `?` is by far the most common field and always expands to the same values.
         const isWildcard = value === "*" || value === "?";
 
         // `?` has to be checked before the cache: the cache is per field, so a `?` in an earlier
         // expression would otherwise hand back its expansion without asking about the dialect.
-        if (value.includes("?") && !features.noSpecificTime) {
-            throw CronExpressionParser.#unsupported("noSpecificTime", field, value);
+        if (value.includes("?")) {
+            if (!features.noSpecificTime) {
+                throw CronExpressionParser.#unsupported("noSpecificTime", field, value);
+            }
+
+            used.add("noSpecificTime");
         }
 
         const cacheKey = `${field}:${String(constraints.max)}`;
@@ -312,9 +357,9 @@ class CronExpressionParser {
         }
 
         value = this.#parseWildcard(value, constraints);
-        value = this.#parseHashed(value, constraints, rand, field, strict, features);
+        value = this.#parseHashed(value, constraints, rand, field, strict, features, used);
 
-        const values = this.#parseSequence(field, value, constraints, features);
+        const values = this.#parseSequence(field, value, constraints, features, used);
 
         if (isWildcard) {
             CronExpressionParser.#wildcards.set(cacheKey, [...values]);
@@ -345,9 +390,18 @@ class CronExpressionParser {
      * @param field The field being parsed, used when reporting an unusable range or step.
      * @param strict If true, will throw an error on an unusable hashed range or step.
      * @param features The syntax the chosen dialect allows.
+     * @param used Collects the extensions the expression is made of.
      * @private
      */
-    static #parseHashed(value: string, constraints: CronConstraints, rand: PRNG, field: CronUnit, strict: boolean, features: CronFeatures): string {
+    static #parseHashed(
+        value: string,
+        constraints: CronConstraints,
+        rand: PRNG,
+        field: CronUnit,
+        strict: boolean,
+        features: CronFeatures,
+        used: Set<CronFeature>,
+    ): string {
         // Every field draws a number, with or without a hashed value in it, so the seed gives the same picks as ever.
         const randomValue = rand();
         let count = 0;
@@ -359,6 +413,8 @@ class CronExpressionParser {
         if (!features.hashed) {
             throw CronExpressionParser.#unsupported("hashed", field, value);
         }
+
+        used.add("hashed");
 
         return value.replaceAll(/H(?:\((\d+)-(\d+)\))?(?:\/(\d+))?/g, (_, min, max, step) => {
             // H(range)/step
@@ -538,9 +594,10 @@ class CronExpressionParser {
      * @param value The sequence to parse.
      * @param constraints The constraints for the field.
      * @param features The syntax the chosen dialect allows.
+     * @param used Collects the extensions the expression is made of.
      * @private
      */
-    static #parseSequence(field: CronUnit, value: string, constraints: CronConstraints, features: CronFeatures): (number | string)[] {
+    static #parseSequence(field: CronUnit, value: string, constraints: CronConstraints, features: CronFeatures, used: Set<CronFeature>): (number | string)[] {
         const stack: (number | string)[] = [];
 
         function handleResult(result: number | string | (number | string)[], constraints: CronConstraints) {
@@ -578,7 +635,7 @@ class CronExpressionParser {
             }
 
             if (field === CronUnit.DayOfMonth) {
-                const day = CronExpressionParser.#readDayOfMonthAtom(atom, features);
+                const day = CronExpressionParser.#readDayOfMonthAtom(atom, features, used);
 
                 if (day !== undefined) {
                     if (!stack.includes(day)) {
@@ -587,8 +644,8 @@ class CronExpressionParser {
 
                     continue;
                 }
-            } else if (field === CronUnit.DayOfWeek && /^[0-7]L$/.test(atom) && !features.lastDayOfWeek) {
-                throw CronExpressionParser.#unsupported("lastDayOfWeek", field, atom);
+            } else if (field === CronUnit.DayOfWeek && /^[0-7]L$/.test(atom)) {
+                CronExpressionParser.#assertLastDayOfWeek(atom, features, used);
             }
 
             handleResult(CronExpressionParser.#parseRepeat(field, atom, constraints), constraints);
@@ -606,6 +663,22 @@ class CronExpressionParser {
      */
     static #isDayOfMonthText(atom: string): boolean {
         return atom === "L" || looksLikeDayOfMonthText(atom) || /^\d{1,2}L$/.test(atom);
+    }
+
+    /**
+     * Records a `5L` day of week text, rejecting it when the dialect does not take it.
+     * @param atom The day of week atom.
+     * @param features The syntax the chosen dialect allows.
+     * @param used Collects the extensions the expression is made of.
+     * @throws {CronParseError} When the dialect does not take `nL`.
+     * @private
+     */
+    static #assertLastDayOfWeek(atom: string, features: CronFeatures, used: Set<CronFeature>): void {
+        if (!features.lastDayOfWeek) {
+            throw CronExpressionParser.#unsupported("lastDayOfWeek", CronUnit.DayOfWeek, atom);
+        }
+
+        used.add("lastDayOfWeek");
     }
 
     /**
@@ -639,13 +712,14 @@ class CronExpressionParser {
      * day: `L`, `nL`, `LW`, `L-n` or `nW`.
      * @param atom One entry of a day of month list.
      * @param features The syntax the chosen dialect allows.
+     * @param used Collects the extensions the expression is made of.
      * @returns The normalized value, or undefined when the atom is an ordinary day or range.
      * @throws {CronParseError} When the atom has one of the shapes but is out of range, or turned off.
      * @private
      */
-    static #readDayOfMonthAtom(atom: string, features: CronFeatures): string | undefined {
+    static #readDayOfMonthAtom(atom: string, features: CronFeatures, used: Set<CronFeature>): string | undefined {
         if (looksLikeDayOfMonthText(atom)) {
-            return CronExpressionParser.#normalizeDayOfMonthAtom(atom, features);
+            return CronExpressionParser.#normalizeDayOfMonthAtom(atom, features, used);
         }
 
         if (atom === "L") {
@@ -653,15 +727,18 @@ class CronExpressionParser {
                 throw CronExpressionParser.#unsupported("lastDayOfMonth", CronUnit.DayOfMonth, atom);
             }
 
+            used.add("lastDayOfMonth");
+
             return "L";
         }
 
         // `5L` is the last day of the month, as the reference implementation reads it: the number before the `L` is ignored.
         if (/^\d{1,2}L$/.test(atom)) {
             if (!features.numberedLastDayOfMonth) {
-                // eslint-disable-next-line no-secrets/no-secrets -- a feature name, not a secret
                 throw CronExpressionParser.#unsupported("numberedLastDayOfMonth", CronUnit.DayOfMonth, atom);
             }
+
+            used.add("numberedLastDayOfMonth");
 
             return "L";
         }
@@ -682,11 +759,12 @@ class CronExpressionParser {
      * Reads one of the day of month texts that go beyond a plain day and checks it against the dialect.
      * @param atom One entry of a day of month list, already known to have one of those shapes.
      * @param features The syntax the chosen dialect allows.
+     * @param used Collects the extensions the expression is made of.
      * @returns The normalized value.
      * @throws {CronParseError} When a number is out of range, or the text is turned off.
      * @private
      */
-    static #normalizeDayOfMonthAtom(atom: string, features: CronFeatures): string {
+    static #normalizeDayOfMonthAtom(atom: string, features: CronFeatures, used: Set<CronFeature>): string {
         const read = readDayOfMonthText(atom);
 
         if (read === undefined) {
@@ -703,6 +781,8 @@ class CronExpressionParser {
         if (!features[read.kind]) {
             throw CronExpressionParser.#unsupported(read.kind, CronUnit.DayOfMonth, atom);
         }
+
+        used.add(read.kind);
 
         return normalizeDayOfMonthText(atom);
     }
@@ -838,10 +918,11 @@ class CronExpressionParser {
      * Parse the nth day of week marker off a day of week field.
      * @param value The day of week field.
      * @param features The syntax the chosen dialect allows.
+     * @param used Collects the extensions the expression is made of.
      * @private
      * @returns The field without the marker, and the occurrence number when there was one.
      */
-    static #parseNthDay(value: string, features: CronFeatures): { dayOfWeek: string; nthDayOfWeek?: number } {
+    static #parseNthDay(value: string, features: CronFeatures, used: Set<CronFeature>): { dayOfWeek: string; nthDayOfWeek?: number } {
         const atoms = value.split("#");
 
         if (atoms.length <= 1) {
@@ -851,6 +932,8 @@ class CronExpressionParser {
         if (!features.nthDayOfWeek) {
             throw CronExpressionParser.#unsupported("nthDayOfWeek", CronUnit.DayOfWeek, value);
         }
+
+        used.add("nthDayOfWeek");
 
         const nthValue = Number(atoms.at(-1));
         const matches = value.match(/([,\-/])/);

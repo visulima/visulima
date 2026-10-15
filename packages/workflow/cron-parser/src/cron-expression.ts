@@ -1,6 +1,6 @@
 import { CronDate } from "./cron-date";
 import type { CronFieldCollection } from "./cron-field-collection";
-import type { CronDialect, CronFeatures } from "./dialect";
+import type { CronDialect, CronFeature, CronFeatures } from "./dialect";
 import { readDayOfMonthText } from "./fields/day-of-month-text";
 import type { ScheduleSpec } from "./schedule";
 import { findRun } from "./schedule";
@@ -18,6 +18,8 @@ type CronExpressionOptions = {
     startDate?: Date | string | number | CronDate;
     strict?: boolean;
     tz?: string;
+    /** Set by `CronExpressionParser.parse`: the extensions the expression is made of. */
+    usedFeatures?: CronFeature[];
 };
 
 /**
@@ -91,6 +93,15 @@ class CronExpression {
      */
     public get fields(): CronFieldCollection {
         return this.#fields;
+    }
+
+    /**
+     * The syntax extensions the expression is made of, such as `hashed` or `nthDayOfWeek`; empty for an
+     * expression built by hand rather than by `CronExpressionParser.parse`.
+     * @returns The extensions used.
+     */
+    public get usedFeatures(): CronFeature[] {
+        return this.#options.usedFeatures ?? [];
     }
 
     /**

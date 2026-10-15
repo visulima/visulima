@@ -1,5 +1,8 @@
 import { CronParseError } from "./errors";
 
+/** How a sixth, seconds field is treated. */
+type CronSeconds = "forbid" | "optional" | "require";
+
 /**
  * The syntax this package understands on top of the five plain fields. A `dialect` picks a whole
  * group of these, and `features` overrides single entries of it, so an expression can be held to what
@@ -36,8 +39,8 @@ type CronFeatures = {
      * `cron-parser` reads it that way; Cloudflare rejects it.
      */
     numberedLastDayOfMonth: boolean;
-    /** A leading seconds field, that is, a six field expression. */
-    seconds: boolean;
+    /** Whether a leading seconds field, that is a six field expression, is forbidden, allowed or required. */
+    seconds: CronSeconds;
 
     /**
      * Reads the weekdays as Cloudflare does: `0` is invalid and `1` is Sunday through `7` Saturday,
@@ -47,6 +50,13 @@ type CronFeatures = {
      */
     sundayIsOne: boolean;
 };
+
+/**
+ * A syntax extension an expression can actually use, as reported by `CronExpression#usedFeatures`. The
+ * mode switches `mixedDayOfMonthText` and `sundayIsOne` are not here: they change what is accepted or
+ * how it is read, not what the expression is made of.
+ */
+type CronFeature = Exclude<keyof CronFeatures, "mixedDayOfMonthText" | "sundayIsOne">;
 
 /** A named grammar. `extended` is everything this package knows, and is the default. */
 type CronDialect = "cloudflare" | "cron-parser" | "extended";
@@ -64,7 +74,7 @@ const EXTENDED_FEATURES: CronFeatures = {
     noSpecificTime: true,
     nthDayOfWeek: true,
     numberedLastDayOfMonth: true,
-    seconds: true,
+    seconds: "optional",
     sundayIsOne: false,
 };
 
@@ -95,7 +105,7 @@ const CLOUDFLARE_FEATURES: CronFeatures = {
     nicknames: false,
     noSpecificTime: false,
     numberedLastDayOfMonth: false,
-    seconds: false,
+    seconds: "forbid",
     sundayIsOne: true,
 };
 
@@ -132,4 +142,4 @@ const resolveFeatures = (dialect?: CronDialect, features?: Partial<CronFeatures>
 };
 
 export { DIALECTS, EXTENDED_FEATURES, resolveFeatures };
-export type { CronDialect, CronFeatures };
+export type { CronDialect, CronFeature, CronFeatures, CronSeconds };

@@ -116,4 +116,32 @@ describe("the dialect option", () => {
 
         expect(() => CronExpressionParser.parse("* * * * *", { dialect: "vixie" as "extended" })).toThrow(CronParseError);
     });
+
+    it("treats the seconds field as forbidden, optional or required", () => {
+        expect.hasAssertions();
+
+        expect(() => CronExpressionParser.parse("0 0 0 * * *", { features: { seconds: "forbid" } })).toThrow(CronParseError);
+        expect(() => CronExpressionParser.parse("0 0 0 * * *", { features: { seconds: "require" } })).not.toThrow();
+        expect(() => CronExpressionParser.parse("0 0 * * *", { features: { seconds: "require" } })).toThrow(CronParseError);
+        expect(() => CronExpressionParser.parse("0 0 * * *", { features: { seconds: "optional" } })).not.toThrow();
+    });
+
+    it("reports the extensions an expression is made of", () => {
+        expect.hasAssertions();
+
+        expect(CronExpressionParser.parse("* * * * *").usedFeatures).toStrictEqual([]);
+        expect(CronExpressionParser.parse("H * * * *").usedFeatures).toStrictEqual(["hashed"]);
+        expect(CronExpressionParser.parse("@daily").usedFeatures).toStrictEqual(["nicknames"]);
+        expect(CronExpressionParser.parse("0 0 0 * * *").usedFeatures).toStrictEqual(["seconds"]);
+        expect(CronExpressionParser.parse("0 0 * * *").usedFeatures).toStrictEqual([]);
+        expect(CronExpressionParser.parse("0 0 LW * *").usedFeatures).toStrictEqual(["lastWeekday"]);
+        expect(CronExpressionParser.parse("0 0 L-3 * *").usedFeatures).toStrictEqual(["lastOffset"]);
+        expect(CronExpressionParser.parse("0 0 15W * *").usedFeatures).toStrictEqual(["nearestWeekday"]);
+        expect(CronExpressionParser.parse("0 0 L * *").usedFeatures).toStrictEqual(["lastDayOfMonth"]);
+        expect(CronExpressionParser.parse("0 0 5L * *").usedFeatures).toStrictEqual(["numberedLastDayOfMonth"]);
+        expect(CronExpressionParser.parse("0 9 * * 5L").usedFeatures).toStrictEqual(["lastDayOfWeek"]);
+        expect(CronExpressionParser.parse("0 9 * * 2#2").usedFeatures).toStrictEqual(["nthDayOfWeek"]);
+        expect(CronExpressionParser.parse("0 0 ? * *").usedFeatures).toStrictEqual(["noSpecificTime"]);
+        expect(CronExpressionParser.parse("H 0 LW * *").usedFeatures).toStrictEqual(["hashed", "lastWeekday"]);
+    });
 });
