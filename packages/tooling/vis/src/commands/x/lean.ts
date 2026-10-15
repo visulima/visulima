@@ -117,10 +117,6 @@ export const runLeanX = async (argv: string[]): Promise<void> => {
         return;
     }
 
-    if (runtime.deferredNotice !== undefined) {
-        process.stderr.write(`${runtime.deferredNotice}\n`);
-    }
-
     const code = await runFile(absoluteFile, scriptArguments, runtime.runtime, cwd);
 
     if (code !== 0) {

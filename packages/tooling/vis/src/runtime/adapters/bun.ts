@@ -9,5 +9,4 @@ export const bunAdapter: RuntimeAdapter = {
     id: "bun",
     label: "Bun",
     lockfiles: ["bun.lock", "bun.lockb"],
-    scriptSource: "package.json",
 };

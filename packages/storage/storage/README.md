@@ -101,7 +101,7 @@ Three handlers cover the common upload patterns:
 - **REST** — direct binary `POST` / `PUT`. Optional client-side chunking for large files.
 - **TUS** — resumable uploads ([tus.io](https://tus.io)) for unreliable networks and very large files.
 
-→ Runtime adapters live under `@visulima/storage/handler/http/{node,fetch,hono,nextjs,solid-start,bun,deno,cloudflare,edge}`. See [framework integrations](https://visulima.com/docs/packages/storage/framework).
+→ Runtime adapters live under `@visulima/storage/handler/http/{node,fetch,hono,nextjs,solid-start,bun,cloudflare,edge}`. See [framework integrations](https://visulima.com/docs/packages/storage/framework).
 
 ## Choosing your surface
 
@@ -151,7 +151,7 @@ Subpaths: `@visulima/storage/ai/{sdk,openai,claude,tanstack}` — Vercel AI SDK,
 - [Introduction](https://visulima.com/docs/packages/storage/introduction) — the two surfaces, when to use each
 - [Files facade](https://visulima.com/docs/packages/storage/files-facade) — the eight-method reference
 - [Services](https://visulima.com/docs/packages/storage/services) — per-provider configuration and capability matrix
-- [Framework integrations](https://visulima.com/docs/packages/storage/framework) — Node, Fetch, Hono, Next.js, SolidStart, Bun, Deno, Cloudflare
+- [Framework integrations](https://visulima.com/docs/packages/storage/framework) — Node, Fetch, Hono, Next.js, SolidStart, Bun, Cloudflare
 - [Custom storage](https://visulima.com/docs/packages/storage/custom-storage) — write your own adapter against `BaseStorage`
 - [Transformers](https://visulima.com/docs/packages/storage/transformers) — image / video / audio pipelines, caching
 - [TUS handler](https://visulima.com/docs/packages/storage/tus-handler) · [Chunked uploads](https://visulima.com/docs/packages/storage/chunked-uploads) · [Authenticated uploads](https://visulima.com/docs/packages/storage/authenticated-file-uploads)

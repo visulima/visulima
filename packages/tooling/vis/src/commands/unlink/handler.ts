@@ -8,7 +8,7 @@ import type { UnlinkOptions } from "./index";
 const execute = async ({ argument, logger, options, rawUnknown, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, UnlinkOptions>): Promise<void> => {
     const packages = mergeForwardedPackages(argument, rawUnknown);
     const cwd = wsRoot ?? process.cwd();
-    const runtime = resolveCommandRuntime({ logger, options, visConfig }, cwd);
+    const runtime = resolveCommandRuntime({ options, visConfig }, cwd);
     const pm = resolveInstaller(cwd, {
         backend: runtimeInstallerBackend(runtime),
         configBackend: visConfig?.install?.backend,

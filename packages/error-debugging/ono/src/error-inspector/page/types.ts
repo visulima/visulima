@@ -7,7 +7,6 @@ const hasNativeHeaders = typeof globalThis !== "undefined" && "Headers" in globa
 // Runtime type detection
 const isNodeJS = typeof process !== "undefined" && process.versions.node;
 const isBun = typeof globalThis !== "undefined" && "Bun" in globalThis;
-const isDeno = typeof globalThis !== "undefined" && "Deno" in globalThis;
 
 // Extract native types safely
 type NativeRequest = typeof globalThis.Request;
@@ -34,7 +33,7 @@ type HeadersLike = NativeHeaders | CustomHeaders;
 
 // Flexible RequestLike interface that supports multiple request types
 type RequestLike
-    // Native Request (works in Node.js 18+, Bun, Deno, browsers)
+    // Native Request (works in Node.js 18+, Bun, browsers)
     = | NativeRequest
     // Node.js IncomingMessage with extensions
         | (IncomingMessage & {
@@ -108,12 +107,10 @@ export const runtime: {
     hasNativeHeaders: boolean;
     hasNativeRequest: boolean;
     isBun: boolean;
-    isDeno: boolean;
     isNodeJS: string | false;
 } = {
     hasNativeHeaders,
     hasNativeRequest,
     isBun,
-    isDeno,
     isNodeJS,
 } as const;

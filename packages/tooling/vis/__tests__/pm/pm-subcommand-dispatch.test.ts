@@ -8,7 +8,6 @@ const pnpm11 = { name: "pnpm" as const, version: "11.0.0" };
 const yarn1 = { name: "yarn" as const, version: "1.22.19" };
 const yarn4 = { name: "yarn" as const, version: "4.1.0" };
 const bun = { name: "bun" as const, version: "1.3.0" };
-const deno = { name: "deno" as const, version: "2.0.0" };
 
 describe(dispatchSubcommand, () => {
     describe("plugin", () => {
@@ -32,7 +31,6 @@ describe(dispatchSubcommand, () => {
             ["npm", npm],
             ["pnpm", pnpm10],
             ["bun", bun],
-            ["deno", deno],
         ])("skips with warning for %s", (_name, pm) => {
             expect.assertions(1);
 
@@ -58,7 +56,6 @@ describe(dispatchSubcommand, () => {
         it.each([
             ["yarn 1", yarn1],
             ["yarn berry", yarn4],
-            ["deno", deno],
         ])("falls back to `npm pkg` with a warning for %s", (_label, pm) => {
             expect.assertions(1);
             expect(dispatchSubcommand(pm, "pkg", ["get", "name"])).toMatchObject({
@@ -105,11 +102,6 @@ describe(dispatchSubcommand, () => {
             });
         });
 
-        it("skips with warning for deno", () => {
-            expect.assertions(1);
-            expect(dispatchSubcommand(deno, "whoami", []).kind).toBe("skip");
-        });
-
         it("passes through for yarn 1", () => {
             expect.assertions(1);
             expect(dispatchSubcommand(yarn1, "whoami", [])).toStrictEqual({ kind: "passthrough" });
@@ -138,17 +130,6 @@ describe(dispatchSubcommand, () => {
                 bin: "npm",
                 kind: "rewrite",
                 warning: expect.stringMatching(/bun has no.*\.npmrc/s),
-            });
-        });
-
-        it("skips deno login with browser-auth note", () => {
-            expect.assertions(1);
-
-            const action = dispatchSubcommand(deno, "login", []);
-
-            expect(action).toMatchObject({
-                kind: "skip",
-                warning: expect.stringMatching(/browser OAuth/),
             });
         });
 
@@ -186,11 +167,6 @@ describe(dispatchSubcommand, () => {
             expect.assertions(2);
             expect(dispatchSubcommand(pnpm10, "owner", []).kind).toBe("passthrough");
             expect(dispatchSubcommand(yarn1, "owner", []).kind).toBe("passthrough");
-        });
-
-        it("skips deno owner", () => {
-            expect.assertions(1);
-            expect(dispatchSubcommand(deno, "owner", []).kind).toBe("skip");
         });
     });
 
@@ -234,10 +210,9 @@ describe(dispatchSubcommand, () => {
             expect(dispatchSubcommand(pnpm11, "dist-tag", []).kind).toBe("passthrough");
         });
 
-        it("skips bun and deno", () => {
-            expect.assertions(2);
+        it("skips bun", () => {
+            expect.assertions(1);
             expect(dispatchSubcommand(bun, "dist-tag", []).kind).toBe("skip");
-            expect(dispatchSubcommand(deno, "dist-tag", []).kind).toBe("skip");
         });
     });
 
@@ -266,7 +241,6 @@ describe(dispatchSubcommand, () => {
             ["pnpm 11", pnpm11],
             ["yarn 1", yarn1],
             ["bun", bun],
-            ["deno", deno],
         ])("passes through audit for %s", (_name, pm) => {
             expect.assertions(1);
             expect(dispatchSubcommand(pm, "audit", []).kind).toBe("passthrough");
@@ -290,10 +264,9 @@ describe(dispatchSubcommand, () => {
             expect(dispatchSubcommand(yarn4, "config", ["set", "registry", "https://r"]).kind).toBe("passthrough");
         });
 
-        it("skips bun and deno", () => {
-            expect.assertions(2);
+        it("skips bun", () => {
+            expect.assertions(1);
             expect(dispatchSubcommand(bun, "config", ["get", "x"]).kind).toBe("skip");
-            expect(dispatchSubcommand(deno, "config", ["get", "x"]).kind).toBe("skip");
         });
 
         it("passes through npm/pnpm/yarn1 config", () => {
@@ -309,7 +282,6 @@ describe(dispatchSubcommand, () => {
             ["yarn 1", yarn1],
             ["yarn 4", yarn4],
             ["bun", bun],
-            ["deno", deno],
         ])("skips prune for %s", (_name, pm) => {
             expect.assertions(1);
             expect(dispatchSubcommand(pm, "prune", []).kind).toBe("skip");
@@ -318,7 +290,6 @@ describe(dispatchSubcommand, () => {
         it.each([
             ["yarn 1", yarn1],
             ["bun", bun],
-            ["deno", deno],
         ])("skips rebuild for %s", (_name, pm) => {
             expect.assertions(1);
             expect(dispatchSubcommand(pm, "rebuild", []).kind).toBe("skip");

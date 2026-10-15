@@ -121,7 +121,7 @@ app.use("/upload/tus", new Tus({ storage }).handle);
 ```
 
 ```ts
-// Fetch runtimes (Hono, Bun, Deno, Next.js route handlers, …)
+// Fetch runtimes (Hono, Bun, Next.js route handlers, …)
 import { Rest } from "@visulima/storage/handler/http/fetch";
 
 const rest = new Rest({ storage });

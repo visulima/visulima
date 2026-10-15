@@ -4,7 +4,7 @@ This file provides guidance to AI coding agents when working with code in this d
 
 ## Overview
 
-`@visulima/cron-parser` parses cron expressions and iterates their schedule, with time zone and DST support. It is an ESM-only, zero-dependency port of the `cron-parser` v5 API that runs on Node, Deno, Bun and workerd.
+`@visulima/cron-parser` parses cron expressions and iterates their schedule, with time zone and DST support. It is an ESM-only, zero-dependency port of the `cron-parser` v5 API that runs on Node, Bun and workerd.
 
 ## Architecture
 
@@ -27,10 +27,10 @@ This file provides guidance to AI coding agents when working with code in this d
 - `vitest.config.ts` runs every suite twice, as the `intl` and `temporal` projects. The `temporal` project installs `temporal-polyfill` on `globalThis` before the code loads, so the Temporal backend gets the same coverage as the Intl one.
 - `__tests__/clock-change-oracle.test.ts` checks `next`/`prev` against a brute-force model of the clock-change rules: it scans a zone minute by minute (second by second for Manila) and inverts the clock, using none of the engine's wall clock mapping and reading `zone.rawOffset`, so it does not depend on the offset memory. It shares the offset primitive itself with the engine, so an error in `Intl` or `Temporal` data is not caught here; the comparison with the reference package and the zone tests cover that. 14 windows, including Apia's lost day, Troll's 2h jump, Chatham's mid-hour gap and Manila 1844. A change to `schedule.ts`, `zone.ts` or the DST rules is not done until it passes.
 - `__tests__/regressions.test.ts` holds the values reporters gave for the known upstream defects.
-- `__tests__/differential.test.ts` compares with the upstream `cron-parser` package (a devDependency used only as an oracle; `luxon` is a devDependency too, used by one ported date test) and requires identical results wherever no clock change is within two days; near one the oracle test judges. Africa/Casablanca is skipped on the `temporal` project (the polyfill's offsets are wrong; native Temporal in Bun and Deno matches Intl).
+- `__tests__/differential.test.ts` compares with the upstream `cron-parser` package (a devDependency used only as an oracle; `luxon` is a devDependency too, used by one ported date test) and requires identical results wherever no clock change is within two days; near one the oracle test judges. Africa/Casablanca is skipped on the `temporal` project (the polyfill's offsets are wrong; native Temporal in Bun matches Intl).
 - `__tests__/zone.test.ts` includes the check that the remembered offsets equal the raw ones around every transition of ten zones. Any change to `rememberOffsets` has to keep it green.
 - `__tests__/types.test.ts` holds the compile-time checks of the range types; they run as part of `tsc --noEmit`.
 - The ported suite is split by area (`cron-expression-parser*.test.ts`) to stay under the 1k-line limit. Where an expectation differs from the reference implementation, the test carries a comment saying why.
 - `__tests__/workerd/` runs under `pnpm run test:workerd`.
-- `scripts/runtime-smoke.mjs` runs the built `dist` on whichever runtime executes it; `pnpm run test:runtimes` runs it under Node, Bun and Deno (build first). Bun and Deno ship native `Temporal`, so those two exercise the native backend.
+- `scripts/runtime-smoke.mjs` runs the built `dist` on whichever runtime executes it; `pnpm run test:runtimes` runs it under Node and Bun (build first). Bun ships native `Temporal`, so it exercises the native backend.
 - The suite sets `TZ=UTC`, as upstream does.

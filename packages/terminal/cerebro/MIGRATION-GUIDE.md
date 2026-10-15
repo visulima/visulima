@@ -6,14 +6,36 @@ This guide documents breaking changes and migration steps for the `@visulima/cer
 
 ### Breaking Changes Summary
 
-- **Supported runtimes**: Node.js 20.19+, Deno 1.0+, Bun 1.0+
+- **Supported runtimes**: Node.js 20.19+, Bun 1.0+
 - **Module format**: ESM-only (CommonJS removed)
 - **Import structure**: Granular plugin and command exports
 - **Error handling**: Enhanced error types and validation
 
+### Deno runtime removed
+
+Deno is no longer a supported runtime. Three public types changed with it:
+
+- `RuntimeType` is now `"bun" | "node"`. `"deno"` is gone.
+- `runtimeVersionCheckPlugin({ runtimes })` no longer accepts `runtimes.deno`. Remove that key. Passing it is a type error.
+- The plugin no longer detects Deno. A Deno process falls through to the Node branch.
+
+#### Before
+
+```ts
+runtimeVersionCheckPlugin({ runtimes: { bun: { minVersion: 1 }, deno: { minVersion: 2 }, node: { minVersion: 20 } } });
+```
+
+#### After
+
+```ts
+runtimeVersionCheckPlugin({ runtimes: { bun: { minVersion: 1 }, node: { minVersion: 20 } } });
+```
+
+If you match on the detected runtime type, drop the `"deno"` branch.
+
 ### CommonJS (CJS) Export Removed
 
-The CommonJS (CJS) export has been removed in favor of ECMAScript Modules (ESM) only. Cerebro now supports Node.js, Deno, and Bun runtimes. For CJS compatibility in Node.js 20.19+, use dynamic imports.
+The CommonJS (CJS) export has been removed in favor of ECMAScript Modules (ESM) only. Cerebro now supports Node.js and Bun runtimes. For CJS compatibility in Node.js 20.19+, use dynamic imports.
 
 #### Before (v1.x)
 
@@ -22,14 +44,14 @@ The CommonJS (CJS) export has been removed in favor of ECMAScript Modules (ESM) 
 const { Cerebro, createCerebro } = require("@visulima/cerebro");
 ```
 
-#### After (v2.x) - Node.js 20.19+, Deno 1.0+, Bun 1.0+
+#### After (v2.x) - Node.js 20.19+, Bun 1.0+
 
 ```javascript
 // Use dynamic import for ESM modules from CJS (Node.js only)
 const { Cerebro, createCerebro } = await import("@visulima/cerebro");
 ```
 
-**Note**: Deno and Bun natively support ESM, so you can use standard `import` statements directly.
+**Note**: Bun natively supports ESM, so you can use standard `import` statements directly.
 
 #### Alternative: Convert to ESM
 
@@ -271,7 +293,7 @@ Ensure your `package.json` uses ESM:
 }
 ```
 
-> **Note**: Deno and Bun don't use the `package.json` engines field. Deno uses `deno.json`, and Bun supports both `package.json` and `bunfig.toml`.
+> **Note**: Bun doesn't use the `package.json` engines field; it supports both `package.json` and `bunfig.toml`.
 
 #### 2. Update Imports
 
@@ -709,8 +731,8 @@ cli.addPlugin(
 
 ### ESM Migration Benefits
 
-- **Better Performance**: ESM's improved module caching in Node.js 20.19+, native ESM support in Deno and Bun
-- **Cross-Runtime Support**: Works seamlessly across Node.js, Deno, and Bun
+- **Better Performance**: ESM's improved module caching in Node.js 20.19+, native ESM support in Bun
+- **Cross-Runtime Support**: Works seamlessly across Node.js and Bun
 - **Modern JavaScript**: Consistent module syntax across environments
 - **Bundle Optimization**: Better tree-shaking and dead code elimination
 - **Developer Experience**: Improved IDE support and error messages

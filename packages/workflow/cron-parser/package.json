@@ -1,7 +1,7 @@
 {
     "name": "@visulima/cron-parser",
     "version": "1.1.0",
-    "description": "Fast, zero-dependency cron expression parser with time zone and DST support, for Node.js, Deno, Bun and Workers",
+    "description": "Fast, zero-dependency cron expression parser with time zone and DST support, for Node.js, Bun and Workers",
     "keywords": [
         "cron",
         "crontab",
@@ -75,7 +75,7 @@
         "size": "node scripts/bundle-size.mjs",
         "test": "vitest run",
         "test:coverage": "vitest run --coverage",
-        "test:runtimes": "node scripts/runtime-smoke.mjs && bun scripts/runtime-smoke.mjs && deno run --allow-read scripts/runtime-smoke.mjs",
+        "test:runtimes": "node scripts/runtime-smoke.mjs && bun scripts/runtime-smoke.mjs",
         "test:ui": "vitest --ui --coverage.enabled=true",
         "test:watch": "vitest",
         "test:workerd": "vitest run --config vitest.workerd.config.ts"

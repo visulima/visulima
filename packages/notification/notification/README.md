@@ -38,7 +38,7 @@
 typed facade drives many channel providers (SMS, push, chat, in-app, webhook) and the email channel delegates straight to
 `@visulima/email`. It is **infra-free** (no Redis/Mongo/dashboard required), **ESM-only**, **tree-shakeable** (import only
 the providers you use), and **edge-ready** — every native provider is built on `fetch` with zero Node built-ins, so it
-runs unmodified on Cloudflare Workers, Vercel Edge, Deno and Bun.
+runs unmodified on Cloudflare Workers, Vercel Edge and Bun.
 
 ## Install
 
@@ -57,7 +57,7 @@ pnpm add @visulima/notification
 ## Usage
 
 > **Every provider is `fetch`-based** — no per-provider SDK to install, and it runs on Node, Cloudflare Workers, Vercel
-> Edge, Deno and Bun. Optional peers are only needed by specific subpaths (e.g. `liquidjs` for `./template/liquid`,
+> Edge and Bun. Optional peers are only needed by specific subpaths (e.g. `liquidjs` for `./template/liquid`,
 > `@visulima/workflow` for `./workflow`) — see the [install table](https://visulima.com/docs/packages/notification/installation#optional-peer-dependencies).
 > Beyond sending, the package ships [workflows](https://visulima.com/docs/packages/notification/workflow),
 > [digest](https://visulima.com/docs/packages/notification/digest),
@@ -132,7 +132,7 @@ Providers are imported from `@visulima/notification/providers/<name>` so unused 
 | **Wrappers** | `failover`, `roundrobin`, `opentelemetry`, `mock`               |
 
 > **Cloudflare / edge note:** nearly every provider is `fetch` + Web Crypto only and runs on **Cloudflare Workers**,
-> Vercel Edge, Deno and Bun — including **AWS SNS** (Web Crypto SigV4) and **web-push** (Web Crypto VAPID + RFC 8291).
+> Vercel Edge and Bun — including **AWS SNS** (Web Crypto SigV4) and **web-push** (Web Crypto VAPID + RFC 8291).
 > FCM accepts a `getAccessToken` callback so you bring your own OAuth token without a Node-only SDK. The only **Node-only**
 > pieces are **APNs** (`node:http2`) and the **bullmq / pg-boss / sqs** queue adapters — import those from a Node runtime.
 > See the [runtime matrix](https://visulima.com/docs/packages/notification/installation#runtime-support).
@@ -317,7 +317,7 @@ barrel holds the shared types, `createInboundRouter` and verification/reply help
 import { createSlackReceiver } from "@visulima/notification/providers/slack";
 
 // Read the secret however your runtime exposes it: an `env` binding on
-// Cloudflare Workers, `Deno.env.get`, `process.env` on Node.
+// Cloudflare Workers, `process.env` on Node.
 declare const signingSecret: string;
 
 const slack = createSlackReceiver({
@@ -331,7 +331,7 @@ const slack = createSlackReceiver({
     },
 });
 
-// Cloudflare Workers / Deno / Bun / Hono / Next.js route handlers …
+// Cloudflare Workers / Bun / Hono / Next.js route handlers …
 export default { fetch: (request: Request) => slack.handle(request) };
 ```
 

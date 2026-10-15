@@ -4,7 +4,6 @@ import { relative } from "@visulima/path";
 
 import { resolveSharedCacheDirectory } from "../../cache/cache-directory";
 import { biomeAdapter } from "../../lint-fmt/adapters/biome";
-import { denoFmtAdapter } from "../../lint-fmt/adapters/deno";
 import { dprintAdapter } from "../../lint-fmt/adapters/dprint";
 import { oxfmtAdapter } from "../../lint-fmt/adapters/oxfmt";
 import { prettierAdapter } from "../../lint-fmt/adapters/prettier";
@@ -14,7 +13,7 @@ import { detectAdapters } from "../../lint-fmt/detect";
 import { changedFilesSince, stagedFiles } from "../../lint-fmt/diff";
 import type { OutputSink } from "../../lint-fmt/output";
 import { resolveOutput } from "../../lint-fmt/output";
-import { adaptersByKind, registerAdapters, routeFilesByExtension } from "../../lint-fmt/registry";
+import { adaptersByKind, registerAdapters, routeFilesByExtension, warnUnknownAdapterIds } from "../../lint-fmt/registry";
 import { emitGitHub } from "../../lint-fmt/reporters/github";
 import { emitJUnit } from "../../lint-fmt/reporters/junit";
 import { emitSarif } from "../../lint-fmt/reporters/sarif";
@@ -24,18 +23,20 @@ import { runAdaptersParallel } from "../../lint-fmt/runner";
 import { runWatchLoop } from "../../lint-fmt/watch-loop";
 import type { FmtOptions } from "./index";
 
-const FORMAT_ADAPTERS = [oxfmtAdapter, biomeAdapter, dprintAdapter, prettierAdapter, ruffFmtAdapter, denoFmtAdapter];
+const FORMAT_ADAPTERS = [oxfmtAdapter, biomeAdapter, dprintAdapter, prettierAdapter, ruffFmtAdapter];
 
 const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Console, FmtOptions>): Promise<void> => {
     const root = workspaceRoot ?? process.cwd();
     const fmtConfig = visConfig?.fmt;
+
+    warnUnknownAdapterIds(logger, "fmt", fmtConfig);
     const adapters = registerAdapters(FORMAT_ADAPTERS, fmtConfig?.order);
     const detected = detectAdapters(root, adapters);
     const allEligible = adaptersByKind(detected, adapters, "fmt");
     const eligible = allEligible.filter(({ adapter }) => fmtConfig?.adapters?.[adapter.id as FmtAdapterId]?.enabled !== false);
 
     if (eligible.length === 0) {
-        logger.warn("vis fmt: no formatter detected in this workspace (looked for: oxfmt, biome, dprint, prettier, ruff, deno-fmt).");
+        logger.warn("vis fmt: no formatter detected in this workspace (looked for: oxfmt, biome, dprint, prettier, ruff).");
 
         return;
     }

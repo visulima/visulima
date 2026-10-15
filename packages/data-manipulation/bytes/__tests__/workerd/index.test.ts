@@ -4,10 +4,7 @@ import {
     asciiToUint8Array,
     base64ToUint8Array,
     bufferToUint8Array,
-    concat,
-    equals,
     hexToUint8Array,
-    indexOfNeedle,
     isUint8Array,
     toUint8Array,
     Uint8ArrayIncompatibleError,
@@ -453,19 +450,6 @@ describe("@visulima/bytes on workerd", () => {
             expect([...toUint8Array("ü")]).toStrictEqual([195, 188]);
             expect([...toUint8Array([1, 2, 3])]).toStrictEqual([1, 2, 3]);
             expect(() => toUint8Array(42)).toThrow(Uint8ArrayIncompatibleError);
-        });
-    });
-
-    describe("re-exported @std/bytes helpers", () => {
-        it("should concat, compare and search byte arrays", () => {
-            expect.assertions(4);
-
-            const joined = concat([new Uint8Array([1, 2]), new Uint8Array([3])]);
-
-            expect([...joined]).toStrictEqual([1, 2, 3]);
-            expect(equals(joined, new Uint8Array([1, 2, 3]))).toBe(true);
-            expect(equals(joined, new Uint8Array([1, 2, 4]))).toBe(false);
-            expect(indexOfNeedle(joined, new Uint8Array([2, 3]))).toBe(1);
         });
     });
 });

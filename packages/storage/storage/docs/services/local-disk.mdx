@@ -117,7 +117,7 @@ app.use("/upload/form", new Multipart({ storage }).handle);
 ```
 
 ```ts
-// Fetch runtimes on Node / Bun / Deno (needs a filesystem)
+// Fetch runtimes on Node / Bun (needs a filesystem)
 import { DiskStorage } from "@visulima/storage";
 import { Tus } from "@visulima/storage/handler/http/fetch";
 

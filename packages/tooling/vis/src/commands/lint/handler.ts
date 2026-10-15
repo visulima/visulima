@@ -4,7 +4,6 @@ import { relative } from "@visulima/path";
 
 import { resolveSharedCacheDirectory } from "../../cache/cache-directory";
 import { biomeAdapter } from "../../lint-fmt/adapters/biome";
-import { denoLintAdapter } from "../../lint-fmt/adapters/deno";
 import { eslintAdapter } from "../../lint-fmt/adapters/eslint";
 import { markdownlintAdapter } from "../../lint-fmt/adapters/markdownlint";
 import { oxlintAdapter } from "../../lint-fmt/adapters/oxlint";
@@ -17,7 +16,7 @@ import { detectAdapters } from "../../lint-fmt/detect";
 import { changedFilesSince, filterByExtensions, stagedFiles } from "../../lint-fmt/diff";
 import type { OutputSink } from "../../lint-fmt/output";
 import { resolveOutput } from "../../lint-fmt/output";
-import { adaptersByKind, registerAdapters } from "../../lint-fmt/registry";
+import { adaptersByKind, registerAdapters, warnUnknownAdapterIds } from "../../lint-fmt/registry";
 import { emitGitHub } from "../../lint-fmt/reporters/github";
 import { emitJUnit } from "../../lint-fmt/reporters/junit";
 import { emitSarif } from "../../lint-fmt/reporters/sarif";
@@ -35,13 +34,14 @@ const SOURCE_ADAPTERS = [
     ruffCheckAdapter,
     markdownlintAdapter,
     shellcheckAdapter,
-    denoLintAdapter,
     typecheckAdapter,
 ];
 
 const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Console, LintOptions>): Promise<void> => {
     const root = workspaceRoot ?? process.cwd();
     const lintConfig = visConfig?.lint;
+
+    warnUnknownAdapterIds(logger, "lint", lintConfig);
     const adapters = registerAdapters(SOURCE_ADAPTERS, lintConfig?.order);
     const detected = detectAdapters(root, adapters);
     const allEligible = adaptersByKind(detected, adapters, "lint");
@@ -60,7 +60,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Co
     }
 
     if (eligible.length === 0) {
-        logger.warn("vis lint: no linter detected in this workspace (looked for: oxlint, biome, eslint, stylelint, ruff, markdownlint, shellcheck, deno; typecheck runs only when enabled).");
+        logger.warn("vis lint: no linter detected in this workspace (looked for: oxlint, biome, eslint, stylelint, ruff, markdownlint, shellcheck; typecheck runs only when enabled).");
 
         return;
     }

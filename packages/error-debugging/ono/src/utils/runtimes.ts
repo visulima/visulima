@@ -1,7 +1,6 @@
 type GlobalHints = {
     __lagon__?: unknown;
     Bun?: unknown;
-    Deno?: unknown;
     EdgeRuntime?: unknown;
     fastly?: unknown;
     navigator?: { userAgent?: string };
@@ -17,7 +16,6 @@ const runtimeChecks: [boolean, RuntimeName][] = [
     // https://developers.cloudflare.com/workers/runtime-apis/web-standards/#navigatoruseragent
     // eslint-disable-next-line n/no-unsupported-features/node-builtins
     [g.navigator?.userAgent === "Cloudflare-Workers", "workerd"],
-    [!!g.Deno, "deno"],
     // https://nodejs.org/api/process.html#processrelease
     // eslint-disable-next-line no-underscore-dangle
     [!!g.__lagon__, "lagon"],
@@ -39,6 +37,6 @@ const detectRuntime = (): RuntimeName | undefined => {
 const runtime: RuntimeName | undefined = detectRuntime();
 
 // https://runtime-keys.proposal.wintercg.org/
-export type RuntimeName = "bun" | "deno" | "edge-light" | "fastly" | "lagon" | "netlify" | "node" | "workerd";
+export type RuntimeName = "bun" | "edge-light" | "fastly" | "lagon" | "netlify" | "node" | "workerd";
 
 export default runtime;

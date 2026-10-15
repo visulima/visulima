@@ -1,8 +1,7 @@
 /**
  * Shared trusted-publishing (OIDC) vs static-token precedence.
  *
- * python (`TWINE_PASSWORD`), cargo (`CARGO_REGISTRY_TOKEN`) and jsr
- * (`JSR_API_KEY`) all resolved the exact same decision independently; the
+ * python (`TWINE_PASSWORD`) and cargo (`CARGO_REGISTRY_TOKEN`) all resolved the exact same decision independently; the
  * only thing that varied was the static-token env-var name. The invariant
  * was being maintained by cross-referencing comments ("aligned with cargo.ts /
  * python.ts") rather than by shared code — a drift hazard. This module is the

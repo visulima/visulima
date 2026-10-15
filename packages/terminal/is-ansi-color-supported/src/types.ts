@@ -16,7 +16,7 @@ export interface CreateIsColorSupportedOptions {
      *
      * Useful when probing color support for a non-standard sink (e.g. a log file)
      * or when the runtime does not expose `isTTY`. When omitted, the stream's own
-     * `isTTY` (or Deno's `isTerminal()`) is used.
+     * `isTTY` is used.
      */
     isTTY?: boolean;
 

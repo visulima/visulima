@@ -18,7 +18,7 @@ const defaultTextHandler = textErrorHandler();
 // The JSON:API and XML formatters pull in `ts-japi` and `jstoxml` respectively.
 // They are loaded lazily — only when a request actually negotiates one of those
 // content types — so a JSON-only consumer of this handler never pays the
-// startup cost of parsing those libraries (notably on Cloudflare/Deno cold
+// startup cost of parsing those libraries (notably on Cloudflare cold
 // starts). The resolved singleton is memoised after the first use.
 let jsonapiHandlerPromise: Promise<ErrorHandler> | undefined;
 let xmlHandlerPromise: Promise<ErrorHandler> | undefined;

@@ -17,7 +17,7 @@ useful on its own.
 
 - **Infra-free** - No dashboard, no SaaS account, no separate server process. Bring any store you already run.
 - **Edge-ready** - The engine core and the in-memory / unstorage stores are `fetch` + Web Crypto only, with zero Node
-  built-ins, so they run unmodified on Cloudflare Workers, Vercel Edge, Deno and Bun.
+  built-ins, so they run unmodified on Cloudflare Workers, Vercel Edge and Bun.
 - **Code-first** - Workflows are ordinary async functions; durability comes from `ctx.step` / `ctx.sleep` /
   `ctx.waitForEvent`, not a YAML DSL or a visual editor.
 - **Type-safe** - Payloads are validated and typed via any [Standard Schema](https://standardschema.dev) validator

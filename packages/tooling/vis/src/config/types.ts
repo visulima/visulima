@@ -470,15 +470,15 @@ export interface VisConfig {
      * Tunes adapter detection precedence, per-extension routing, and
      * per-adapter overrides. Flags on the CLI always win over config.
      *
-     * The default fmt precedence is `oxfmt → biome → dprint → prettier
-     * → deno-fmt`. When multiple adapters claim the same extension,
+     * The default fmt precedence is `oxfmt → biome → dprint → prettier`.
+     * When multiple adapters claim the same extension,
      * the first in this order owns it unless overridden here.
      * @example
      * ```
      * fmt: {
      *   order: ["biome", "prettier"],
      *   extensionOverrides: { md: "dprint" },
-     *   adapters: { "deno-fmt": { enabled: false } },
+     *   adapters: { dprint: { enabled: false } },
      * }
      * ```
      */
@@ -604,7 +604,6 @@ export interface VisConfig {
      *   format:check), `biome` (lint, format), `oxlint` (lint),
      *   `oxfmt` (format / format:check), `stylelint` (lint:css),
      *   `knip` (knip).
-     * - **Runtimes** — `deno` (test/lint/fmt/check).
      * - **Database tooling** — `prisma` (db:generate/db:migrate/
      *   db:push/db:studio), `drizzle` (db:generate/db:migrate/
      *   db:push/db:studio).
@@ -620,15 +619,15 @@ export interface VisConfig {
      * a config file (because the package frequently appears transitively
      * and a dep-only match would synthesize broken commands): `vite`,
      * `rolldown`, `rollup`, `webpack`, `storybook`, `nest`, `remix`,
-     * `vitepress`, `bun`, `deno`, `changeset`.
+     * `vitepress`, `bun`, `changeset`.
      *
      * Conflict resolution: detectors are evaluated in registration order
      * (see `BUILT_IN_DETECTORS`) and the first to claim a target name
      * wins. Per-name priorities: `build` → nuxt > next > remix > astro
      * > gatsby > docusaurus > vite > nest > rolldown > tsdown > tsup >
-     * packem > rollup > webpack; `test` → vitest > jest > bun > deno;
+     * packem > rollup > webpack; `test` → vitest > jest > bun;
      * `test:e2e` → playwright > cypress; `lint` → eslint > biome >
-     * oxlint > deno; `format` → prettier > biome > oxfmt; `db:*` →
+     * oxlint; `format` → prettier > biome > oxfmt; `db:*` →
      * prisma > drizzle.
      *
      * Also accepts an object form (`{ vite: false, vitest: true }`) to
@@ -698,7 +697,7 @@ export interface VisConfig {
          *   and the PM is corepack-managed (errors loudly otherwise).
          * - `false`: never go through corepack — invoke the PM directly.
          *
-         * Mirrors nypm's `corepack: true` flag. Bun, deno, and aube are
+         * Mirrors nypm's `corepack: true` flag. Bun and aube are
          * never wrapped — corepack does not manage them.
          * @default "auto"
          */
@@ -712,13 +711,13 @@ export interface VisConfig {
      * Flags on the CLI always win over config.
      *
      * The default lint precedence is `oxlint → biome → eslint →
-     * stylelint → deno-lint`. Override with `order` to e.g. let biome
+     * stylelint`. Override with `order` to e.g. let biome
      * fire before oxlint when the workspace standardises on biome.
      * @example
      * ```
      * lint: {
      *   order: ["biome", "eslint"],
-     *   adapters: { "deno-lint": { enabled: false } },
+     *   adapters: { oxlint: { enabled: false } },
      * }
      * ```
      */

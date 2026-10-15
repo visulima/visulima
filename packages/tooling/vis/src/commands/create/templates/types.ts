@@ -18,7 +18,7 @@ export interface TemplateConfig {
 export interface CreateConfig {
     auth?: string;
     defaultEditor?: "vscode";
-    defaultPm?: "bun" | "deno" | "npm" | "pnpm" | "yarn";
+    defaultPm?: "bun" | "npm" | "pnpm" | "yarn";
     defaultProvider?: "bitbucket" | "github" | "gitlab" | "sourcehut";
     /** Template used by a bare `vis create`. Accepts any template input, including `@org` / `@org:name`. */
     defaultTemplate?: string;
@@ -44,7 +44,7 @@ export interface ExecutionContext {
     logger: Console;
 
     /** Detected package manager. */
-    pm: { name: "bun" | "deno" | "npm" | "pnpm" | "yarn"; version: string };
+    pm: { name: "bun" | "npm" | "pnpm" | "yarn"; version: string };
 
     /** The validated npm-safe project name. */
     projectName: string;

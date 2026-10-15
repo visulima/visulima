@@ -6,7 +6,7 @@ import { resolveCommandRuntime, runtimeInstallerBackend } from "../../runtime/co
 const execute = async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox): Promise<void> => {
     const target = argument?.[0] ?? null;
     const cwd = wsRoot ?? process.cwd();
-    const runtime = resolveCommandRuntime({ logger, options, visConfig }, cwd);
+    const runtime = resolveCommandRuntime({ options, visConfig }, cwd);
     const pm = resolveInstaller(cwd, {
         backend: runtimeInstallerBackend(runtime),
         configBackend: visConfig?.install?.backend,

@@ -16,8 +16,8 @@ pub struct ResolvedCommand {
 /// Validates that the PM name is one of the supported values.
 fn validate_pm(pm: &str) -> Result<(), String> {
     match pm {
-        "pnpm" | "npm" | "yarn" | "bun" | "deno" => Ok(()),
-        _ => Err(format!("Unsupported package manager: '{pm}'. Supported: pnpm, npm, yarn, bun, deno")),
+        "pnpm" | "npm" | "yarn" | "bun" => Ok(()),
+        _ => Err(format!("Unsupported package manager: '{pm}'. Supported: pnpm, npm, yarn, bun")),
     }
 }
 
@@ -127,20 +127,6 @@ pub fn resolve_exec(pm: &str, version: &str, opts: ExecOptions) -> Result<Resolv
             args.push(opts.command);
             args.extend(opts.args);
         }
-        "deno" => {
-            args.push("task".into());
-
-            if opts.shell_mode {
-                warnings.push("deno task does not support shell mode.".into());
-            }
-
-            if opts.recursive || !opts.filter.is_empty() || opts.parallel || opts.reverse {
-                warnings.push("deno task has no workspace fan-out flags (--recursive / --filter / --parallel / --reverse) — ignoring.".into());
-            }
-
-            args.push(opts.command);
-            args.extend(opts.args);
-        }
         _ => unreachable!(),
     }
 
@@ -203,27 +189,6 @@ pub fn resolve_pm_command(
 
                 return Ok(ResolvedCommand { args, bin: "bun".into(), warnings });
             }
-            "deno" => {
-                match extra_args.first().map(String::as_str) {
-                    Some("dir") => {
-                        args.push("info".into());
-                        warnings
-                            .push("deno has no `cache dir`; printing `deno info` (DENO_DIR is in the output).".into());
-                    }
-                    Some("clean") => {
-                        warnings.push(
-                            "deno has no `cache clean`. Remove DENO_DIR (default: ~/.cache/deno) manually.".into(),
-                        );
-                        args.push("--help".into());
-                    }
-                    _ => {
-                        args.push("cache".into());
-                        args.extend(extra_args);
-                    }
-                }
-
-                return Ok(ResolvedCommand { args, bin: "deno".into(), warnings });
-            }
             _ => {
                 args.push("cache".into());
                 args.extend(extra_args);
@@ -242,13 +207,6 @@ pub fn resolve_pm_command(
 
                 return Ok(ResolvedCommand { args, bin: "bun".into(), warnings });
             }
-            "deno" => {
-                warnings.push("deno has no `list`; falling back to `deno info`.".into());
-                args.push("info".into());
-                args.extend(extra_args);
-
-                return Ok(ResolvedCommand { args, bin: "deno".into(), warnings });
-            }
             _ => {
                 args.push("list".into());
                 args.extend(extra_args);
@@ -266,15 +224,6 @@ pub fn resolve_pm_command(
                 args.extend(extra_args);
 
                 return Ok(ResolvedCommand { args, bin: "bun".into(), warnings });
-            }
-            "deno" => {
-                warnings.push(
-                    "deno does not support `pack`. Use `deno publish --dry-run` to preview a JSR publish.".into(),
-                );
-                args.push("publish".into());
-                args.push("--dry-run".into());
-
-                return Ok(ResolvedCommand { args, bin: "deno".into(), warnings });
             }
             _ => {
                 args.push("pack".into());
@@ -302,23 +251,6 @@ pub fn resolve_pm_command(
                 args.push("view".into());
                 args.extend(extra_args);
             }
-            "deno" => {
-                args.push("info".into());
-
-                for arg in &extra_args {
-                    if arg.starts_with("npm:")
-                        || arg.starts_with("jsr:")
-                        || arg.starts_with("https://")
-                        || arg.starts_with("http://")
-                        || arg.starts_with("file:")
-                        || arg.starts_with('-')
-                    {
-                        args.push(arg.clone());
-                    } else {
-                        args.push(format!("npm:{arg}"));
-                    }
-                }
-            }
             _ => {
                 args.push("view".into());
                 args.extend(extra_args);
@@ -328,11 +260,11 @@ pub fn resolve_pm_command(
         return Ok(ResolvedCommand { args, bin: pm.to_owned(), warnings });
     }
 
-    if subcommand == "prune" && (pm == "yarn" || pm == "bun" || pm == "deno") {
+    if subcommand == "prune" && (pm == "yarn" || pm == "bun") {
         warnings.push(format!("{pm} does not support 'prune'. It prunes automatically on install."));
     }
 
-    if subcommand == "rebuild" && (pm == "yarn" || pm == "bun" || pm == "deno") {
+    if subcommand == "rebuild" && (pm == "yarn" || pm == "bun") {
         warnings.push(format!("{pm} does not support 'rebuild'."));
     }
 
@@ -386,9 +318,9 @@ pub fn resolve_remove(pm: &str, version: &str, opts: RemoveOptions) -> Result<Re
     validate_pm(pm)?;
 
     let mut args = Vec::new();
-    let mut warnings = Vec::new();
+    let warnings = Vec::new();
 
-    if opts.global && pm != "bun" && pm != "deno" {
+    if opts.global && pm != "bun" {
         let mut global = vec!["uninstall".to_owned(), "--global".to_owned()];
         global.extend(opts.packages);
 
@@ -482,26 +414,6 @@ pub fn resolve_remove(pm: &str, version: &str, opts: RemoveOptions) -> Result<Re
 
             args.extend(opts.packages);
         }
-        "deno" => {
-            if opts.global {
-                args.push("uninstall".into());
-                args.push("-g".into());
-            } else {
-                args.push("remove".into());
-
-                if opts.save_dev {
-                    warnings.push(
-                        "deno remove has no --save-dev flag; section is inferred from where the package lives.".into(),
-                    );
-                }
-
-                if !opts.filter.is_empty() || opts.recursive || opts.workspace_root {
-                    warnings.push("deno remove operates on the current workspace; --filter / --recursive / --workspace-root are ignored.".into());
-                }
-            }
-
-            args.extend(opts.packages);
-        }
         _ => unreachable!(),
     }
 
@@ -548,11 +460,6 @@ pub fn resolve_dedupe(pm: &str, version: &str, check: bool) -> Result<ResolvedCo
 
             return Ok(ResolvedCommand { args: vec!["install".into()], bin: "bun".into(), warnings });
         }
-        "deno" => {
-            warnings.push("deno does not support dedupe operations. Falling back to `deno install`.".into());
-
-            return Ok(ResolvedCommand { args: vec!["install".into()], bin: "deno".into(), warnings });
-        }
         _ => unreachable!(),
     }
 
@@ -562,18 +469,6 @@ pub fn resolve_dedupe(pm: &str, version: &str, check: bool) -> Result<ResolvedCo
 /// Resolve `vis link [target]`. Faithful copy of the addon's `resolve_link`.
 pub fn resolve_link(pm: &str, version: &str, target: Option<String>) -> Result<ResolvedCommand, String> {
     validate_pm(pm)?;
-
-    if pm == "deno" {
-        let mut warnings = vec![
-            "deno does not support `link`. Use `deno add ./relative/path` to depend on a local package.".to_owned(),
-        ];
-
-        if target.is_some() {
-            warnings.push("Ignoring link target on deno.".into());
-        }
-
-        return Ok(ResolvedCommand { args: vec!["--help".into()], bin: "deno".into(), warnings });
-    }
 
     let mut args = vec!["link".to_owned()];
     let mut warnings = Vec::new();
@@ -658,16 +553,6 @@ pub fn resolve_unlink(
 
             if recursive {
                 warnings.push("bun does not support --recursive for unlink.".into());
-            }
-
-            args.extend(packages);
-        }
-        "deno" => {
-            warnings.push("deno does not support `unlink`. Falling back to `deno remove` (use `vis remove -g` for global binaries).".into());
-            args.push("remove".into());
-
-            if recursive {
-                warnings.push("deno remove has no --recursive flag.".into());
             }
 
             args.extend(packages);
@@ -799,27 +684,6 @@ pub fn resolve_outdated(pm: &str, version: &str, opts: OutdatedOptions) -> Resul
 
             args.extend(opts.packages);
         }
-        "deno" => {
-            args.push("outdated".into());
-
-            if opts.compatible {
-                args.push("--compatible".into());
-            }
-
-            if opts.format == "json" {
-                warnings.push("deno outdated does not support JSON output.".into());
-            }
-
-            if !opts.filter.is_empty() {
-                warnings.push("deno outdated has no --filter flag.".into());
-            }
-
-            if opts.global {
-                warnings.push("deno outdated has no --global flag.".into());
-            }
-
-            args.extend(opts.packages);
-        }
         _ => unreachable!(),
     }
 
@@ -944,18 +808,6 @@ pub fn resolve_why(pm: &str, version: &str, opts: WhyOptions) -> Result<Resolved
             if let Some(d) = opts.depth {
                 args.push("--depth".into());
                 args.push(d.to_string());
-            }
-
-            args.extend(opts.packages);
-        }
-        "deno" => {
-            warnings.push(
-                "deno does not have a `why` subcommand; falling back to `deno info` (module dependency graph).".into(),
-            );
-            args.push("info".into());
-
-            if opts.json {
-                args.push("--json".into());
             }
 
             args.extend(opts.packages);

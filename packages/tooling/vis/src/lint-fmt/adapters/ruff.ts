@@ -9,7 +9,7 @@ import { declaredVersion, findFirstConfig } from "../detect";
 
 /**
  * Ruff adapter pair. Ruff is a Rust-native Python linter +
- * formatter that mirrors `deno`'s split surface: two subcommands
+ * formatter with a split surface: two subcommands
  * (`ruff check` and `ruff format`) with different output shapes,
  * so we register two adapters that share detection.
  *

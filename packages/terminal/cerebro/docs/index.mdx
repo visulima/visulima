@@ -5,7 +5,7 @@ description: "Lightweight, extensible CLI framework for building command-line ap
 
 # @visulima/cerebro
 
-A lightweight, extensible CLI framework for building modern command-line applications with TypeScript support, plugins, nested commands, and cross-runtime compatibility (Node.js, Deno, Bun).
+A lightweight, extensible CLI framework for building modern command-line applications with TypeScript support, plugins, nested commands, and cross-runtime compatibility (Node.js, Bun).
 
 ## Key Features
 
@@ -13,7 +13,7 @@ A lightweight, extensible CLI framework for building modern command-line applica
 
 - **Zero Dependencies Core** - Minimal footprint with optional peer dependencies
 - **TypeScript First** - Full type safety with comprehensive type definitions
-- **Cross-Runtime** - Works with Node.js, Deno, and Bun
+- **Cross-Runtime** - Works with Node.js and Bun
 - **Plugin System** - Extensible architecture with built-in and custom plugins
 
 **Commands & Arguments**
@@ -131,10 +131,10 @@ await cli.run();
 
 ### Cross-Runtime Tools
 
-Build CLIs that work across Node.js, Deno, and Bun:
+Build CLIs that work across Node.js and Bun:
 
 ```typescript
-// Works in Node.js, Deno, and Bun
+// Works in Node.js and Bun
 import { createCerebro } from "@visulima/cerebro";
 
 const cli = createCerebro("universal-cli");
@@ -173,6 +173,5 @@ await cli.run();
 Cerebro is designed for command-line environments and works with:
 
 - **Node.js** - Version 18.x and above
-- **Deno** - Latest stable version
 - **Bun** - Latest stable version
 - **Platforms** - Linux, macOS, Windows

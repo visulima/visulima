@@ -9,7 +9,7 @@
  * and `node:tty` through *static* imports. Importing it therefore drags those
  * builtins into the module graph of everything that imports `@visulima/boxen` —
  * which breaks at module-resolution time on runtimes that ship no Node builtins
- * (Cloudflare Workers without `nodejs_compat`, Deno Deploy, browsers), long
+ * (Cloudflare Workers without `nodejs_compat`, browsers), long
  * before any box is rendered.
  *
  * This port keeps the probing order and the documented 80x24 fallback, but

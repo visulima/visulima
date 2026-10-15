@@ -52,11 +52,10 @@ describe(applyCorepack, () => {
         expect(applyCorepack(RESOLVED("pnpm", ["install"]), { name: "pnpm", version: "10.0.0" }).bin).toBe("pnpm");
     });
 
-    it("is a no-op for bun, deno, and aube even when useCorepack is true", () => {
-        expect.assertions(3);
+    it("is a no-op for bun and aube even when useCorepack is true", () => {
+        expect.assertions(2);
 
         expect(applyCorepack(RESOLVED("bun", ["install"]), { name: "bun", useCorepack: true, version: "1.0.0" }).bin).toBe("bun");
-        expect(applyCorepack(RESOLVED("deno", ["install"]), { name: "deno", useCorepack: true, version: "1.0.0" }).bin).toBe("deno");
         expect(applyCorepack(RESOLVED("aube", ["install"]), { name: "aube", useCorepack: true, version: "1.0.0" }).bin).toBe("aube");
     });
 
@@ -106,14 +105,13 @@ describe(shouldUseCorepack, () => {
         expect(shouldUseCorepack(tmp, "pnpm", false)).toBe(false);
     });
 
-    it("returns false for PMs corepack does not manage (bun, deno, aube)", () => {
-        expect.assertions(3);
+    it("returns false for PMs corepack does not manage (bun, aube)", () => {
+        expect.assertions(2);
 
         availableBinaries.add("corepack");
         writeFileSync(join(tmp, "package.json"), JSON.stringify({ packageManager: "pnpm@10.0.0" }));
 
         expect(shouldUseCorepack(tmp, "bun", true)).toBe(false);
-        expect(shouldUseCorepack(tmp, "deno", true)).toBe(false);
         expect(shouldUseCorepack(tmp, "aube", true)).toBe(false);
     });
 
@@ -154,30 +152,22 @@ describe(shouldUseCorepack, () => {
 });
 
 describe(applySilent, () => {
-    it("appends --quiet for deno and --silent for every other PM", () => {
+    it("appends --silent for every PM", () => {
         expect.assertions(5);
 
         for (const pm of ["npm", "pnpm", "bun", "yarn", "aube"] as const) {
-            const out = applySilent(RESOLVED(pm, []), pm);
+            const out = applySilent(RESOLVED(pm, []));
 
             expect(out.args).toStrictEqual(["--silent"]);
         }
     });
-
-    it("uses --quiet for deno", () => {
-        expect.assertions(1);
-
-        const out = applySilent(RESOLVED("deno", []), "deno");
-
-        expect(out.args).toStrictEqual(["--quiet"]);
-    });
 });
 
 describe(applyDryRun, () => {
-    it("appends --dry-run for npm, pnpm, bun, and deno", () => {
-        expect.assertions(4);
+    it("appends --dry-run for npm, pnpm, and bun", () => {
+        expect.assertions(3);
 
-        for (const pm of ["npm", "pnpm", "bun", "deno"] as const) {
+        for (const pm of ["npm", "pnpm", "bun"] as const) {
             const out = applyDryRun(RESOLVED(pm, ["install"]), pm);
 
             expect(out?.args).toStrictEqual(["install", "--dry-run"]);
@@ -231,9 +221,9 @@ describe(applyImmutableCache, () => {
     });
 
     it("is a no-op for non-yarn PMs", () => {
-        expect.assertions(5);
+        expect.assertions(4);
 
-        for (const pm of ["npm", "pnpm", "bun", "deno", "aube"] as const) {
+        for (const pm of ["npm", "pnpm", "bun", "aube"] as const) {
             const out = applyImmutableCache(RESOLVED(pm, ["install", "--immutable"]), pm, "1.0.0");
 
             expect(out.args).toStrictEqual(["install", "--immutable"]);
@@ -286,28 +276,12 @@ describe(applyDlxOffline, () => {
         expect(out.warnings.some((w) => w.includes("bun x does not support --offline"))).toBe(true);
     });
 
-    it("uses --cached-only for deno", () => {
-        expect.assertions(1);
-
-        const out = applyDlxOffline(RESOLVED("deno", ["run", "-A", "npm:cowsay"]), "deno", "2.0.0");
-
-        expect(out.args).toStrictEqual(["run", "--cached-only", "-A", "npm:cowsay"]);
-    });
-
     it("is idempotent — does not double-insert when --offline is already present", () => {
         expect.assertions(1);
 
         const out = applyDlxOffline(RESOLVED("pnpm", ["dlx", "--offline", "cowsay"]), "pnpm", "10.0.0");
 
         expect(out.args).toStrictEqual(["dlx", "--offline", "cowsay"]);
-    });
-
-    it("is idempotent for deno (--cached-only already present)", () => {
-        expect.assertions(1);
-
-        const out = applyDlxOffline(RESOLVED("deno", ["run", "--cached-only", "-A", "npm:cowsay"]), "deno", "2.0.0");
-
-        expect(out.args).toStrictEqual(["run", "--cached-only", "-A", "npm:cowsay"]);
     });
 });
 

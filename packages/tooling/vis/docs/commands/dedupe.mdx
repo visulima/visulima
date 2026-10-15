@@ -29,4 +29,3 @@ vis dedupe --check     # CI: exits non-zero when changes would be made
 ## Notes
 
 - **bun** and **yarn v1** have no native dedupe command — vis emits a warning and falls back to a no-op.
-- **deno** has no dedupe command. vis falls back to running `deno install` with a warning, which re-resolves the lockfile.

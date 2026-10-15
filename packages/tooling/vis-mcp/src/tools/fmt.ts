@@ -31,7 +31,7 @@ export const registerFmt = ({ server }: ToolDeps, context: ToolContext): void =>
             annotations: { readOnlyHint: true },
             description:
                 "Run the vis fmt orchestrator in --check mode via `vis fmt --check --format json`. Auto-detects every "
-                + "installed formatter (oxfmt, biome, dprint, prettier, ruff-fmt, deno-fmt) and returns the merged "
+                + "installed formatter (oxfmt, biome, dprint, prettier, ruff-fmt) and returns the merged "
                 + "{ findings, runs } payload — each finding represents a file that would change. This tool never writes "
                 + "to disk; invoke `vis fmt` directly to apply the formatting.",
             inputSchema: {
