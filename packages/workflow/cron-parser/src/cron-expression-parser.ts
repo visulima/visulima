@@ -219,7 +219,7 @@ class CronExpressionParser {
         // A bare `L` is the last day of the Cloudflare week, Saturday, which sits at 7 before the shift.
         const shifted = value.replaceAll(/(^|,)L(?=,|$)/g, (_match, prefix: string) => `${prefix}7`);
 
-        return shifted.replaceAll(/(?<![#/])\d+/g, (digits) => {
+        return shifted.replaceAll(/(?<![#/\d])\d+/g, (digits) => {
             const weekday = Number.parseInt(digits, 10);
 
             if (weekday < 1 || weekday > 7) {

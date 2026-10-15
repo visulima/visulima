@@ -95,6 +95,15 @@ describe("the dialect option", () => {
         expect(() => CronExpressionParser.parse("0 0 1W,LW * *")).not.toThrow();
     });
 
+    it("leaves the digits of a step alone under `cloudflare`", () => {
+        expect.hasAssertions();
+
+        // `10` is a step, not a weekday `0`; `1-7/10` used to throw because the `0` was shifted.
+        expect(daysOfWeek("0 0 * * 1-7/10", { dialect: "cloudflare" })).toStrictEqual([0]);
+        expect(daysOfWeek("0 0 * * */12", { dialect: "cloudflare" })).toStrictEqual([0]);
+        expect(daysOfWeek("0 0 * * 1-7/2", { dialect: "cloudflare" })).toStrictEqual([0, 2, 4, 6]);
+    });
+
     it("computes the same runs as the equivalent numbering outside `cloudflare`", () => {
         expect.hasAssertions();
 
