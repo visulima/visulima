@@ -8,10 +8,10 @@ const root = fileURLToPath(new URL("../", import.meta.url));
 
 const cases = {
     "parse and iterate":
-        'import { CronExpressionParser } from "@visulima/cron-parser"; export default CronExpressionParser.parse("0 9 * * *", { tz: "Europe/Berlin" }).next();',
+        'import { parse } from "@visulima/cron-parser"; export default parse("0 9 * * *", { tz: "Europe/Berlin" }).next();',
     "a date on its own": 'import { CronDate } from "@visulima/cron-parser"; export default new CronDate("2021-01-01T00:00:00Z", "UTC");',
     "everything in the main entry": 'import * as everything from "@visulima/cron-parser"; export default everything;',
-    "the crontab reader": 'import { CronFileParser } from "@visulima/cron-parser/file"; export default CronFileParser;',
+    "the crontab reader": 'import { parseFile } from "@visulima/cron-parser/file"; export default parseFile;',
 };
 
 const rows = [];

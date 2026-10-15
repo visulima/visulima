@@ -107,7 +107,7 @@ class CronExpression {
 
     /**
      * The syntax extensions the expression is made of, such as `hashed` or `nthDayOfWeek`; empty for an
-     * expression built by hand rather than by `CronExpressionParser.parse`.
+     * expression built by hand rather than by `parse`.
      * @returns The extensions used.
      */
     public get usedFeatures(): ReadonlySet<CronFeature> {

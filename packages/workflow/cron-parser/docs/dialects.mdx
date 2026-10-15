@@ -14,12 +14,12 @@ Every runtime reads a slightly different cron. `dialect` holds an expression to 
 | `cloudflare`  | Cloudflare Workers Cron Triggers: five fields, `L`, `W`, `LW`, `L-n` and `#` (with names), but not `H`, `?`, `@nicknames`, a seconds field, a day of month `5L` or a day of month text in a list. |
 
 ```ts
-import { CronExpressionParser } from "@visulima/cron-parser";
+import { parse } from "@visulima/cron-parser";
 
-CronExpressionParser.parse("H * * * *", { dialect: "cloudflare" });
+parse("H * * * *", { dialect: "cloudflare" });
 // throws CronParseError: Unsupported feature "hashed" in the selected dialect
 
-CronExpressionParser.parse("0 0 1W * *", { dialect: "cron-parser", features: { nearestWeekday: true } });
+parse("0 0 1W * *", { dialect: "cron-parser", features: { nearestWeekday: true } });
 // parses: the dialect turns `1W` off, the feature turns it back on
 ```
 
@@ -34,9 +34,9 @@ Seconds are not a switch. They have their own `seconds` option. How a target _re
 To read what an expression is made of, rather than constrain it, `usedFeatures` holds the extensions it uses:
 
 ```ts
-CronExpressionParser.parse("0 0 LW * *").usedFeatures; // Set { "lastWeekday" }
-CronExpressionParser.parse("0 0 0 * * *").usedFeatures; // Set { "seconds" }
-CronExpressionParser.parse("* * * * *").usedFeatures.has("hashed"); // false
+parse("0 0 LW * *").usedFeatures; // Set { "lastWeekday" }
+parse("0 0 0 * * *").usedFeatures; // Set { "seconds" }
+parse("* * * * *").usedFeatures.has("hashed"); // false
 ```
 
 ## The Cloudflare dialect
@@ -50,10 +50,10 @@ The `cloudflare` dialect was checked against the validator wrangler itself deplo
 For a Cloudflare Worker, import the entry that has the dialect already applied:
 
 ```ts
-import { CronExpressionParser } from "@visulima/cron-parser/cloudflare";
+import { parse } from "@visulima/cron-parser/cloudflare";
 
-CronExpressionParser.parse("0 0 * * 1").next(); // Sunday, not Monday
-CronExpressionParser.parse("H * * * *"); // throws: Cloudflare has no hashed values
+parse("0 0 * * 1").next(); // Sunday, not Monday
+parse("H * * * *"); // throws: Cloudflare has no hashed values
 ```
 
 It is the default entry with `{ dialect: "cloudflare" }` applied. A `dialect` you pass yourself still wins. It imports no `node:*` module, so it loads on Workers like the default entry does.

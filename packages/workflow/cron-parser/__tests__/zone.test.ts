@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { CronDate, CronExpressionParser } from "../src";
+import { CronDate, parse } from "../src";
 import { getZone, resolveLocal, startOfDay, toLocalMs, wallInstants, weekdayOf } from "../src/zone";
 import { HOUR } from "./_helpers/clock-changes";
 
@@ -75,7 +75,7 @@ describe("zone", () => {
 
         // Europe/London was on British Standard Time (UTC+1) all of 1970.
         expect(getZone("Europe/London").offset(1000.5)).toBe(60);
-        expect(CronExpressionParser.parse("0 0 * * *", { currentDate: 1000.5, tz: "Europe/London" }).next().toISOString()).toBe("1970-01-01T23:00:00.000Z");
+        expect(parse("0 0 * * *", { currentDate: 1000.5, tz: "Europe/London" }).next().toISOString()).toBe("1970-01-01T23:00:00.000Z");
     });
 
     it("tells a year before the common era from the same year after it", () => {
@@ -114,13 +114,13 @@ describe("wall clock arithmetic for years 0 to 99", () => {
     it("schedules there", () => {
         expect.assertions(3);
 
-        expect(CronExpressionParser.parse("0 0 * * *", { currentDate: "0050-01-01T00:00:00.000Z", tz: "UTC" }).next().toISOString()).toBe(
+        expect(parse("0 0 * * *", { currentDate: "0050-01-01T00:00:00.000Z", tz: "UTC" }).next().toISOString()).toBe(
             "0050-01-02T00:00:00.000Z",
         );
-        expect(CronExpressionParser.parse("0 0 1 * *", { currentDate: "0002-01-15T00:00:00.000Z", tz: "UTC" }).next().toISOString()).toBe(
+        expect(parse("0 0 1 * *", { currentDate: "0002-01-15T00:00:00.000Z", tz: "UTC" }).next().toISOString()).toBe(
             "0002-02-01T00:00:00.000Z",
         );
-        expect(CronExpressionParser.parse("0 0 * * *", { currentDate: "0050-01-05T00:00:00.000Z", tz: "UTC" }).prev().toISOString()).toBe(
+        expect(parse("0 0 * * *", { currentDate: "0050-01-05T00:00:00.000Z", tz: "UTC" }).prev().toISOString()).toBe(
             "0050-01-04T00:00:00.000Z",
         );
     });

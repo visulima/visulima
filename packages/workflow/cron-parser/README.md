@@ -46,9 +46,9 @@ pnpm add @visulima/cron-parser
 ## Usage
 
 ```ts
-import { CronExpressionParser } from "@visulima/cron-parser";
+import { parse } from "@visulima/cron-parser";
 
-const interval = CronExpressionParser.parse("0 9 * * 1-5", {
+const interval = parse("0 9 * * 1-5", {
     currentDate: "2026-03-06T12:00:00Z",
     tz: "America/New_York",
 });
@@ -61,7 +61,7 @@ interval.prev().toISOString(); // "2026-03-06T14:00:00.000Z"
 `next()` and `prev()` move a cursor, so they can be mixed. `take(n)` returns the next `n` runs (a negative `n` walks backwards), and the interval is iterable:
 
 ```ts
-const days = CronExpressionParser.parse("0 0 * * *", {
+const days = parse("0 0 * * *", {
     currentDate: "2026-01-01T00:00:00Z",
     endDate: "2026-01-03T12:00:00Z",
     tz: "UTC",
@@ -110,10 +110,10 @@ Every runtime reads a slightly different cron. `dialect` holds an expression to 
 | `cloudflare`  | Cloudflare Workers Cron Triggers: five fields, `L`, `W`, `LW`, `L-n` and `#` (with names), but not `H`, `?`, `@nicknames`, a seconds field, a day of month `5L` or a day of month text in a list. |
 
 ```ts
-CronExpressionParser.parse("H * * * *", { dialect: "cloudflare" });
+parse("H * * * *", { dialect: "cloudflare" });
 // throws CronParseError: Unsupported feature "hashed" in the selected dialect
 
-CronExpressionParser.parse("0 0 1W * *", { dialect: "cron-parser", features: { nearestWeekday: true } });
+parse("0 0 1W * *", { dialect: "cron-parser", features: { nearestWeekday: true } });
 // parses: the dialect turns `1W` off, the feature turns it back on
 ```
 
@@ -122,9 +122,9 @@ CronExpressionParser.parse("0 0 1W * *", { dialect: "cron-parser", features: { n
 To read what an expression is actually made of, rather than constrain it, `usedFeatures` holds the extensions it uses:
 
 ```ts
-CronExpressionParser.parse("0 0 LW * *").usedFeatures; // Set { "lastWeekday" }
-CronExpressionParser.parse("0 0 0 * * *").usedFeatures; // Set { "seconds" }
-CronExpressionParser.parse("* * * * *").usedFeatures.has("hashed"); // false
+parse("0 0 LW * *").usedFeatures; // Set { "lastWeekday" }
+parse("0 0 0 * * *").usedFeatures; // Set { "seconds" }
+parse("* * * * *").usedFeatures.has("hashed"); // false
 ```
 
 The `cloudflare` dialect was checked against the validator wrangler itself deploys through, `cron-triggers.cloudflareworkers.com` (backed by [`cloudflare/saffron`](https://github.com/cloudflare/saffron)). A few of its rules are easy to miss and are built in: the weekdays run `1` (Sunday) to `7` (Saturday) and a weekday of `0` is rejected, so `0 0 * * 1` fires on Sunday and `0 18 * * 6L` on the last Friday (the number before an `L` or a `#` follows the same scale; the three letter names always mean the day they name, and a bare `L` in the weekday field is Saturday); a day of month text such as `LW`, `L-3` or `15W` has to stand alone, so `1,15` parses but `1W,LW` does not; and a step may not be as large as the field, so `*/6` is a valid weekday step but `*/7` is not, and minutes allow `*/59` but not `*/60`.
@@ -134,10 +134,10 @@ The `cloudflare` dialect was checked against the validator wrangler itself deplo
 A schedule that is a Cloudflare Cron Trigger can take the entry that has the dialect already applied, so there is no dialect name to remember:
 
 ```ts
-import { CronExpressionParser } from "@visulima/cron-parser/cloudflare";
+import { parse } from "@visulima/cron-parser/cloudflare";
 
-CronExpressionParser.parse("0 0 * * 1").next(); // Sunday, not Monday
-CronExpressionParser.parse("H * * * *"); // throws: Cloudflare has no hashed values
+parse("0 0 * * 1").next(); // Sunday, not Monday
+parse("H * * * *"); // throws: Cloudflare has no hashed values
 ```
 
 It is the default entry with `{ dialect: "cloudflare" }` baked in, and a `dialect` you pass yourself still wins. It imports no `node:*` module, so it loads on Workers like the default entry does.
@@ -148,7 +148,7 @@ A parse failure throws a `CronParseError`, an `Error` with a `code` (such as `FI
 
 ```ts
 try {
-    CronExpressionParser.parse("10 ! 12 8 0");
+    parse("10 ! 12 8 0");
 } catch (error) {
     if (error instanceof CronParseError) {
         error.code; // "FIELD_CHARACTER"
@@ -173,9 +173,9 @@ interval.fields.hour.values; // [9]
 Reading a crontab file needs `node:fs`, so it lives in its own entry point. The main entry never imports it, which keeps it loadable on Workers.
 
 ```ts
-import { CronFileParser } from "@visulima/cron-parser/file";
+import { parseFile, parseFileSync } from "@visulima/cron-parser/file";
 
-const { expressions, variables, errors } = await CronFileParser.parseFile("./crontab");
+const { expressions, variables, errors } = await parseFile("./crontab");
 ```
 
 ## Time zones and DST
@@ -185,7 +185,7 @@ An expression is read on the wall clock of its `tz`, and a run is a real instant
 - **A time that does not exist** (02:30 on the spring-forward day) runs after the gap, at the same minute of the first hour after it, when the expression names its hours. An every-hour schedule just skips the missing hour, so it does not run twice. A day that never happened at all (Samoa lost 30 December 2011) is dropped rather than moved.
 
     ```ts
-    CronExpressionParser.parse("30 2 * * *", { currentDate: "2021-03-13T12:00:00Z", tz: "America/New_York" }).next().toISOString();
+    parse("30 2 * * *", { currentDate: "2021-03-13T12:00:00Z", tz: "America/New_York" }).next().toISOString();
     // "2021-03-14T07:30:00.000Z"  (03:30 EDT)
     ```
 
@@ -214,16 +214,16 @@ Date strings may be ISO 8601 / SQL, RFC 2822 or HTTP dates. A string without an 
 
 The main entry uses only `Intl`, optionally `Temporal`, and plain JavaScript, so it runs unchanged on Node.js, Deno, Bun and Cloudflare Workers. `@visulima/cron-parser/cloudflare` is the same entry with the Cloudflare dialect applied, and `@visulima/cron-parser/file` is the one that needs `node:fs`. It is ESM only, side-effect free, and has no dependencies.
 
-Bundled and minified, `CronExpressionParser.parse(...).next()` is about 31 KB (11 KB gzipped), and a bare `CronDate` is about 10 KB (4 KB gzipped). The same import through `cron-parser` and `luxon` is about 100 KB (31 KB gzipped). `pnpm run build:prod && pnpm run size` prints the figures for this package. Iteration is also faster than that package; `__bench__` compares it with `croner`, `cron-schedule` and `cron-fast` too.
+Bundled and minified, `parse(...).next()` is about 31 KB (11 KB gzipped), and a bare `CronDate` is about 10 KB (4 KB gzipped). The same import through `cron-parser` and `luxon` is about 100 KB (31 KB gzipped). `pnpm run build:prod && pnpm run size` prints the figures for this package. Iteration is also faster than that package; `__bench__` compares it with `croner`, `cron-schedule` and `cron-fast` too.
 
-Tree-shaking helps less than the sizes suggest: parsing needs the whole expression engine, so importing `CronExpressionParser` costs nearly the same as importing everything. What it does keep out of your bundle is the crontab reader (a separate entry point) and, if you only need dates, the parser.
+Tree-shaking helps less than the sizes suggest: parsing needs the whole expression engine, so importing `parse` costs nearly the same as importing everything. What it does keep out of your bundle is the crontab reader (a separate entry point) and, if you only need dates, the parser.
 
 ## Coming from `cron-parser`
 
-The API is the same shape: `CronExpressionParser.parse`, `CronExpression`, `CronFieldCollection`, `CronDate` and the field classes keep their names and behaviour. What changes:
+The API is the same shape: `parse`, `CronExpression`, `CronFieldCollection`, `CronDate` and the field classes keep their names and behaviour. Upgrading from 1.0.0 is covered in the [migration guide](docs/migration.mdx). What changes:
 
 - ESM only, no `luxon`. Timezone handling is built in.
-- `CronFileParser` moves to `@visulima/cron-parser/file`.
+- `CronFileParser` becomes the functions `parseFile` and `parseFileSync`, from `@visulima/cron-parser/file`.
 - `TimeUnit`, `DateMathOp`, `CronUnit` and the other enums are `as const` objects, so they tree-shake.
 - A failed parse throws a `CronParseError` carrying a `code`, the `field` and the `token`, rather than a plain `Error`.
 - `dialect` and `features` hold an expression to another runtime's grammar; see [Dialects](#dialects).
@@ -260,7 +260,7 @@ These are in this package and not in `cron-parser`. All three are day of month a
 | `L-3`  | Three days before the last day of the month. `L-1` to `L-30` are accepted; a month too short for the offset has no run.                                                                                                                                                                                |
 
 ```ts
-CronExpressionParser.parse("0 0 15W * *", { currentDate: "2026-01-31T00:00:00Z", tz: "UTC" })
+parse("0 0 15W * *", { currentDate: "2026-01-31T00:00:00Z", tz: "UTC" })
     .take(3)
     .map((run) => run.toISOString().slice(0, 10));
 // ["2026-02-16", "2026-03-16", "2026-04-15"]   (15 February and March 2026 are Sundays)

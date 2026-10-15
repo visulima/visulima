@@ -1,7 +1,7 @@
 /* eslint-disable vitest/prefer-expect-assertions, vitest/prefer-strict-equal -- ported from the reference implementation's suite; kept close to the original for easy comparison */
 import { beforeEach, describe, expect, it } from "vitest";
 
-import CronExpressionParser from "../src";
+import { parse } from "../src";
 import type { CronExpressionOptions } from "../src/cron-expression";
 import { CronExpression, LOOPS_LIMIT_EXCEEDED_ERROR_MESSAGE, TIME_SPAN_OUT_OF_BOUNDS_ERROR_MESSAGE } from "../src/cron-expression";
 import type { CronFields } from "../src/cron-field-collection";
@@ -102,7 +102,7 @@ describe(CronExpression, () => {
         const cron = "0 9,12,15,18 * * 1-5";
         const tz = "Australia/Melbourne";
 
-        const schedule = CronExpressionParser.parse(cron, { currentDate: "2026-05-06T00:00:00.000Z", tz });
+        const schedule = parse(cron, { currentDate: "2026-05-06T00:00:00.000Z", tz });
 
         const first = schedule.next().toDate();
 
@@ -122,7 +122,7 @@ describe(CronExpression, () => {
         const cron = "0 9,12,15,18 * * 1-5";
         const tz = "America/New_York";
 
-        const schedule = CronExpressionParser.parse(cron, { currentDate: "2026-05-06T00:00:00.000Z", tz });
+        const schedule = parse(cron, { currentDate: "2026-05-06T00:00:00.000Z", tz });
 
         // Skip ahead to a specific date (May 7 is Thursday)
         schedule.reset(new Date("2026-05-07T00:00:00.000Z"));
@@ -139,7 +139,7 @@ describe(CronExpression, () => {
     });
 
     it("should set milliseconds to 0 on next scheduled date (issue #363)", () => {
-        const cronExpression = CronExpressionParser.parse("* * * * *", {
+        const cronExpression = parse("* * * * *", {
             currentDate: "2020-03-06T10:02:01.002Z",
         });
         const nextDate = cronExpression.next();
@@ -148,7 +148,7 @@ describe(CronExpression, () => {
     });
 
     it("should set milliseconds to 0 on previous scheduled date (issue #363)", () => {
-        const cronExpression = CronExpressionParser.parse("* * * * *", {
+        const cronExpression = parse("* * * * *", {
             currentDate: "2020-03-06T10:02:01.002Z",
         });
         const previousDate = cronExpression.prev();
@@ -166,14 +166,14 @@ describe(CronExpression, () => {
             ["0 0 9 * * *", "2023-01-01T10:00:00.000Z", 1, "2023-01-02T09:00:00.000Z"],
             ["0 0 5,10 * * *", "2023-01-01T06:00:00.000Z", 1, "2023-01-01T10:00:00.000Z"],
         ] as const)("%s from %s, direction %i, is %s", (expression, currentDate, direction, expected) => {
-            const interval = CronExpressionParser.parse(expression, { currentDate: new Date(currentDate), tz: "UTC" });
+            const interval = parse(expression, { currentDate: new Date(currentDate), tz: "UTC" });
 
             expect((direction === 1 ? interval.next() : interval.prev()).toISOString()).toBe(expected);
         });
 
         it("finds a run decades away without hitting the loop limit", () => {
             // The fifth Wednesday of February: 2040-02-29, then 2068-02-29.
-            const interval = CronExpressionParser.parse("0 0 * 2 3#5", { currentDate: new Date("2040-03-01T00:00:00.000Z"), tz: "UTC" });
+            const interval = parse("0 0 * 2 3#5", { currentDate: new Date("2040-03-01T00:00:00.000Z"), tz: "UTC" });
 
             expect(interval.next().toISOString()).toBe("2068-02-29T00:00:00.000Z");
             expect(interval.prev().toISOString()).toBe("2040-02-29T00:00:00.000Z");
@@ -182,7 +182,7 @@ describe(CronExpression, () => {
 
     describe("iteration exclusivity", () => {
         it("when currentDate is exactly on a schedule, returns the next occurrence", () => {
-            const interval = CronExpressionParser.parse("0 0 9 * * *", {
+            const interval = parse("0 0 9 * * *", {
                 currentDate: new Date("2023-01-01T09:00:00.000Z"),
             });
 
@@ -190,7 +190,7 @@ describe(CronExpression, () => {
         });
 
         it("when currentDate is exactly on a schedule, returns the previous occurrence", () => {
-            const interval = CronExpressionParser.parse("0 0 9 * * *", {
+            const interval = parse("0 0 9 * * *", {
                 currentDate: new Date("2023-01-01T09:00:00.000Z"),
             });
 
@@ -266,7 +266,7 @@ describe(CronExpression, () => {
         });
 
         it("should throw when the previous occurrence would land inside a sub-second start date", () => {
-            const cronExpression = CronExpressionParser.parse("* * * * * *", {
+            const cronExpression = parse("* * * * * *", {
                 currentDate: new Date("2025-01-01T10:00:05.500Z"),
                 startDate: new Date("2025-01-01T10:00:05.200Z"),
                 tz: "UTC",
@@ -278,7 +278,7 @@ describe(CronExpression, () => {
         it("should throw when no occurrence exists within the loop limit", () => {
             // Day 31 restricted to April and June, which only ever have 30 days, so
             // the expression can never match and iteration must not return a bogus date.
-            const cronExpression = CronExpressionParser.parse("0 0 0 31 4,6 *", {
+            const cronExpression = parse("0 0 0 31 4,6 *", {
                 currentDate: "2024-01-01T00:00:00Z",
                 tz: "UTC",
             });
@@ -288,7 +288,7 @@ describe(CronExpression, () => {
     });
 
     it("returns an occurrence on the end date when the current date carries milliseconds", () => {
-        const interval = CronExpressionParser.parse("*/1 * * * * *", {
+        const interval = parse("*/1 * * * * *", {
             currentDate: new Date("2025-01-01T00:00:09.151Z"),
             endDate: new Date("2025-01-01T00:00:10.000Z"),
             tz: "UTC",
@@ -298,7 +298,7 @@ describe(CronExpression, () => {
     });
 
     it("keeps interleaved forward and backward iteration anchored to the last result", () => {
-        const interval = CronExpressionParser.parse("*/5 * * * *", {
+        const interval = parse("*/5 * * * *", {
             currentDate: new Date("2025-01-01T12:02:00.000Z"),
             tz: "UTC",
         });
@@ -312,7 +312,7 @@ describe(CronExpression, () => {
     describe("stringify", () => {
         it("stringify cron expression all stars no seconds 0 * * * * *", () => {
             const expected = "0 * * * * *";
-            const interval = CronExpressionParser.parse("* * * * *", {});
+            const interval = parse("* * * * *", {});
             let text = interval.stringify(true);
 
             expect(text).toEqual(expected);
@@ -324,7 +324,7 @@ describe(CronExpression, () => {
 
         it("stringify cron expression all stars no seconds (discard seconds)", () => {
             const expected = "* * * * *";
-            const interval = CronExpressionParser.parse("* * * * *", {});
+            const interval = parse("* * * * *", {});
             let text = interval.stringify();
 
             expect(text).toEqual(expected);
@@ -336,7 +336,7 @@ describe(CronExpression, () => {
 
         it("stringify cron expression all stars with seconds", () => {
             const expected = "* * * * * *";
-            const interval = CronExpressionParser.parse("* * * * * *", {});
+            const interval = parse("* * * * * *", {});
             let text = interval.stringify(true);
 
             expect(text).toEqual(expected);
@@ -348,7 +348,7 @@ describe(CronExpression, () => {
 
         it("stringify cron expression all stars with seconds (discard seconds)", () => {
             const expected = "* * * * *";
-            const interval = CronExpressionParser.parse("* * * * * *", {});
+            const interval = parse("* * * * * *", {});
             let text = interval.stringify();
 
             expect(text).toEqual(expected);
@@ -360,7 +360,7 @@ describe(CronExpression, () => {
 
         it("stringify cron expression", () => {
             const expected = "0 1,2,4-10,20-35/5,57 * * * *";
-            const interval = CronExpressionParser.parse("1,2,4-10,20-35/5,57 * * * *", {});
+            const interval = parse("1,2,4-10,20-35/5,57 * * * *", {});
             let text = interval.stringify(true);
 
             expect(text).toEqual(expected);
@@ -372,7 +372,7 @@ describe(CronExpression, () => {
 
         it("stringify cron expression (discard seconds)", () => {
             const expected = "1,2,4-10,20-35/5,57 * * * *";
-            const interval = CronExpressionParser.parse("1,2,4-10,20-35/5,57 * * * *", {});
+            const interval = parse("1,2,4-10,20-35/5,57 * * * *", {});
             let text = interval.stringify();
 
             expect(text).toEqual(expected);
@@ -384,7 +384,7 @@ describe(CronExpression, () => {
 
         it("stringify cron expression with star range step", () => {
             const expected = "0 */5 */2 1-31 * *";
-            const interval = CronExpressionParser.parse("*/5 */2 */1 * *", {});
+            const interval = parse("*/5 */2 */1 * *", {});
             let text = interval.stringify(true);
 
             expect(text).toEqual(expected);
@@ -396,7 +396,7 @@ describe(CronExpression, () => {
 
         it("stringify cron expression with multiple values and retain original value", () => {
             const expected = "0 * * * * 1,3,5";
-            const interval = CronExpressionParser.parse("* * * * 1,3,5", {});
+            const interval = parse("* * * * 1,3,5", {});
             let text = interval.stringify(true);
 
             expect(text).toEqual(expected);
@@ -408,7 +408,7 @@ describe(CronExpression, () => {
 
         it("correctly stringify cron expression * * * * 0,2,4 and convert value to range step", () => {
             const expected = "0 * * * * 0-4/2";
-            const interval = CronExpressionParser.parse("* * * * 0,2,4", {});
+            const interval = parse("* * * * 0,2,4", {});
             let text = interval.stringify(true);
 
             expect(text).toEqual(expected);
@@ -420,7 +420,7 @@ describe(CronExpression, () => {
 
         it("correctly stringify cron expression * * * * 0,2,4,6 convert value to */2 step", () => {
             const expected = "0 * * * * */2";
-            const interval = CronExpressionParser.parse("* * * * 0,2,4,6", {});
+            const interval = parse("* * * * 0,2,4,6", {});
             let text = interval.stringify(true);
 
             expect(text).toEqual(expected);
@@ -432,7 +432,7 @@ describe(CronExpression, () => {
 
         it("correctly stringify cron expression * * * * */2", () => {
             const expected = "0 * * * * */2";
-            const interval = CronExpressionParser.parse("* * * * */2", {});
+            const interval = parse("* * * * */2", {});
             let text = interval.stringify(true);
 
             expect(text).toEqual(expected);
@@ -444,7 +444,7 @@ describe(CronExpression, () => {
 
         it("stringify cron expression with star range step (discard seconds)", () => {
             const expected = "*/5 */2 1-31 * *";
-            const interval = CronExpressionParser.parse("*/5 */2 */1 * *", {});
+            const interval = parse("*/5 */2 */1 * *", {});
             let text = interval.stringify();
 
             expect(text).toEqual(expected);
@@ -456,7 +456,7 @@ describe(CronExpression, () => {
 
         it("stringify cron expression with semi range step", () => {
             const expected = "0 5-55/5 * * * *";
-            const interval = CronExpressionParser.parse("5/5 * * * *", {});
+            const interval = parse("5/5 * * * *", {});
             let text = interval.stringify(true);
 
             expect(text).toEqual(expected);
@@ -468,7 +468,7 @@ describe(CronExpression, () => {
 
         it("stringify cron expression with semi range step (discard seconds)", () => {
             const expected = "5-55/5 * * * *";
-            const interval = CronExpressionParser.parse("5/5 * * * *", {});
+            const interval = parse("5/5 * * * *", {});
             let text = interval.stringify();
 
             expect(text).toEqual(expected);
@@ -492,18 +492,18 @@ describe(CronExpression, () => {
             ];
 
             for (const [input, expected] of cases) {
-                const stringified = CronExpressionParser.parse(input).stringify();
+                const stringified = parse(input).stringify();
 
                 expect(stringified).toEqual(expected);
                 // Re-parsing the output and stringifying again must be stable (round-trips
                 // to the same expression), proving no value information was lost.
-                expect(CronExpressionParser.parse(stringified).stringify()).toEqual(expected);
+                expect(parse(stringified).stringify()).toEqual(expected);
             }
         });
 
         it("stringify cron expression with L", () => {
             const expected = "0 * * 1,4-10,L * *";
-            const interval = CronExpressionParser.parse("* * 1,4-10,L * *", {});
+            const interval = parse("* * 1,4-10,L * *", {});
             let text = interval.stringify(true);
 
             expect(text).toEqual(expected);
@@ -515,7 +515,7 @@ describe(CronExpression, () => {
 
         it("stringify cron expression with L (discard seconds)", () => {
             const expected = "* * 1,4-10,L * *";
-            const interval = CronExpressionParser.parse("* * 1,4-10,L * *", {});
+            const interval = parse("* * 1,4-10,L * *", {});
             let text = interval.stringify();
 
             expect(text).toEqual(expected);
@@ -527,7 +527,7 @@ describe(CronExpression, () => {
 
         it("stringify cron expression with weekday L", () => {
             const expected = "0 0 0 * * 1L";
-            const interval = CronExpressionParser.parse(expected, {});
+            const interval = parse(expected, {});
             let text = interval.stringify(true);
 
             expect(text).toEqual(expected);
@@ -539,7 +539,7 @@ describe(CronExpression, () => {
 
         it("stringify cron expression with multiple weekday, one of them with an L", () => {
             const expected = "0 0 0 * * 4,6L";
-            const interval = CronExpressionParser.parse(expected, {});
+            const interval = parse(expected, {});
             let text = interval.stringify(true);
 
             expect(text).toEqual(expected);
@@ -551,7 +551,7 @@ describe(CronExpression, () => {
 
         it("stringify cron expression with multiple weekday, two of them with an L", () => {
             const expected = "0 0 0 * * 1L,5L";
-            const interval = CronExpressionParser.parse(expected, {});
+            const interval = parse(expected, {});
             let text = interval.stringify(true);
 
             expect(text).toEqual(expected);
@@ -571,7 +571,7 @@ describe(CronExpression, () => {
             }
 
             for (const expression of expressions) {
-                const interval = CronExpressionParser.parse(expression, {});
+                const interval = parse(expression, {});
                 const text = interval.stringify(true);
 
                 expect(text).toEqual(expression);
@@ -580,7 +580,7 @@ describe(CronExpression, () => {
 
         it("stringify cron expression with ?", () => {
             const expected = "? ? * * ?";
-            const interval = CronExpressionParser.parse(expected, {});
+            const interval = parse(expected, {});
             const text = interval.stringify();
 
             expect(text).toEqual(expected);
@@ -588,7 +588,7 @@ describe(CronExpression, () => {
 
         it("stringify cron expression with wildcard day of month and single month value", () => {
             const expected = "* * * 4 *";
-            const interval = CronExpressionParser.parse(expected, {});
+            const interval = parse(expected, {});
             const text = interval.stringify();
 
             expect(text).toEqual(expected);
@@ -596,7 +596,7 @@ describe(CronExpression, () => {
 
         it("stringify cron expression with wildcard day of month and month range", () => {
             const expected = "* * * 4-6 *";
-            const interval = CronExpressionParser.parse(expected, {});
+            const interval = parse(expected, {});
             const text = interval.stringify();
 
             expect(text).toEqual(expected);
@@ -604,7 +604,7 @@ describe(CronExpression, () => {
 
         it("stringify cron expression with day of month range and single month value", () => {
             const expected = "* * 1-25 4 *";
-            const interval = CronExpressionParser.parse(expected, {});
+            const interval = parse(expected, {});
             const text = interval.stringify();
 
             expect(text).toEqual(expected);
@@ -643,7 +643,7 @@ describe(CronExpression, () => {
         });
 
         it("stringify cron expression with extended day of week range (0,7)", () => {
-            const interval = CronExpressionParser.parse("* * * * *");
+            const interval = parse("* * * * *");
 
             let text = CronExpression.fieldsToExpression(
                 new CronFieldCollection({
@@ -673,28 +673,28 @@ describe(CronExpression, () => {
         });
 
         it("stringify day of week that covers the whole week without collapsing it", () => {
-            expect(CronExpressionParser.parse("0 0 16 * 0-6").stringify()).toBe("0 0 16 * 0-6");
-            expect(CronExpressionParser.parse("0 0 16 * 0-7").stringify()).toBe("0 0 16 * 0-6");
-            expect(CronExpressionParser.parse("0 0 16 * */1").stringify()).toBe("0 0 16 * 0-6");
+            expect(parse("0 0 16 * 0-6").stringify()).toBe("0 0 16 * 0-6");
+            expect(parse("0 0 16 * 0-7").stringify()).toBe("0 0 16 * 0-6");
+            expect(parse("0 0 16 * */1").stringify()).toBe("0 0 16 * 0-6");
         });
 
         it("stringify day of month that covers the whole month without collapsing it", () => {
-            expect(CronExpressionParser.parse("0 0 1-31 * 5").stringify()).toBe("0 0 1-31 * 5");
+            expect(parse("0 0 1-31 * 5").stringify()).toBe("0 0 1-31 * 5");
         });
 
         it("stringify day field written as a wildcard collapses it", () => {
-            expect(CronExpressionParser.parse("0 0 16 * *").stringify()).toBe("0 0 16 * *");
-            expect(CronExpressionParser.parse("0 0 * * 5").stringify()).toBe("0 0 * * 5");
+            expect(parse("0 0 16 * *").stringify()).toBe("0 0 16 * *");
+            expect(parse("0 0 * * 5").stringify()).toBe("0 0 * * 5");
         });
 
         it("stringify question mark day of week is unchanged", () => {
-            expect(CronExpressionParser.parse("0 0 16 * ?").stringify()).toBe("0 0 16 * ?");
+            expect(parse("0 0 16 * ?").stringify()).toBe("0 0 16 * ?");
         });
 
         it("parsing an expression from its own rendered form keeps the schedule", () => {
             const roundTripOptions = { currentDate: new Date("2026-01-01T00:00:00Z"), tz: "UTC" };
-            const expression = CronExpressionParser.parse("0 0 16 * 0-6", roundTripOptions);
-            const reparsed = CronExpressionParser.parse(expression.stringify(), roundTripOptions);
+            const expression = parse("0 0 16 * 0-6", roundTripOptions);
+            const reparsed = parse(expression.stringify(), roundTripOptions);
 
             expect(reparsed.take(5).map((date) => date.toISOString())).toEqual(expression.take(5).map((date) => date.toISOString()));
         });
@@ -722,7 +722,7 @@ describe(CronExpression, () => {
         });
 
         it("should support last weekday of month", () => {
-            const cronExpression = CronExpressionParser.parse("0 0 0 * * 1L", {
+            const cronExpression = parse("0 0 0 * * 1L", {
                 currentDate: new Date("2023-01-01T00:00:00Z"),
             });
 
@@ -732,7 +732,7 @@ describe(CronExpression, () => {
         });
 
         it("should support nth day of week", () => {
-            const cronExpression = CronExpressionParser.parse("0 0 0 * * 1#3", {
+            const cronExpression = parse("0 0 0 * * 1#3", {
                 currentDate: new Date("2023-01-01T00:00:00Z"),
             });
 
@@ -744,7 +744,7 @@ describe(CronExpression, () => {
 
         it("honors day of month when combined with an nth day of week", () => {
             // Day of month 8 OR the 3rd Friday of the month.
-            const cronExpression = CronExpressionParser.parse("0 0 0 8 * 5#3", { tz: "UTC" });
+            const cronExpression = parse("0 0 0 8 * 5#3", { tz: "UTC" });
 
             expect(cronExpression.includesDate(new Date("2024-01-08T00:00:00.000Z"))).toBe(true);
             expect(cronExpression.includesDate(new Date("2024-01-19T00:00:00.000Z"))).toBe(true);
@@ -760,7 +760,7 @@ describe(CronExpression, () => {
         };
 
         const createInterval = (pattern: string) =>
-            CronExpressionParser.parse(pattern, {
+            parse(pattern, {
                 ...baseOptions,
                 currentDate: new Date(baseOptions.currentDate.getTime() - 1000),
             });
@@ -821,7 +821,7 @@ describe(CronExpression, () => {
         });
 
         it("should NOT return undefined after DST gap", () => {
-            const interval = CronExpressionParser.parse("0 5 * * 7", {
+            const interval = parse("0 5 * * 7", {
                 currentDate: new Date("2025-03-29T00:00:00Z"),
                 endDate: new Date("2025-03-31T00:00:00Z"),
                 tz: "Europe/Rome",
@@ -835,7 +835,7 @@ describe(CronExpression, () => {
         });
 
         it("iterator should remain stable across DST gap", () => {
-            const interval = CronExpressionParser.parse("0 * * * 7", {
+            const interval = parse("0 * * * 7", {
                 currentDate: new Date("2025-03-29T00:00:00Z"),
                 endDate: new Date("2025-03-31T00:00:00Z"),
                 tz: "Europe/Rome",
@@ -865,12 +865,12 @@ describe(CronExpression, () => {
         });
 
         it("europe/Rome vs UTC should differ correctly", () => {
-            const rome = CronExpressionParser.parse("0 5 * * 7", {
+            const rome = parse("0 5 * * 7", {
                 currentDate: new Date("2025-03-29T00:00:00Z"),
                 endDate: new Date("2025-03-31T00:00:00Z"),
                 tz: "Europe/Rome",
             });
-            const utc = CronExpressionParser.parse("0 5 * * 7", {
+            const utc = parse("0 5 * * 7", {
                 currentDate: new Date("2025-03-29T00:00:00Z"),
                 endDate: new Date("2025-03-31T00:00:00Z"),
                 tz: "UTC",

@@ -1,0 +1,169 @@
+---
+title: Migration guide
+description: Move from @visulima/cron-parser 1.0.0, or from cron-parser v5, to the function API
+---
+
+# Migration guide
+
+This guide covers two moves: upgrading from `@visulima/cron-parser` 1.0.0, and moving to this package from the `cron-parser` v5 package it is a port of.
+
+The next release is a breaking change. The parser is now a function, `parse`, instead of a class with a static `parse` method. The crontab reader is now two functions instead of a class. Errors are a typed class. Everything else in the API keeps its name and behaviour, except where a row below says otherwise.
+
+## Upgrading from 1.0.0
+
+### The parser is a function
+
+`CronExpressionParser` is gone, including the default export. Import `parse`.
+
+```ts
+// 1.0.0
+import { CronExpressionParser } from "@visulima/cron-parser";
+
+const interval = CronExpressionParser.parse("0 9 * * 1-5", { tz: "UTC" });
+```
+
+```ts
+// next release
+import { parse } from "@visulima/cron-parser";
+
+const interval = parse("0 9 * * 1-5", { tz: "UTC" });
+```
+
+A default import has to become a named one:
+
+```ts
+// 1.0.0
+import CronExpressionParser from "@visulima/cron-parser";
+
+// next release
+import { parse } from "@visulima/cron-parser";
+```
+
+`CronExpression`, `CronDate`, `CronFieldCollection`, `TimeUnit` and the field classes are unchanged.
+
+### The crontab reader is two functions
+
+`CronFileParser` is gone. Import `parseFile` or `parseFileSync` from the `/file` entry.
+
+```ts
+// 1.0.0
+import { CronFileParser } from "@visulima/cron-parser/file";
+
+const result = await CronFileParser.parseFile("./crontab");
+```
+
+```ts
+// next release
+import { parseFile } from "@visulima/cron-parser/file";
+
+const result = await parseFile("./crontab");
+```
+
+The result has the same shape: `expressions`, `variables` and `errors`.
+
+### Errors are a `CronParseError`
+
+1.0.0 threw a plain `Error`, and callers matched the message. The message text has also changed. Match on the `code` instead:
+
+```ts
+import { CronParseError, parse } from "@visulima/cron-parser";
+
+try {
+    parse(userInput);
+} catch (error) {
+    if (error instanceof CronParseError) {
+        error.code; // such as "FIELD_RANGE"
+        error.field; // such as "hour", when the failure is in a field
+        error.token; // the part of the expression that failed
+    }
+}
+```
+
+Codes are listed in the [API reference](/docs/packages/cron-parser/api#cronparseerror).
+
+### `expression` is removed from the options
+
+1.0.0 accepted an `expression` option. Remove it. `toString()` still returns the expression as it was written, so nothing else needs to change.
+
+### `seconds` is an option, and `strict` no longer requires six fields
+
+1.0.0 had no way to say whether a seconds field was allowed, and `strict` required six fields. Now:
+
+- `seconds` takes `"forbid"`, `"optional"` (the default, and the 1.0.0 behaviour) or `"require"`.
+- `strict` requires the field count the cron spec defines: five fields, or six with `seconds: "require"`.
+
+If you used `strict` to force a seconds field, move that to `seconds`:
+
+```ts
+// 1.0.0: strict meant "six fields"
+parse("0 0 9 * * 1-5", { strict: true });
+
+// next release
+parse("0 0 9 * * 1-5", { seconds: "require" });
+```
+
+### New options: `dialect` and `features`
+
+These are additions, not breaking, but worth knowing about: `dialect: "cloudflare"` holds an expression to what Cloudflare Cron Triggers accept, and `features` turns one syntax switch on or off. See [Dialects](/docs/packages/cron-parser/dialects).
+
+For a Cloudflare Worker, the entry `@visulima/cron-parser/cloudflare` already applies that dialect:
+
+```ts
+import { parse } from "@visulima/cron-parser/cloudflare";
+
+parse("0 0 * * 1").next(); // Sunday, not Monday
+```
+
+### `take()` only stops at the end of the span
+
+`take(n)` stops at the end of the schedule's span (`endDate`, or the start of the span), and returns the runs it found. Any other failure now throws. Before, every failure ended the list early, so a broken expression could return a short list without any error.
+
+### A day of month `5L` is the last day
+
+`5L` in the day of month field is read as `L`, the last day of the month, as `cron-parser` reads it. The `cloudflare` dialect rejects it.
+
+### Some errors name a different code
+
+When an expression has two faults, the first one the parser reaches is reported. The code can be different from the one 1.0.0 reported for the same input. The input is still rejected.
+
+## Coming from `cron-parser` v5
+
+The API keeps the same shape, so most code moves by changing the import:
+
+| `cron-parser` v5                                     | `@visulima/cron-parser`                         |
+| ---------------------------------------------------- | ----------------------------------------------- |
+| `import { CronExpressionParser } from "cron-parser"` | `import { parse } from "@visulima/cron-parser"` |
+| `CronExpressionParser.parse(expr, options)`          | `parse(expr, options)`                          |
+| `CronExpression`, `CronDate`                         | Same names, same behaviour                      |
+
+### What is different
+
+- **ESM only, no `luxon`.** Time zone handling is built in, and the package has no dependencies.
+- **Errors** are a `CronParseError` with a `code`, the `field` and the `token`.
+- **Dialects.** `dialect` and `features` hold an expression to another runtime's grammar. `cron-parser` v5's extensions are on by default.
+- **Date strings.** `CronDate` reads ISO 8601 and SQL dates, RFC 2822 and HTTP dates. Other `luxon`-only forms, such as ISO week and ordinal dates and `UTC+3` style zone names, are not accepted.
+- **Dead API.** `CronDate` has no `dstStart`, `dstEnd`, `applyDateOperation`, `invokeDateOperation` or `DateMathOp`. They existed to drive `cron-parser`'s search and reported nothing useful on a returned date.
+- **Crontab files** are read by `parseFile` and `parseFileSync` from `@visulima/cron-parser/file`.
+
+### Behaviour that differs
+
+These follow from the DST rules and from defects in `cron-parser` that this package fixes. A schedule that never crosses a clock change is unaffected.
+
+- `prev()` after a spring-forward gap returns the run that was moved after the gap, instead of skipping back a day.
+- A repeated hour runs once going backwards, and `includesDate()` agrees with that.
+- A fall-back of less than an hour (`Australia/Lord_Howe`) and a gap that begins mid-hour (`Pacific/Chatham`) no longer make `next()` or `prev()` fail with `Invalid expression, loop limit exceeded`.
+- A schedule with no run for decades, such as the fifth Wednesday of February, is found instead of hitting that limit.
+- `includesDate()` asks only whether the date is one of the runs. It ignores `startDate` and `endDate`.
+- `startDate` and `endDate` are both inclusive. `reset()` without an argument goes back to `startDate` when there is no `currentDate`.
+- A crontab line is a variable only when it looks like `NAME=value`. A command that contains `=` stays a job. `@reboot` is reported in `errors`.
+
+For the DST rules themselves, see [Time zones and DST](/docs/packages/cron-parser/time-zones).
+
+## Checklist
+
+1. Replace `CronExpressionParser.parse(` with `parse(`, and change the import.
+2. Replace `CronFileParser.parseFile` and `parseFileSync` with the functions of the same name.
+3. Remove the `expression` option.
+4. If you used `strict` to require six fields, use `seconds: "require"` instead.
+5. Where you matched error messages, match `error.code` on a `CronParseError` instead.
+6. Run your tests. A test that matched `new Error(...)` by class no longer matches, because the error is a `CronParseError`.

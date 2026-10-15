@@ -1,7 +1,7 @@
 import { CronExpressionParser as Upstream } from "cron-parser";
 import { describe, expect, it } from "vitest";
 
-import { CronExpressionParser } from "../src";
+import { parse } from "../src";
 import { seededRandom } from "../src/utils/random";
 import { clockChangesBetween, DAY, HOUR } from "./_helpers/clock-changes";
 
@@ -96,9 +96,9 @@ type Schedule = { next: () => { toISOString: () => string | null }; prev: () => 
 type Outcome = { dates: string[]; error?: string };
 
 /** The next and previous five runs, or the error message that stopped them. */
-const run = (parse: (expression: string, options: { currentDate: Date; tz: string }) => Schedule, expression: string, tz: string, start: number): Outcome => {
+const run = (schedule: (expression: string, options: { currentDate: Date; tz: string }) => Schedule, expression: string, tz: string, start: number): Outcome => {
     try {
-        const interval = parse(expression, { currentDate: new Date(start), tz });
+        const interval = schedule(expression, { currentDate: new Date(start), tz });
         const forward = Array.from({ length: 5 }, () => interval.next().toISOString() as string);
         const backward = Array.from({ length: 5 }, () => interval.prev().toISOString() as string);
 
@@ -126,7 +126,7 @@ const compareAwayFromClockChanges = (tz: string): { mismatches: string[]; summar
     for (const start of startsFor(tz, transitions)) {
         for (const expression of expressions) {
             const expected = run((value, options) => Upstream.parse(value, options), expression, tz, start);
-            const actual = run((value, options) => CronExpressionParser.parse(value, options), expression, tz, start);
+            const actual = run((value, options) => parse(value, options), expression, tz, start);
 
             compared += 1;
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { CronExpressionParser } from "../src";
+import { parse } from "../src";
 import { CronDayOfMonth } from "../src/fields";
 
 /**
@@ -37,7 +37,7 @@ const lastWeekday = (year: number, month: number): number =>
 
 /** The `year-month-day` of every run of an expression over the years, in time order. */
 const runDays = (expression: string): string[] => {
-    const interval = CronExpressionParser.parse(expression, { currentDate: "2019-12-31T00:00:00.000Z", tz: "UTC" });
+    const interval = parse(expression, { currentDate: "2019-12-31T00:00:00.000Z", tz: "UTC" });
 
     return interval
         .take(12 * YEARS.length)
@@ -127,7 +127,7 @@ describe("days before the last day, L-n", () => {
     it("runs three days before the end of every month, as asked for with six fields", () => {
         expect.assertions(1);
 
-        const interval = CronExpressionParser.parse("0 0 0 L-3 * *", { currentDate: "2026-01-01T00:00:00.000Z", tz: "UTC" });
+        const interval = parse("0 0 0 L-3 * *", { currentDate: "2026-01-01T00:00:00.000Z", tz: "UTC" });
 
         expect(interval.take(4).map((run) => run.toISOString().slice(0, 10))).toStrictEqual(["2026-01-28", "2026-02-25", "2026-03-28", "2026-04-27"]);
     });
@@ -137,7 +137,7 @@ describe("in a list and with the other fields", () => {
     it("takes numbers, ranges and the new forms together", () => {
         expect.assertions(1);
 
-        const interval = CronExpressionParser.parse("0 0 1,10-12,15W,LW,L-3,L * *", { currentDate: "2026-01-31T12:00:00.000Z", tz: "UTC" });
+        const interval = parse("0 0 1,10-12,15W,LW,L-3,L * *", { currentDate: "2026-01-31T12:00:00.000Z", tz: "UTC" });
         const february = interval
             .take(12)
             .map((run) => run.toISOString().slice(8, 10))
@@ -151,7 +151,7 @@ describe("in a list and with the other fields", () => {
         expect.assertions(1);
 
         // The last weekday of February 2026 is Friday the 27th, and every Monday is a run too.
-        const interval = CronExpressionParser.parse("0 0 LW 2 1", { currentDate: "2026-02-01T00:00:00.000Z", tz: "UTC" });
+        const interval = parse("0 0 LW 2 1", { currentDate: "2026-02-01T00:00:00.000Z", tz: "UTC" });
 
         expect(interval.take(6).map((run) => run.toISOString().slice(0, 10))).toStrictEqual([
             "2026-02-02",
@@ -166,7 +166,7 @@ describe("in a list and with the other fields", () => {
     it("works going backwards and for includesDate()", () => {
         expect.assertions(3);
 
-        const interval = CronExpressionParser.parse("0 0 15W * *", { currentDate: "2026-03-01T00:00:00.000Z", tz: "UTC" });
+        const interval = parse("0 0 15W * *", { currentDate: "2026-03-01T00:00:00.000Z", tz: "UTC" });
 
         expect(interval.prev().toISOString()).toBe("2026-02-16T00:00:00.000Z");
         expect(interval.includesDate(new Date("2026-03-16T00:00:00.000Z"))).toBe(true);
@@ -185,16 +185,16 @@ describe("writing an expression back", () => {
     ])("%s is written as %s", (expression, expected) => {
         expect.assertions(1);
 
-        expect(CronExpressionParser.parse(expression).stringify()).toBe(expected);
+        expect(parse(expression).stringify()).toBe(expected);
     });
 
     it("reads back to the same schedule", () => {
         expect.assertions(1);
 
-        const written = CronExpressionParser.parse("0 0 1,15W,LW,L-3 * *").stringify();
+        const written = parse("0 0 1,15W,LW,L-3 * *").stringify();
         const options = { currentDate: "2026-01-01T00:00:00.000Z", tz: "UTC" };
 
-        expect(CronExpressionParser.parse(written, options).take(20)).toStrictEqual(CronExpressionParser.parse("0 0 1,15W,LW,L-3 * *", options).take(20));
+        expect(parse(written, options).take(20)).toStrictEqual(parse("0 0 1,15W,LW,L-3 * *", options).take(20));
     });
 });
 
@@ -216,7 +216,7 @@ describe("what is not accepted", () => {
     ])("rejects %s", (expression, message) => {
         expect.assertions(1);
 
-        expect(() => CronExpressionParser.parse(expression)).toThrow(message);
+        expect(() => parse(expression)).toThrow(message);
     });
 
     it("rejects them on a field built by hand", () => {

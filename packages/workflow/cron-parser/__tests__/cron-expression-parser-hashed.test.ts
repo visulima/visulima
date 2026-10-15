@@ -1,42 +1,42 @@
 /* eslint-disable vitest/prefer-expect-assertions -- ported from the reference implementation's suite; kept close to the original for easy comparison */
 import { describe, expect, it } from "vitest";
 
-import { CronExpressionParser } from "../src/cron-expression-parser";
+import { parse } from "../src/cron-expression-parser";
 
-describe(CronExpressionParser, () => {
+describe(parse, () => {
     describe("test expressions using hashed extension syntax", () => {
         describe("pattern validation", () => {
             // Test invalid step value for H/step pattern
             it("throws error for invalid step in H/step pattern", () => {
-                expect(() => CronExpressionParser.parse("H/0 * * * *")).toThrow("Invalid step: 0, must be positive");
+                expect(() => parse("H/0 * * * *")).toThrow("Invalid step: 0, must be positive");
             });
 
             // Test invalid range for H(range) pattern
             it("throws error for invalid range in H(range) pattern", () => {
-                expect(() => CronExpressionParser.parse("H(10-5) * * * *")).toThrow("Invalid range: 10-5, min > max");
+                expect(() => parse("H(10-5) * * * *")).toThrow("Invalid range: 10-5, min > max");
             });
 
             // Test invalid range for H(range)/step pattern
             it("throws error for invalid range in H(range)/step pattern", () => {
-                expect(() => CronExpressionParser.parse("H(10-5)/2 * * * *")).toThrow("Invalid range: 10-5, min > max");
+                expect(() => parse("H(10-5)/2 * * * *")).toThrow("Invalid range: 10-5, min > max");
             });
 
             // Test invalid step for H(range)/step pattern
             it("throws error for invalid step in H(range)/step pattern", () => {
-                expect(() => CronExpressionParser.parse("H(1-10)/0 * * * *")).toThrow("Invalid step: 0, must be positive");
+                expect(() => parse("H(1-10)/0 * * * *")).toThrow("Invalid step: 0, must be positive");
             });
         });
 
         describe("a hashed range or step the field cannot satisfy", () => {
             it("parses without a seed every time", () => {
                 for (let i = 0; i < 20; i += 1) {
-                    expect(() => CronExpressionParser.parse("H(1-5)/10 * * * *")).not.toThrow();
-                    expect(() => CronExpressionParser.parse("0 0 H(0-5) * *")).not.toThrow();
+                    expect(() => parse("H(1-5)/10 * * * *")).not.toThrow();
+                    expect(() => parse("0 0 H(0-5) * *")).not.toThrow();
                 }
             });
 
             it("is rejected without a seed in strict mode", () => {
-                expect(() => CronExpressionParser.parse("0 H(1-5)/10 * * * *", { strict: true })).toThrow(
+                expect(() => parse("0 H(1-5)/10 * * * *", { strict: true })).toThrow(
                     "Invalid step: 10, wider than the 1-5 range of the minute field",
                 );
             });
@@ -44,7 +44,7 @@ describe(CronExpressionParser, () => {
             it("h(range) always yields a value inside the field constraints", () => {
                 for (let seed = 0; seed < 20; seed += 1) {
                     const options = { hashSeed: `seed-${String(seed)}` };
-                    const daysOfMonth = CronExpressionParser.parse("0 0 H(0-5) * *", options).fields.dayOfMonth.values as number[];
+                    const daysOfMonth = parse("0 0 H(0-5) * *", options).fields.dayOfMonth.values as number[];
 
                     expect(daysOfMonth).toHaveLength(1);
                     expect(daysOfMonth[0]).toBeGreaterThanOrEqual(1);
@@ -55,7 +55,7 @@ describe(CronExpressionParser, () => {
             it("h(range)/step always yields a value inside the range", () => {
                 for (let seed = 0; seed < 20; seed += 1) {
                     const options = { hashSeed: `seed-${String(seed)}` };
-                    const minutes = CronExpressionParser.parse("H(1-5)/10 * * * *", options).fields.minute.values as number[];
+                    const minutes = parse("H(1-5)/10 * * * *", options).fields.minute.values as number[];
 
                     expect(minutes).toHaveLength(1);
                     expect(minutes[0]).toBeGreaterThanOrEqual(1);
@@ -66,8 +66,8 @@ describe(CronExpressionParser, () => {
             it("h/step always yields a value inside the field constraints", () => {
                 for (let seed = 0; seed < 20; seed += 1) {
                     const options = { hashSeed: `seed-${String(seed)}` };
-                    const daysOfMonth = CronExpressionParser.parse("0 0 H/40 * *", options).fields.dayOfMonth.values as number[];
-                    const months = CronExpressionParser.parse("0 0 * H/60 *", options).fields.month.values as number[];
+                    const daysOfMonth = parse("0 0 H/40 * *", options).fields.dayOfMonth.values as number[];
+                    const months = parse("0 0 * H/60 *", options).fields.month.values as number[];
 
                     expect(daysOfMonth).toHaveLength(1);
                     expect(daysOfMonth[0]).toBeGreaterThanOrEqual(1);
@@ -82,7 +82,7 @@ describe(CronExpressionParser, () => {
             it("a range wider than the field is narrowed before the step is applied", () => {
                 for (let seed = 0; seed < 20; seed += 1) {
                     const options = { hashSeed: `seed-${String(seed)}` };
-                    const minutes = CronExpressionParser.parse("H(50-100)/60 * * * *", options).fields.minute.values as number[];
+                    const minutes = parse("H(50-100)/60 * * * *", options).fields.minute.values as number[];
 
                     expect(minutes).toHaveLength(1);
                     expect(minutes[0]).toBeGreaterThanOrEqual(50);
@@ -91,28 +91,28 @@ describe(CronExpressionParser, () => {
             });
 
             it("a range with no value inside the field is rejected", () => {
-                expect(() => CronExpressionParser.parse("0 0 H(0-0)/40 * *")).toThrow("Invalid range: 0-0, no usable value in the dayOfMonth field");
+                expect(() => parse("0 0 H(0-0)/40 * *")).toThrow("Invalid range: 0-0, no usable value in the dayOfMonth field");
             });
 
             it("keeps the same seed returning the same value", () => {
                 const options = { hashSeed: "F00D" };
 
-                expect(CronExpressionParser.parse("H(1-5)/10 * * * *", options).stringify(true)).toBe(
-                    CronExpressionParser.parse("H(1-5)/10 * * * *", options).stringify(true),
+                expect(parse("H(1-5)/10 * * * *", options).stringify(true)).toBe(
+                    parse("H(1-5)/10 * * * *", options).stringify(true),
                 );
             });
 
             it("leaves a step that fits inside the range untouched", () => {
                 const options = { hashSeed: "F00D" };
 
-                expect(CronExpressionParser.parse("H(5-10)/3 * * * * *", options).stringify(true)).toBe("6,9 * * * * *");
+                expect(parse("H(5-10)/3 * * * * *", options).stringify(true)).toBe("6,9 * * * * *");
             });
 
             describe("in strict mode", () => {
                 it("rejects H(range)/step", () => {
                     const options = { hashSeed: "F00D", strict: true };
 
-                    expect(() => CronExpressionParser.parse("H(1-5)/10 * * * * *", options)).toThrow(
+                    expect(() => parse("H(1-5)/10 * * * * *", options)).toThrow(
                         "Invalid step: 10, wider than the 1-5 range of the second field",
                     );
                 });
@@ -120,7 +120,7 @@ describe(CronExpressionParser, () => {
                 it("rejects H/step", () => {
                     const options = { hashSeed: "F00D", strict: true };
 
-                    expect(() => CronExpressionParser.parse("0 0 0 * H/60 *", options)).toThrow(
+                    expect(() => parse("0 0 0 * H/60 *", options)).toThrow(
                         "Invalid step: 60, wider than the 1-12 range of the month field",
                     );
                 });
@@ -128,10 +128,10 @@ describe(CronExpressionParser, () => {
                 it("rejects a range reaching outside the field, quoting the range as written", () => {
                     const options = { hashSeed: "F00D", strict: true };
 
-                    expect(() => CronExpressionParser.parse("0 0 0 H(0-5) * *", options)).toThrow(
+                    expect(() => parse("0 0 0 H(0-5) * *", options)).toThrow(
                         "Invalid range: 0-5, outside the 1-31 range of the dayOfMonth field",
                     );
-                    expect(() => CronExpressionParser.parse("0 0 0 H(0-5)/50 * *", options)).toThrow(
+                    expect(() => parse("0 0 0 H(0-5)/50 * *", options)).toThrow(
                         "Invalid range: 0-5, outside the 1-31 range of the dayOfMonth field",
                     );
                 });
@@ -139,8 +139,8 @@ describe(CronExpressionParser, () => {
                 it("accepts a step that fits inside the range", () => {
                     const options = { hashSeed: "F00D" };
 
-                    expect(CronExpressionParser.parse("0 H(0-29)/10 * * * *", { ...options, strict: true }).stringify(true)).toBe(
-                        CronExpressionParser.parse("0 H(0-29)/10 * * * *", options).stringify(true),
+                    expect(parse("0 H(0-29)/10 * * * *", { ...options, strict: true }).stringify(true)).toBe(
+                        parse("0 H(0-29)/10 * * * *", options).stringify(true),
                     );
                 });
             });
@@ -169,7 +169,7 @@ describe(CronExpressionParser, () => {
                 ];
 
                 for (const expression of expressions) {
-                    const interval = CronExpressionParser.parse(expression, options);
+                    const interval = parse(expression, options);
 
                     for (let i = 0; i < 3; i += 1) {
                         const date = interval.next();
@@ -222,7 +222,7 @@ describe(CronExpressionParser, () => {
                 ];
 
                 for (const { expected, expression } of expressions) {
-                    expect(CronExpressionParser.parse(expression, options).stringify(true)).toBe(expected);
+                    expect(parse(expression, options).stringify(true)).toBe(expected);
                 }
             });
         });

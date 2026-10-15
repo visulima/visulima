@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { CronExpressionParser } from "../src";
+import { parse } from "../src";
 import type { CronExpression } from "../src/cron-expression";
 import { getZone } from "../src/zone";
 import { clockChangesBetween, DAY, HOUR, MINUTE } from "./_helpers/clock-changes";
@@ -227,7 +227,7 @@ describe("next and prev against a brute-force model of the clock-change rules", 
 
             for (const testCase of cases) {
                 const runs = modelRuns(testCase, model, from, to, step);
-                const interval = CronExpressionParser.parse(testCase.expression, { tz: window.zone });
+                const interval = parse(testCase.expression, { tz: window.zone });
 
                 for (const cursor of cursorsAround(transition, runs)) {
                     checked += 1;

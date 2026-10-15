@@ -7,12 +7,12 @@ description: Parse an expression, walk its schedule, and set the options
 
 ## Parse and walk
 
-`CronExpressionParser.parse` returns an interval. `next()` and `prev()` move a cursor, so they can be mixed:
+`parse` returns an interval. `next()` and `prev()` move a cursor, so they can be mixed:
 
 ```ts
-import { CronExpressionParser } from "@visulima/cron-parser";
+import { parse } from "@visulima/cron-parser";
 
-const interval = CronExpressionParser.parse("0 9 * * 1-5", {
+const interval = parse("0 9 * * 1-5", {
     currentDate: "2026-03-06T12:00:00Z",
     tz: "America/New_York",
 });
@@ -25,7 +25,7 @@ interval.prev().toISOString(); // "2026-03-06T14:00:00.000Z"
 `take(n)` returns the next `n` runs. A negative `n` walks backwards. The interval is also iterable:
 
 ```ts
-const days = CronExpressionParser.parse("0 0 * * *", {
+const days = parse("0 0 * * *", {
     currentDate: "2026-01-01T00:00:00Z",
     endDate: "2026-01-03T12:00:00Z",
     tz: "UTC",
@@ -78,9 +78,9 @@ When both day of month and day of week are set, a day matching either one runs, 
 Reading a crontab file needs `node:fs`, so it has its own entry point:
 
 ```ts
-import { CronFileParser } from "@visulima/cron-parser/file";
+import { parseFile, parseFileSync } from "@visulima/cron-parser/file";
 
-const { expressions, variables, errors } = await CronFileParser.parseFile("./crontab");
+const { expressions, variables, errors } = await parseFile("./crontab");
 ```
 
 `parseFileSync` is the synchronous version. See the [API reference](/docs/packages/cron-parser/api) for the result shape.
