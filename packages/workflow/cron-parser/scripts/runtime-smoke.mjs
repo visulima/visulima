@@ -1,7 +1,7 @@
 // Runs the built package on whichever runtime executes this file: `node`, `bun run`, or `deno run`.
 // It uses no test framework so the same file works everywhere.
 import { CronDate, parse } from "../dist/index.js";
-import { parseFile, parseFileSync } from "../dist/file.js";
+import { parseFileSync } from "../dist/file.js";
 
 const runtime = globalThis.Deno ? `deno ${Deno.version.deno}` : globalThis.Bun ? `bun ${Bun.version}` : `node ${process.version}`;
 
@@ -25,11 +25,7 @@ expectEqual("DST gap", gap.next().toISOString(), "2021-03-14T07:30:00.000Z");
 expectEqual("kathmandu offset", new CronDate("2021-01-01T00:00:00Z", "Asia/Kathmandu").getUTCOffset(), 345);
 expectEqual("lord howe offset", new CronDate("2021-01-01T00:00:00Z", "Australia/Lord_Howe").getUTCOffset(), 660);
 expectEqual("wall clock string", new CronDate("Mon, 4 Jan 2021 10:00:00", "America/New_York").toISOString(), "2021-01-04T15:00:00.000Z");
-expectEqual(
-    "previous run",
-    parse("*/15 * * * *", { currentDate: "2021-06-01T10:07:00Z", tz: "UTC" }).prev().toISOString(),
-    "2021-06-01T10:00:00.000Z",
-);
+expectEqual("previous run", parse("*/15 * * * *", { currentDate: "2021-06-01T10:07:00Z", tz: "UTC" }).prev().toISOString(), "2021-06-01T10:00:00.000Z");
 
 let threw = false;
 

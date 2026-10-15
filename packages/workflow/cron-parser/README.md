@@ -220,9 +220,10 @@ Tree-shaking helps less than the sizes suggest: parsing needs the whole expressi
 
 ## Coming from `cron-parser`
 
-The API is the same shape: `parse`, `CronExpression`, `CronFieldCollection`, `CronDate` and the field classes keep their names and behaviour. Upgrading from 1.0.0 is covered in the [migration guide](docs/migration.mdx). What changes:
+The API is the same shape: `CronExpression`, `CronFieldCollection`, `CronDate` and the field classes keep their names and behaviour. Upgrading from 1.0.0 is covered in the [migration guide](docs/migration.mdx). What changes:
 
 - ESM only, no `luxon`. Timezone handling is built in.
+- `CronExpressionParser.parse(expr, options)` becomes the function `parse(expr, options)`; there is no parser class or default export.
 - `CronFileParser` becomes the functions `parseFile` and `parseFileSync`, from `@visulima/cron-parser/file`.
 - `TimeUnit`, `DateMathOp`, `CronUnit` and the other enums are `as const` objects, so they tree-shake.
 - A failed parse throws a `CronParseError` carrying a `code`, the `field` and the `token`, rather than a plain `Error`.
