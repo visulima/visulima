@@ -24,7 +24,8 @@ const previousRun: Adapter<[string, Date]> = {
     "cron-fast": (cron, from) => cronFast_previousRun(cron, { from }),
     "cron-parser": (cron, from) => CronParser.parse(cron, { currentDate: from }).prev().toDate(),
     "cron-schedule": (cron, from) => parseCronExpression(cron).getPrevDate(from),
-    croner: (cron, from) => new Cron(cron, { paused: true, startAt: from }).previousRuns(1, from),
+    // No `startAt`: Croner does not look for runs before it, so with `startAt: from` there would be nothing to find.
+    croner: (cron, from) => new Cron(cron, { paused: true }).previousRuns(1, from),
     [OURS]: (cron, from) => VisulimaCron.parse(cron, { currentDate: from, tz: "UTC" }).prev().toDate(),
 };
 

@@ -235,7 +235,8 @@ const rememberOffsets = (raw: Zone["rawOffset"]): Zone["offset"] => {
                 let far = probe;
 
                 while (Math.abs(far - near) > 1000) {
-                    const middle = Math.floor((near + far) / 2000) * 1000;
+                    // Either end may carry milliseconds, so the midpoint is not rounded to a second: that could land on an end and never converge.
+                    const middle = Math.floor((near + far) / 2);
 
                     if (raw(middle) === offset) {
                         near = middle;
@@ -406,8 +407,9 @@ type WallInstants = {
 
 /** The first second at which a zone's offset is no longer `before`, given that it is at `high` and was `before` at `low`. */
 const findTransition = (zone: Zone, low: number, high: number, before: number): number => {
-    let near = low;
-    let far = high;
+    // Transitions fall on whole seconds, so snapping the ends outward keeps them on their sides and makes the rounded midpoint always land strictly between them.
+    let near = Math.floor(low / 1000) * 1000;
+    let far = Math.ceil(high / 1000) * 1000;
 
     while (far - near > 1000) {
         const middle = Math.floor((near + far) / 2000) * 1000;

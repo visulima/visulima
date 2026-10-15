@@ -1,9 +1,10 @@
 // Bundles and minifies a few typical imports of the built package and prints their size, so the figures in the
 // README can be reproduced: `pnpm run build:prod && pnpm run size`.
+import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
 import { build } from "esbuild";
 
-const root = new URL("../", import.meta.url).pathname;
+const root = fileURLToPath(new URL("../", import.meta.url));
 
 const cases = {
     "parse and iterate":

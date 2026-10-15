@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { CronExpressionParser } from "../src";
+import { getZone } from "../src/zone";
 
 /**
  * Defects the reference implementation is known to have, with the answers its reporters expected.
@@ -266,5 +267,32 @@ describe("schedule lookups across clock changes", () => {
 
             expect(CronExpressionParser.parse("* * * * * *", options).includesDate(new Date("2011-12-30T06:59:59.000Z"))).toBe(true);
         });
+    });
+});
+
+describe("input that used to be read as something else", () => {
+    it("rejects a range with more than two parts instead of dropping the rest", () => {
+        expect.assertions(1);
+
+        expect(() => CronExpressionParser.parse("0 1-5-9 * * *")).toThrow("Invalid range: 1-5-9");
+    });
+
+    it.each(["8L", "15L", "65L"])("rejects %s as a day of week", (text) => {
+        expect.assertions(1);
+
+        expect(() => CronExpressionParser.parse(`0 0 * * ${text}`)).toThrow("Validation error");
+    });
+
+    it.each(["0L", "5L", "7L"])("accepts %s as a day of week", (text) => {
+        expect.assertions(1);
+
+        expect(CronExpressionParser.parse(`0 0 * * ${text}`).stringify()).toBe(`0 0 * * ${text}`);
+    });
+
+    it("looks up an offset a fraction of a second after a clock change", () => {
+        expect.assertions(1);
+
+        // The first probe lands 500 ms after New York's 2026-03-08 transition; narrowing used to stall there for good.
+        expect(getZone("America/New_York").offset(Date.UTC(2026, 2, 7, 7, 0, 0, 500))).toBe(-300);
     });
 });

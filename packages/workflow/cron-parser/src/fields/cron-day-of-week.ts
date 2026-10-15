@@ -3,6 +3,9 @@ import type { CronFieldOptions } from "./cron-field";
 import { CronField } from "./cron-field";
 import type { CronChars, CronMax, CronMin, DayOfWeekRange } from "./types";
 
+/** A weekday from 0 to 7 before the `L`, or the bare `L`. */
+const LAST_WEEKDAY = /^[0-7]?L$/;
+
 /** One regular expression for every call: a regex literal inside a getter is made anew each time it runs. */
 const DAY_OF_WEEK_CHARS = /^[?,*\dLH#/-]+$|^.*H\(\d+-\d+\)\/\d.*$|^.*H\(\d+-\d+\).*$|^.*H\/\d.*$/;
 
@@ -44,6 +47,14 @@ class CronDayOfWeek extends CronField {
         if (this.values.includes("L")) {
             throw new Error(`${this.constructor.name} Validation error, unexpected standalone L`);
         }
+    }
+
+    /**
+     * `5L` is the last Friday of the month: the day before the `L` is a single weekday from 0 to 7.
+     */
+    // eslint-disable-next-line class-methods-use-this
+    protected override isValidText(value: string): boolean {
+        return LAST_WEEKDAY.test(value);
     }
 
     /**
