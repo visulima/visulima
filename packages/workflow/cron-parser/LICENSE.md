@@ -22,8 +22,6 @@ SOFTWARE.
 
 ---
 
-This package follows the API of the project below, whose license is reproduced in full:
-
 The MIT License (MIT)
 
 Copyright (c) 2014-2023 Harri Siirak
