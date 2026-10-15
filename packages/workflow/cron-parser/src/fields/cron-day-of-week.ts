@@ -1,4 +1,5 @@
 /* eslint-disable sonarjs/regex-complexity -- ported from the reference implementation, whose behaviour its tests pin; these style rules stay relaxed so the code remains easy to compare with the original (the search engine in schedule.ts, zone.ts and cron-expression.ts has no such exceptions) */
+import { CronParseError, fieldNameOf } from "../errors";
 import type { CronFieldOptions } from "./cron-field";
 import { CronField } from "./cron-field";
 import type { CronChars, CronMax, CronMin, DayOfWeekRange } from "./types";
@@ -45,7 +46,11 @@ class CronDayOfWeek extends CronField {
         this.validate();
 
         if (this.values.includes("L")) {
-            throw new Error(`${this.constructor.name} Validation error, unexpected standalone L`);
+            throw new CronParseError(`${this.constructor.name} Validation error, unexpected standalone L`, {
+                code: "FIELD_VALUE",
+                field: fieldNameOf(this.constructor.name),
+                token: "L",
+            });
         }
     }
 

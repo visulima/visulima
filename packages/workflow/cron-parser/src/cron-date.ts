@@ -2,6 +2,15 @@ import { parseDateString } from "./parse-date";
 import type { Fields, Zone } from "./zone";
 import { daysInMonth, getSystemZone, getZone, MS_PER_HOUR, MS_PER_MINUTE, resolveLocal, toFields, toLocalMs, weekdayOf } from "./zone";
 
+/**
+ * The units `addUnit` and `subtractUnit` move by.
+ *
+ * Written as an explicit union rather than `(typeof TimeUnit)[keyof typeof TimeUnit]`, because a type
+ * alias that shares its name with the `const` it derives from makes the dts bundler emit an invalid
+ * `type TimeUnit: { … } = …`. Keep the two in step by hand.
+ */
+type TimeUnit = "Day" | "Hour" | "Minute" | "Month" | "Second" | "Year";
+
 const TimeUnit = {
     Day: "Day",
     Hour: "Hour",
@@ -10,8 +19,6 @@ const TimeUnit = {
     Second: "Second",
     Year: "Year",
 } as const;
-
-type TimeUnit = (typeof TimeUnit)[keyof typeof TimeUnit];
 
 /** Calendar units move the wall clock; the rest move elapsed time. */
 type Delta = { days?: number; months?: number; ms?: number; years?: number };

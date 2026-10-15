@@ -1,5 +1,6 @@
 import { CronDate } from "./cron-date";
 import type { CronFieldCollection } from "./cron-field-collection";
+import type { CronDialect, CronFeatures } from "./dialect";
 import { readDayOfMonthText } from "./fields/day-of-month-text";
 import type { ScheduleSpec } from "./schedule";
 import { findRun } from "./schedule";
@@ -7,8 +8,12 @@ import { getZone } from "./zone";
 
 type CronExpressionOptions = {
     currentDate?: Date | string | number | CronDate;
+    /** The named grammar to hold the expression to; `extended` when none is given. */
+    dialect?: CronDialect;
     endDate?: Date | string | number | CronDate;
     expression?: string;
+    /** Syntax to turn on or off on top of the dialect. */
+    features?: Partial<CronFeatures>;
     hashSeed?: string;
     startDate?: Date | string | number | CronDate;
     strict?: boolean;

@@ -114,13 +114,13 @@ describe(CronExpressionParser, () => {
         it("invalid list value without value", () => {
             expect(() => {
                 CronExpressionParser.parse("*/10 * * * * ,");
-            }).toThrow(new Error("Invalid list value format"));
+            }).toThrow("Invalid list value format");
         });
 
         it("invalid list value with right-side value", () => {
             expect(() => {
                 CronExpressionParser.parse("*/10 * * * * ,2");
-            }).toThrow(new Error("Invalid list value format"));
+            }).toThrow("Invalid list value format");
         });
         // The Quartz documentation says that if the # character is used then no other expression can be used in the dayOfWeek term:
         // http://www.quartz-scheduler.org/api/2.3.0/index.html

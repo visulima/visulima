@@ -73,14 +73,16 @@ const days = CronExpressionParser.parse("0 0 * * *", {
 
 ### Options
 
-| Option        | Description                                                                                                                     |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `currentDate` | Where iteration starts. A `Date`, epoch milliseconds, a date string or a `CronDate`. Defaults to now.                           |
-| `startDate`   | Earliest allowed run. Used as `currentDate` when none is given.                                                                 |
-| `endDate`     | Latest allowed run. `next()` throws and iteration ends once it is passed.                                                       |
-| `tz`          | IANA time zone the expression is read in, such as `Europe/Berlin`. Defaults to the system zone.                                 |
-| `hashSeed`    | Seed for `H` (hashed) values, so the same seed always picks the same minute and hour.                                           |
-| `strict`      | Reject an expression that sets both day of month and day of week, has fewer than six fields, or has an unsatisfiable `H` range. |
+| Option        | Description                                                                                                                           |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `currentDate` | Where iteration starts. A `Date`, epoch milliseconds, a date string or a `CronDate`. Defaults to now.                                 |
+| `startDate`   | Earliest allowed run. Used as `currentDate` when none is given.                                                                       |
+| `endDate`     | Latest allowed run. `next()` throws and iteration ends once it is passed.                                                             |
+| `tz`          | IANA time zone the expression is read in, such as `Europe/Berlin`. Defaults to the system zone.                                       |
+| `hashSeed`    | Seed for `H` (hashed) values, so the same seed always picks the same minute and hour.                                                 |
+| `strict`      | Reject an expression that sets both day of month and day of week, has fewer than six fields, or has an unsatisfiable `H` range.       |
+| `dialect`     | Hold the expression to another runtime's grammar: `extended` (the default), `cron-parser` or `cloudflare`. See [Dialects](#dialects). |
+| `features`    | Turn a single switch on or off on top of `dialect`, such as `{ hashed: false }`.                                                      |
 
 ### Expression syntax
 
@@ -95,6 +97,44 @@ Five or six fields (seconds are optional and come first): `second minute hour da
 - `@yearly`, `@annually`, `@monthly`, `@weekly`, `@daily`, `@hourly`, `@minutely`, `@secondly`, `@weekdays`, `@weekends`
 
 When both day of month and day of week are set, a day matching either one runs, as in Vixie cron.
+
+### Dialects
+
+Every runtime reads a slightly different cron. `dialect` holds an expression to what a target's own parser accepts, and `features` turns a single switch on or off when the target is stricter than the named dialect.
+
+| Dialect       | What it keeps                                                                                                                                                                                     |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `extended`    | Everything on this page. The default.                                                                                                                                                             |
+| `cron-parser` | The grammar of `cron-parser` v5: `H`, `#`, `L` and `@nicknames`, but not the `W`, `LW` or `L-n` day of month extensions.                                                                          |
+| `cloudflare`  | Cloudflare Workers Cron Triggers: five fields, `L`, `W`, `LW`, `L-n` and `#` (with names), but not `H`, `?`, `@nicknames`, a seconds field, a day of month `5L` or a day of month text in a list. |
+
+```ts
+CronExpressionParser.parse("H * * * *", { dialect: "cloudflare" });
+// throws CronParseError: Unsupported feature "hashed" in the selected dialect
+
+CronExpressionParser.parse("0 0 1W * *", { dialect: "cron-parser", features: { nearestWeekday: true } });
+// parses: the dialect turns `1W` off, the feature turns it back on
+```
+
+The switches are `hashed`, `lastDayOfMonth`, `lastDayOfWeek`, `lastOffset`, `lastWeekday`, `mixedDayOfMonthText`, `nearestWeekday`, `nicknames`, `noSpecificTime`, `nthDayOfWeek`, `numberedLastDayOfMonth`, `seconds` and `sundayIsOne`.
+
+The `cloudflare` dialect was checked against the validator wrangler itself deploys through, `cron-triggers.cloudflareworkers.com` (backed by [`cloudflare/saffron`](https://github.com/cloudflare/saffron)). Three of its rules are easy to miss and are built in: the weekdays run `1` (Sunday) to `7` (Saturday) and a weekday of `0` is rejected, so `0 0 * * 1` fires on Sunday and `0 18 * * 6L` on the last Friday (`sundayIsOne` does that rewrite, and it follows the number before an `L` or a `#`; the three letter names always mean the day they name, and a bare `L` in the weekday field is Saturday); and a day of month text such as `LW`, `L-3` or `15W` has to stand alone, so `1,15` parses but `1W,LW` does not (`mixedDayOfMonthText`).
+
+### Parse errors
+
+A parse failure throws a `CronParseError`, an `Error` with a `code` (such as `FIELD_RANGE`, `FIELD_CHARACTER` or `UNSUPPORTED_FEATURE`), the `field` it is in and the `token` that failed, so a caller can mark the spot without matching the message.
+
+```ts
+try {
+    CronExpressionParser.parse("10 ! 12 8 0");
+} catch (error) {
+    if (error instanceof CronParseError) {
+        error.code; // "FIELD_CHARACTER"
+        error.field; // "hour"
+        error.token; // "!"
+    }
+}
+```
 
 ### More on an interval
 
@@ -163,6 +203,9 @@ The API is the same shape: `CronExpressionParser.parse`, `CronExpression`, `Cron
 - ESM only, no `luxon`. Timezone handling is built in.
 - `CronFileParser` moves to `@visulima/cron-parser/file`.
 - `TimeUnit`, `DateMathOp`, `CronUnit` and the other enums are `as const` objects, so they tree-shake.
+- A failed parse throws a `CronParseError` carrying a `code`, the `field` and the `token`, rather than a plain `Error`.
+- `dialect` and `features` hold an expression to another runtime's grammar; see [Dialects](#dialects).
+- A day of month `5L` is read as `L`, the last day, the way `cron-parser` reads it. The `cloudflare` dialect turns this off, because Cloudflare rejects it.
 - `new CronDate(0)` is the epoch. (Before, any falsy value meant "now".) An empty string throws.
 - `toISOString()` and `toJSON()` return `string`, never `null`.
 - An unknown `tz` throws `CronDate: unhandled timezone: <name>`.
@@ -205,7 +248,7 @@ When the day of week field is also set, a day matching either field runs, as wit
 
 ### Open requests this does not cover
 
-Switching the non-standard extensions off, a "this run" accessor and shorter `stringify()` output for stepped ranges are requests upstream has not implemented and this package does not either.
+A "this run" accessor and shorter `stringify()` output for stepped ranges are requests upstream has not implemented and this package does not either. Switching the non-standard extensions off is covered by the `dialect` and `features` options above.
 
 The `temporal-polyfill` package has wrong offsets for `Africa/Casablanca` (Morocco's negative DST); native `Temporal` in Bun and Deno agrees with `Intl` there. The DST model above does not depend on the polyfill's data, but the comparison with `cron-parser` skips that zone when running on the polyfill.
 

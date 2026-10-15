@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/member-ordering, @typescript-eslint/prefer-nullish-coalescing, @typescript-eslint/restrict-template-expressions, @typescript-eslint/unbound-method, jsdoc/informative-docs, no-plusplus, sonarjs/regex-complexity, unicorn/no-null, unicorn/no-object-as-default-parameter -- ported from the reference implementation, whose behaviour its tests pin; these style rules stay relaxed so the code remains easy to compare with the original (the search engine in schedule.ts, zone.ts and cron-expression.ts has no such exceptions) */
+import { CronParseError, fieldNameOf } from "../errors";
 import type { CronChars, CronConstraints, CronFieldType, CronMax, CronMin } from "./types";
 
 /** One regular expression for every call: a regex literal inside a getter is made anew each time it runs. */
@@ -269,14 +270,22 @@ abstract class CronField {
             if (!valid) {
                 const charsString = chars.length > 0 ? ` or chars ${chars.join("")}` : "";
 
-                throw new Error(`${this.constructor.name} Validation error, got value ${value} expected range ${min}-${max}${charsString}`);
+                throw new CronParseError(`${this.constructor.name} Validation error, got value ${value} expected range ${min}-${max}${charsString}`, {
+                    code: "FIELD_RANGE",
+                    field: fieldNameOf(this.constructor.name),
+                    token: String(value),
+                });
             }
         }
 
         // The values are sorted, so equal ones are next to each other.
         for (let index = 1; index < this.#values.length; index += 1) {
             if (this.#values[index] === this.#values[index - 1]) {
-                throw new Error(`${this.constructor.name} Validation error, duplicate values found: ${this.#values[index]}`);
+                throw new CronParseError(`${this.constructor.name} Validation error, duplicate values found: ${this.#values[index]}`, {
+                    code: "DUPLICATE_VALUE",
+                    field: fieldNameOf(this.constructor.name),
+                    token: String(this.#values[index]),
+                });
             }
         }
     }

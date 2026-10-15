@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/member-ordering, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/prefer-nullish-coalescing, @typescript-eslint/restrict-template-expressions, jsdoc/check-indentation, jsdoc/check-param-names, no-plusplus, sonarjs/no-inverted-boolean-check, unicorn/no-null -- ported from the reference implementation, whose behaviour its tests pin; these style rules stay relaxed so the code remains easy to compare with the original (the search engine in schedule.ts, zone.ts and cron-expression.ts has no such exceptions) */
+import { CronParseError } from "./errors";
 import type { SerializedCronField } from "./fields";
 import { CronDayOfMonth, CronDayOfWeek, CronField, CronHour, CronMinute, CronMonth, CronSecond } from "./fields";
 import type { DayOfMonthRange, DayOfWeekRange, HourRange, MonthRange, SixtyRange } from "./fields/types";
@@ -135,27 +136,27 @@ class CronFieldCollection {
      */
     public constructor({ dayOfMonth, dayOfWeek, hour, minute, month, second }: CronFields) {
         if (!second) {
-            throw new Error("Validation error, Field second is missing");
+            throw new CronParseError("Validation error, Field second is missing", { code: "FIELD_MISSING", field: "second" });
         }
 
         if (!minute) {
-            throw new Error("Validation error, Field minute is missing");
+            throw new CronParseError("Validation error, Field minute is missing", { code: "FIELD_MISSING", field: "minute" });
         }
 
         if (!hour) {
-            throw new Error("Validation error, Field hour is missing");
+            throw new CronParseError("Validation error, Field hour is missing", { code: "FIELD_MISSING", field: "hour" });
         }
 
         if (!dayOfMonth) {
-            throw new Error("Validation error, Field dayOfMonth is missing");
+            throw new CronParseError("Validation error, Field dayOfMonth is missing", { code: "FIELD_MISSING", field: "dayOfMonth" });
         }
 
         if (!month) {
-            throw new Error("Validation error, Field month is missing");
+            throw new CronParseError("Validation error, Field month is missing", { code: "FIELD_MISSING", field: "month" });
         }
 
         if (!dayOfWeek) {
-            throw new Error("Validation error, Field dayOfWeek is missing");
+            throw new CronParseError("Validation error, Field dayOfWeek is missing", { code: "FIELD_MISSING", field: "dayOfWeek" });
         }
 
         // Only an explicit day of month that can never occur is invalid. When the
@@ -165,7 +166,11 @@ class CronFieldCollection {
             const daysInMonth = CronMonth.daysInMonth[(month.values[0] as number) - 1] as number;
 
             if (!(Number.parseInt(String(dayOfMonth.values[0]), 10) <= daysInMonth)) {
-                throw new Error("Invalid explicit day of month definition");
+                throw new CronParseError("Invalid explicit day of month definition", {
+                    code: "FIELD_RANGE",
+                    field: "dayOfMonth",
+                    token: String(dayOfMonth.values[0]),
+                });
             }
         }
 
