@@ -33,8 +33,8 @@
  *      used when OIDC env is absent, or when the operator opts back
  *      into static-token precedence via
  *      `release.publish.preferStaticToken: true` in vis.config.ts.
- *   3. Whatever's in the `~/.deno/auth.json` / `~/.config/jsr/auth.json`
- *      cache (deno login state — vis doesn't manage this).
+ *   3. Whatever's in the `~/.config/jsr/auth.json` cache (JSR login
+ *      state — vis doesn't manage this).
  *
  * Wire it via per-package config (the `jsr()` preset already does this
  * for you):

@@ -308,17 +308,6 @@ export interface JsrPresetOptions {
      */
     allowSlowTypes?: boolean;
 
-    /**
-     * When `true`, also write the version literal into `deno.json` (in
-     * addition to `jsr.json`). Useful for Deno-flavoured packages that
-     * keep their full Deno config in `deno.json` and use `jsr.json` only
-     * for the JSR manifest itself. Default `false`.
-     *
-     * When the package uses `deno.json` as its sole JSR manifest, pass
-     * `manifestPath: "deno.json"` instead — that points the
-     * versionActions reader and the extra-files rule at the same file.
-     */
-    deno?: boolean;
     extraFiles?: ExtraFileRule[];
 
     /**
@@ -352,10 +341,6 @@ export interface JsrPresetOptions {
  * `name`. If your manifest has nested objects with their own
  * `"version"` keys, write a more specific rule.
  *
- * Operators who need to bump BOTH `jsr.json` AND `deno.json` (because
- * the package keeps a separate Deno config) can pass `deno: true` —
- * the preset emits an extra rule against `deno.json` alongside the
- * primary `jsr.json` bump.
  */
 export const jsr = (options: JsrPresetOptions = {}): PerPackageReleaseConfig => {
     const manifestPath = options.manifestPath ?? "jsr.json";
@@ -371,20 +356,10 @@ export const jsr = (options: JsrPresetOptions = {}): PerPackageReleaseConfig => 
         search: String.raw`^(\s*"version"\s*:\s*")([^"]+)(")`,
     };
 
-    const denoRule: ExtraFileRule | undefined
-        = options.deno && manifestPath !== "deno.json"
-            ? {
-                flags: "m",
-                path: "deno.json",
-                replace: "$1{version}$3",
-                search: String.raw`^(\s*"version"\s*:\s*")([^"]+)(")`,
-            }
-            : undefined;
-
     const jsrPublishArgs = [...(options.allowSlowTypes ? ["--allow-slow-types"] : []), ...(options.publishArgs ?? [])];
 
     return {
-        extraFiles: [versionRule, ...(denoRule ? [denoRule] : []), ...(options.extraFiles ?? [])],
+        extraFiles: [versionRule, ...(options.extraFiles ?? [])],
         // Route the jsr versionActions reader at the same manifest the
         // extra-files bump targets so the natively-parsed version always
         // matches the literal we just wrote.

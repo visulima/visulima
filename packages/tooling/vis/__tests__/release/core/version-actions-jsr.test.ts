@@ -599,28 +599,6 @@ describe("jsr version actions", () => {
             expect(cfg.extraFiles![0]!.path).toBe("deno.json");
         });
 
-        it("emits a second extra-files rule against deno.json when `deno: true` is passed", () => {
-            expect.hasAssertions();
-
-            const cfg = jsr({ deno: true });
-
-            expect(cfg.extraFiles).toHaveLength(2);
-            expect(cfg.extraFiles![0]!.path).toBe("jsr.json");
-            expect(cfg.extraFiles![1]!.path).toBe("deno.json");
-        });
-
-        it("does NOT duplicate the rule when `deno: true` is paired with `manifestPath: 'deno.json'`", () => {
-            // Edge case: operator passed both flags. The manifestPath
-            // already targets deno.json, so there's no second file to
-            // rewrite — the preset must not emit a duplicate rule.
-            expect.hasAssertions();
-
-            const cfg = jsr({ deno: true, manifestPath: "deno.json" });
-
-            expect(cfg.extraFiles).toHaveLength(1);
-            expect(cfg.extraFiles![0]!.path).toBe("deno.json");
-        });
-
         it("merges operator-supplied extraFiles after the manifest rule", () => {
             expect.hasAssertions();
 

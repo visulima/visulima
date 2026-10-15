@@ -5703,8 +5703,7 @@
             "enum": [
                 "bun",
                 "node"
-            ],
-            "description": "JS runtimes vis can target today."
+            ]
         },
         "ScopedTasksBlock": {
             "type": "object",
