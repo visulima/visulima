@@ -128,6 +128,19 @@ CronExpressionParser.parse("* * * * *").usedFeatures; // []
 
 The `cloudflare` dialect was checked against the validator wrangler itself deploys through, `cron-triggers.cloudflareworkers.com` (backed by [`cloudflare/saffron`](https://github.com/cloudflare/saffron)). A few of its rules are easy to miss and are built in: the weekdays run `1` (Sunday) to `7` (Saturday) and a weekday of `0` is rejected, so `0 0 * * 1` fires on Sunday and `0 18 * * 6L` on the last Friday (`sundayIsOne` does that rewrite, and it follows the number before an `L` or a `#`; the three letter names always mean the day they name, and a bare `L` in the weekday field is Saturday); a day of month text such as `LW`, `L-3` or `15W` has to stand alone, so `1,15` parses but `1W,LW` does not (`mixedDayOfMonthText`); and a step may not be as large as the field, so `*/6` is a valid weekday step but `*/7` is not, and minutes allow `*/59` but not `*/60` (`stepSmallerThanField`).
 
+### On Cloudflare Workers
+
+A schedule that is a Cloudflare Cron Trigger can take the entry that has the dialect already applied, so there is no dialect name to remember:
+
+```ts
+import { CronExpressionParser } from "@visulima/cron-parser/cloudflare";
+
+CronExpressionParser.parse("0 0 * * 1").next(); // Sunday, not Monday
+CronExpressionParser.parse("H * * * *"); // throws: Cloudflare has no hashed values
+```
+
+It is the default entry with `{ dialect: "cloudflare" }` baked in, and a `dialect` you pass yourself still wins. It imports no `node:*` module, so it loads on Workers like the default entry does.
+
 ### Parse errors
 
 A parse failure throws a `CronParseError`, an `Error` with a `code` (such as `FIELD_RANGE`, `FIELD_CHARACTER` or `UNSUPPORTED_FEATURE`), the `field` it is in and the `token` that failed, so a caller can mark the spot without matching the message.
@@ -198,7 +211,7 @@ Date strings may be ISO 8601 / SQL, RFC 2822 or HTTP dates. A string without an 
 
 ## Runtimes and size
 
-The main entry uses only `Intl`, optionally `Temporal`, and plain JavaScript, so it runs unchanged on Node.js, Deno, Bun and Cloudflare Workers. It is ESM only, side-effect free, and has no dependencies.
+The main entry uses only `Intl`, optionally `Temporal`, and plain JavaScript, so it runs unchanged on Node.js, Deno, Bun and Cloudflare Workers. `@visulima/cron-parser/cloudflare` is the same entry with the Cloudflare dialect applied, and `@visulima/cron-parser/file` is the one that needs `node:fs`. It is ESM only, side-effect free, and has no dependencies.
 
 Bundled and minified, `CronExpressionParser.parse(...).next()` is about 31 KB (11 KB gzipped), and a bare `CronDate` is about 10 KB (4 KB gzipped). The same import through `cron-parser` and `luxon` is about 100 KB (31 KB gzipped). `pnpm run build:prod && pnpm run size` prints the figures for this package. Iteration is also faster than that package; `__bench__` compares it with `croner`, `cron-schedule` and `cron-fast` too.
 
