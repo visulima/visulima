@@ -586,7 +586,9 @@ const runWithNativeDryRun = (pm: InstallerInfo, resolved: ResolvedCommand, cwd: 
  * the CLI surface. Aube already skips dependency lifecycle scripts by
  * default, so the flag is a visible no-op there.
  */
-const applyIgnoreScripts = (resolved: ResolvedCommand): ResolvedCommand => ({ ...resolved, args: [...resolved.args, "--ignore-scripts"] });
+const applyIgnoreScripts = (resolved: ResolvedCommand): ResolvedCommand => {
+    return { ...resolved, args: [...resolved.args, "--ignore-scripts"] };
+};
 
 interface RunAddExtras extends RunOverrides {
     /**
