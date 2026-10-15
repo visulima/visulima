@@ -78,7 +78,7 @@ const isColorSupportedFactory = (stdName: "err" | "out", options: CreateIsColorS
         return position !== -1 && (terminatorPosition === -1 || position < terminatorPosition);
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const environment: Record<string, string | undefined> = proc.env ?? {};
 
     const FORCE_COLOR = "FORCE_COLOR";
@@ -153,7 +153,6 @@ const isColorSupportedFactory = (stdName: "err" | "out", options: CreateIsColorS
         return minColorLevel;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (proc.platform === "win32") {
         // Modern Windows terminals advertise themselves via env variables even when `TERM`/`COLORTERM`
         // are unset; honor those before falling back to the OS build-number heuristic.
@@ -175,14 +174,9 @@ const isColorSupportedFactory = (stdName: "err" | "out", options: CreateIsColorS
             // `node:os`. The previous code called `proc.os.release()` unconditionally, which always
             // threw on real Node (`process` has no `os` property), so Windows detection was silently
             // broken and fell through to no color.
-            let rawRelease: string;
-
-            if (typeof proc.os?.release === "function") {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
-                rawRelease = proc.os.release();
-            } else {
-                rawRelease = getOsRelease();
-            }
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            const injectedOsRelease = proc.os?.release as (() => string) | undefined;
+            const rawRelease = typeof injectedOsRelease === "function" ? injectedOsRelease() : getOsRelease();
 
             const release = rawRelease.split(".");
 
