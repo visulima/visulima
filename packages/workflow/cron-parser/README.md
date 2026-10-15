@@ -212,7 +212,7 @@ Date strings may be ISO 8601 / SQL, RFC 2822 or HTTP dates. A string without an 
 
 ## Runtimes and size
 
-The main entry uses only `Intl`, optionally `Temporal`, and plain JavaScript, so it runs unchanged on Node.js, Bun and Cloudflare Workers. It is ESM only, side-effect free, and has no dependencies.
+The main entry uses only `Intl`, optionally `Temporal`, and plain JavaScript, so it runs unchanged on Node.js, Bun and Cloudflare Workers. `@visulima/cron-parser/cloudflare` is the same entry with the Cloudflare dialect applied, and `@visulima/cron-parser/file` is the one that needs `node:fs`. It is ESM only, side-effect free, and has no dependencies.
 
 Bundled and minified, `CronExpressionParser.parse(...).next()` is about 31 KB (11 KB gzipped), and a bare `CronDate` is about 10 KB (4 KB gzipped). The same import through `cron-parser` and `luxon` is about 100 KB (31 KB gzipped). `pnpm run build:prod && pnpm run size` prints the figures for this package. Iteration is also faster than that package; `__bench__` compares it with `croner`, `cron-schedule` and `cron-fast` too.
 
