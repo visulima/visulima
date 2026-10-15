@@ -1,3 +1,4 @@
+import type { CronFieldName } from "../errors";
 import type { CronFieldOptions } from "./cron-field";
 import { CronField } from "./cron-field";
 import type { CronChars, CronMax, CronMin, MonthRange } from "./types";
@@ -15,6 +16,10 @@ const MOST_DAYS_IN_MONTH: ReadonlyArray<number> = Object.freeze([31, 29, 31, 30,
  * @augments CronField
  */
 class CronMonth extends CronField {
+    public static override get fieldName(): CronFieldName {
+        return "month";
+    }
+
     public static override get min(): CronMin {
         return MIN_MONTH;
     }
