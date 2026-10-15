@@ -568,6 +568,10 @@ catalogs:
     copy-file: ^11.1.0
     core-js: 3.50.0
     cors: 2.8.6
+    cron-fast: 3.13.0
+    cron-schedule: 6.0.0
+    cron-validate: 1.5.3
+    croner: 10.0.1
     cross-env: ^10.1.0
     csstype: 3.2.3
     date-fns: ^4.4.0
@@ -709,9 +713,12 @@ catalogs:
     '@vitest/coverage-v8': 4.1.11
     '@vitest/ui': 4.1.11
     eslint-plugin-playwright: 2.11.0
+    cron-parser: 5.10.2
+    luxon: 3.7.2
     miniflare: 5.20260804.0-alpha
     next-test-api-route-handler: 5.0.6
     playwright: ^1.62.1
+    temporal-polyfill: 1.0.5
     test-runner: 0.11.1
     vitest: 4.1.11
   tsc:
@@ -741,6 +748,7 @@ catalogs:
     '@types/lodash.clonedeep': ^4.5.9
     '@types/lodash.merge': ^4.6.9
     '@types/lodash.mergewith': ^4.6.9
+    '@types/luxon': 3.7.6
     '@types/mdx': ^2.0.14
     '@types/micromatch': 4.0.10
     '@types/mime': ^4.0.0

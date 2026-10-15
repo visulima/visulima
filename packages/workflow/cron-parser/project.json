@@ -1,0 +1,8 @@
+{
+    "name": "workflow/cron-parser",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/workflow/cron-parser/src",
+    "projectType": "library",
+    "tags": ["cron-parser", "type:package", "category:dev-tools"],
+    "implicitDependencies": []
+}
