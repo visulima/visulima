@@ -13,7 +13,6 @@ import { changesetDetector } from "./detectors/changeset";
 import { composerDetector } from "./detectors/composer";
 import { cypressDetector } from "./detectors/cypress";
 import { dartDetector } from "./detectors/dart";
-import { denoDetector } from "./detectors/deno";
 import { docusaurusDetector } from "./detectors/docusaurus";
 import { dprintDetector } from "./detectors/dprint";
 import { drizzleDetector } from "./detectors/drizzle";
@@ -66,17 +65,16 @@ export type { DetectContext, Detector } from "./types";
  *   nest > rolldown > tsdown > tsup > packem > rollup > webpack
  * - `dev` / `preview` / `start` / `serve`: cascades from `build` order;
  *   gatsby owns `develop` uniquely
- * - `test`: vitest > jest > bun > deno (`test:e2e` is playwright >
+ * - `test`: vitest > jest > bun (`test:e2e` is playwright >
  *   cypress)
- * - `lint`: eslint > biome > oxlint > deno
+ * - `lint`: eslint > biome > oxlint
  * - `format` / `format:check`: prettier > biome > oxfmt > dprint
  *
  * Single-owner targets (no collision possible): `typecheck` (typescript),
  * `storybook` / `build-storybook`, `knip`, `lint:css` (stylelint),
  * `generate` (nuxt), `cypress:open`, `docs` (typedoc), `docs:build` /
  * `docs:dev` / `docs:preview` (vitepress), `db:*` (prisma > drizzle),
- * `codegen` (graphql), `api-extract`, `changeset:*`, deno's `fmt` /
- * `check`.
+ * `codegen` (graphql), `api-extract`, `changeset:*`.
  *
  * `cargo`, `python` and `maven` never compete: `discoverWorkspace` runs each
  * alone on its own project kind and leaves it out for every other project.
@@ -113,7 +111,6 @@ export const BUILT_IN_DETECTORS: ReadonlyArray<Detector> = [
     dprintDetector,
     stylelintDetector,
     knipDetector,
-    denoDetector,
     prismaDetector,
     drizzleDetector,
     graphqlCodegenDetector,

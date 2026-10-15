@@ -11,7 +11,7 @@ const fixtures = resolve(__dirname, "../__fixtures__/test-strings/fixtures");
 const start = join(fixtures, "a/b/c/d/e/f/g/h/i/j");
 
 const level6 = "file.txt";
-const level10 = "deno.json";
+const level10 = "biome.json";
 // eslint-disable-next-line sonarjs/pseudo-random
 const other = Math.random().toString(16).slice(4);
 
@@ -42,7 +42,7 @@ describe("find-up", () => {
         });
     });
 
-    describe("level-10 (deno.json, 10 levels up)", () => {
+    describe("level-10 (biome.json, 10 levels up)", () => {
         describe("async", () => {
             bench("@visulima/fs find-up", async () => {
                 await visulimaFindUp(level10, { cwd: start });

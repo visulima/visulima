@@ -21,7 +21,7 @@ An expression is read on the wall clock of its `tz`, and a run is a real instant
 
 ## Verification
 
-Everything zone related comes from one primitive: a zone's UTC offset at an instant. It comes from native `Temporal` where the runtime has it (Deno and Bun today) and from `Intl.DateTimeFormat` everywhere else. The test suite runs against both, and they give the same answers.
+Everything zone related comes from one primitive: a zone's UTC offset at an instant. It comes from native `Temporal` where the runtime has it (Bun today) and from `Intl.DateTimeFormat` everywhere else. The test suite runs against both, and they give the same answers.
 
 The DST rules are checked against an independent brute-force model of the clock. That model scans a zone minute by minute and inverts it, across 14 zone and date windows, including Samoa's lost day, Troll's two hour jump, Chatham's mid-hour gap and a 1844 Manila offset with seconds in it. Away from clock changes, results are compared with the `cron-parser` package and must be identical.
 

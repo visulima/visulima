@@ -53,12 +53,9 @@ const isColorSupportedFactory = (stdName: "err" | "out", options: CreateIsColorS
     // eslint-disable-next-line @typescript-eslint/naming-convention,@typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-assignment, no-underscore-dangle
     const _this = globalThis as any;
 
-    // eslint-disable-next-line eqeqeq,@typescript-eslint/no-unsafe-member-access
-    const isDeno = _this.Deno != undefined;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
-    const proc: Record<string, any> = _this.process ?? _this.Deno ?? {};
-    // Node -> `argv`, Deno -> `args`
-    const argv: string[] = (proc.argv ?? proc.args ?? []) as string[];
+    const proc: Record<string, any> = _this.process ?? {};
+    const argv: string[] = (proc.argv ?? []) as string[];
 
     // Cache the `--` terminator lookup; `oneOfFlags` is called several times per detection.
     const terminatorPosition = sniffFlags ? argv.indexOf("--") : -1;
@@ -81,18 +78,8 @@ const isColorSupportedFactory = (stdName: "err" | "out", options: CreateIsColorS
         return position !== -1 && (terminatorPosition === -1 || position < terminatorPosition);
     };
 
-    let environment: Record<string, string | undefined> = {};
-
-    try {
-        // Deno requires the permission for the access to env, use the `--allow-env` flag: deno run --allow-env ./app.js
-
-        // On Deno 2 a Node-compat `process` global coexists with `Deno`, so `proc` may resolve to
-        // `process`; read env from `Deno.env.toObject()` explicitly instead of via `proc.env`.
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
-        environment = isDeno ? _this.Deno.env.toObject() : proc.env ?? {};
-    } catch {
-        // Deno: if interactive permission is not granted, do nothing, no colors
-    }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const environment: Record<string, string | undefined> = proc.env ?? {};
 
     const FORCE_COLOR = "FORCE_COLOR";
     const hasForceColor = FORCE_COLOR in environment;
@@ -113,7 +100,7 @@ const isColorSupportedFactory = (stdName: "err" | "out", options: CreateIsColorS
 
         forceColor = Number.isNaN(parsed) ? undefined : (Math.max(0, Math.min(parsed, 3)) as ColorSupportLevel);
     } else if (forceColorValueIsNumber) {
-        // Deno's `env.toObject()` (and other runtimes) can yield a raw numeric FORCE_COLOR value.
+        // A raw numeric FORCE_COLOR value.
         forceColor = Number.isNaN(forceColorValue) ? undefined : (Math.max(0, Math.min(forceColorValue, 3)) as ColorSupportLevel);
     }
 
@@ -166,8 +153,7 @@ const isColorSupportedFactory = (stdName: "err" | "out", options: CreateIsColorS
         return minColorLevel;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    if (isDeno ? _this.Deno.build.os === "windows" : proc.platform === "win32") {
+    if (proc.platform === "win32") {
         // Modern Windows terminals advertise themselves via env variables even when `TERM`/`COLORTERM`
         // are unset; honor those before falling back to the OS build-number heuristic.
         // - `WT_SESSION` -> Windows Terminal (truecolor)
@@ -181,27 +167,13 @@ const isColorSupportedFactory = (stdName: "err" | "out", options: CreateIsColorS
         }
 
         try {
-            // Deno requires the permission for the access to the operating system, use the `--allow-sys` flag: deno run --allow-sys ./app.js
-
             // Windows 10 build 10586 is the first Windows release that supports 256 colors.
             // Windows 10 build 14931 is the first release that supports 16m/TrueColor.
 
-            // Prefer a runtime-provided `os.release()` (Deno's `osRelease`, or an injected `process.os`
-            // used by tests); otherwise read it from `node:os`. The previous code called `proc.os.release()`
-            // which always threw on real Node (`process` has no `os` property), so Windows detection was
-            // silently broken and fell through to no color.
-            let rawRelease: string;
-
-            if (isDeno) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
-                rawRelease = _this.Deno.osRelease();
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            } else if (typeof proc.os?.release === "function") {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
-                rawRelease = proc.os.release();
-            } else {
-                rawRelease = getOsRelease();
-            }
+            // Prefer an injected `process.os` (used by tests); otherwise read it from `node:os`.
+            // Keep the receiver: `release` is called as a method on the injected object.
+            const injectedOs = proc.os as { release?: () => string } | undefined;
+            const rawRelease = typeof injectedOs?.release === "function" ? injectedOs.release() : getOsRelease();
 
             const release = rawRelease.split(".");
 
@@ -211,7 +183,7 @@ const isColorSupportedFactory = (stdName: "err" | "out", options: CreateIsColorS
 
             return SPACE_16_COLORS;
         } catch {
-            // Deno: if interactive permission is not granted, do nothing, no colors
+            // `node:os` may be unavailable in some environments; fall through to no color.
         }
     }
 
@@ -279,9 +251,6 @@ const isColorSupportedFactory = (stdName: "err" | "out", options: CreateIsColorS
 
     if (isTTYOverride !== undefined) {
         isTTY = isTTYOverride;
-    } else if (isDeno) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
-        isTTY = stdName === "out" ? _this.Deno.stdout.isTerminal() : _this.Deno.stderr.isTerminal();
     } else if ("PM2_HOME" in environment && "pm_id" in environment) {
         // PM2 does not set process.stdout.isTTY, but colors may be supported (depends on actual terminal)
         isTTY = true;

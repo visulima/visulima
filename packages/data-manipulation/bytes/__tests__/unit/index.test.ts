@@ -595,21 +595,6 @@ describe("@visulima/bytes", () => {
         });
     });
 
-    describe("@std/bytes re-export smoke", () => {
-        it("should re-export concat, equals and indexOfNeedle", async () => {
-            expect.assertions(3);
-
-            const module = await import("../../src/index");
-
-            // `concat` here is the @std/bytes slice-concat (takes an array of
-            // Uint8Arrays), not Array.prototype.concat.
-            // eslint-disable-next-line unicorn/prefer-spread
-            expect(module.concat([new Uint8Array([1]), new Uint8Array([2, 3])])).toStrictEqual(new Uint8Array([1, 2, 3]));
-            expect(module.equals(new Uint8Array([1, 2]), new Uint8Array([1, 2]))).toBe(true);
-            expect(module.indexOfNeedle(new Uint8Array([0, 1, 2, 3]), new Uint8Array([2, 3]))).toBe(2);
-        });
-    });
-
     describe("browser environment (no Buffer)", () => {
         // The module branches on `typeof Buffer === "function"` at evaluation
         // time, so to exercise the browser/edge code paths we delete the global

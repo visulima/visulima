@@ -1,5 +1,5 @@
 import type { Plugin } from "../types/plugin";
-import { exitProcess, getEnv, getVersions } from "../util/general/runtime-process";
+import { exitProcess, getEnv, getVersions, hasBun } from "../util/general/runtime-process";
 
 /**
  * Safely parse major version from a version string.
@@ -39,38 +39,22 @@ const extractNodeVersion = (processVersion: string | undefined): string => {
  * Detect the current JavaScript runtime and its version.
  */
 const detectRuntime = (): { major: number; type: RuntimeType; version: string } => {
-    // Check for Bun
-    // @ts-expect-error - Bun is a global in Bun runtime
-    if (typeof Bun !== "undefined") {
-        // @ts-expect-error - Bun.version exists in Bun runtime
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        const version = (Bun.version as string) || "";
-        const major = parseMajorVersion(version);
+    const versions = getVersions();
 
-        return { major, type: "bun", version };
-    }
+    if (hasBun(globalThis)) {
+        const version = versions.bun ?? "";
 
-    // Check for Deno
-    // @ts-expect-error - Deno is a global in Deno runtime
-    if (typeof Deno !== "undefined") {
-        // @ts-expect-error - Deno.version exists in Deno runtime
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        const version = (Deno.version?.deno as string) || "";
-        const major = parseMajorVersion(version);
-
-        return { major, type: "deno", version };
+        return { major: parseMajorVersion(version), type: "bun", version };
     }
 
     // Default to Node.js - use runtime abstraction
-    const versions = getVersions();
-    const nodeVersion = versions.node ?? "";
-    const version = extractNodeVersion(nodeVersion);
+    const version = extractNodeVersion(versions.node);
     const major = parseMajorVersion(version);
 
     return { major, type: "node", version };
 };
 
-export type RuntimeType = "bun" | "deno" | "node";
+export type RuntimeType = "bun" | "node";
 
 export type RuntimeVersionRequirement = {
     /** Minimum version required */
@@ -82,15 +66,13 @@ export type RuntimeVersionCheckOptions = {
     runtimes?: {
         /** Minimum Bun version requirement */
         bun?: RuntimeVersionRequirement;
-        /** Minimum Deno version requirement */
-        deno?: RuntimeVersionRequirement;
         /** Minimum Node.js version requirement */
         node?: RuntimeVersionRequirement;
     };
 };
 
 /**
- * Create a runtime version check plugin that supports Node.js, Bun, and Deno.
+ * Create a runtime version check plugin that supports Node.js and Bun.
  * @param options Configuration for runtime version requirements
  * @returns Plugin instance that validates runtime version on initialization
  */
@@ -103,7 +85,6 @@ export const runtimeVersionCheckPlugin = (options: RuntimeVersionCheckOptions = 
             // Get minimum version for detected runtime
             const defaultMinVersions: Record<RuntimeType, number> = {
                 bun: 1,
-                deno: 1,
                 node: 18,
             };
 

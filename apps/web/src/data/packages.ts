@@ -123,7 +123,7 @@ export const packages: PackageInfo[] = [
     {
         accentColor: categoryColors["CLI & Terminal"],
         category: "CLI & Terminal",
-        description: "A delightful toolkit for building cross-runtime CLIs for Node.js, Deno, and Bun.",
+        description: "A delightful toolkit for building cross-runtime CLIs for Node.js and Bun.",
         docsPath: "/docs/packages/cerebro",
         features: ["Flag and argument parsing", "Auto-generated help docs", "Terminal autocompletion", "Plugin system"],
         name: "Cerebro",

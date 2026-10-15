@@ -37,7 +37,6 @@ const commands = parseCommands([
     "yarn:lint", // yarn run lint
     "bun:dev", // bun run dev
     "node:script", // node --run script
-    "deno:check", // deno task check
 ]);
 
 await runConcurrently(commands);
@@ -57,9 +56,6 @@ const commands = parseCommands(["npm:watch-*"]);
 // Result: [{ command: "npm run watch-js" }, { command: "npm run watch-css" }, ...]
 
 await runConcurrently(commands);
-
-// Deno tasks from deno.json are also supported:
-const denoCommands = parseCommands(["deno:dev-*"]);
 ```
 
 ## Real-Time Output Streaming

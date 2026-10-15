@@ -20,10 +20,10 @@ pub struct ResolvedCommand {
 /// Validates that the PM name is one of the supported values.
 fn validate_pm(pm: &str) -> napi::Result<()> {
     match pm {
-        "pnpm" | "npm" | "yarn" | "bun" | "deno" => Ok(()),
+        "pnpm" | "npm" | "yarn" | "bun" => Ok(()),
         _ => Err(Error::new(
             Status::InvalidArg,
-            format!("Unsupported package manager: '{pm}'. Supported: pnpm, npm, yarn, bun, deno"),
+            format!("Unsupported package manager: '{pm}'. Supported: pnpm, npm, yarn, bun"),
         )),
     }
 }
@@ -201,44 +201,6 @@ pub fn resolve_install(pm: String, version: String, opts: InstallOptions) -> nap
                 args.push("--no-optional".into());
             }
         }
-        "deno" => {
-            // `deno install` (no args) installs deps from deno.json
-            // imports + package.json deps. Lifecycle scripts are
-            // disabled by default in deno; honour ignore_scripts as a
-            // no-op (the converse `--allow-scripts=<pkg>` opts in to
-            // a specific package, which vis does not surface here).
-            args.push("install".into());
-            if opts.frozen_lockfile {
-                args.push("--frozen".into());
-            }
-            if opts.lockfile_only {
-                warnings
-                    .push("deno does not support --lockfile-only; the lockfile is updated as part of install.".into());
-            }
-            if opts.offline {
-                args.push("--cached-only".into());
-            }
-            if opts.force {
-                args.push("--reload".into());
-            }
-            if opts.dev {
-                warnings.push("deno install has no --dev flag; dev/prod separation is governed by deno.json.".into());
-            }
-            if opts.prod {
-                warnings.push("deno install has no --prod flag; dev/prod separation is governed by deno.json.".into());
-            }
-            if opts.no_optional {
-                warnings.push("deno install has no --no-optional flag.".into());
-            }
-            if opts.silent {
-                args.push("--quiet".into());
-            }
-            if !opts.filter.is_empty() || opts.recursive || opts.workspace_root {
-                warnings.push(
-                    "deno install operates on the current workspace; --filter / --recursive / --workspace-root are ignored.".into(),
-                );
-            }
-        }
         _ => unreachable!(), // validate_pm already checked
     }
 
@@ -264,9 +226,9 @@ pub fn resolve_add(pm: String, version: String, opts: AddOptions) -> napi::Resul
     let mut args = Vec::new();
     let mut warnings = Vec::new();
 
-    // Global packages use npm exclusively (except bun and deno, which
-    // both ship native global-install paths).
-    if opts.global && pm != "bun" && pm != "deno" {
+    // Global packages use npm exclusively (except bun, which ships a
+    // native global-install path).
+    if opts.global && pm != "bun" {
         args.push("install".into());
         args.push("--global".into());
         if opts.save_dev {
@@ -403,44 +365,6 @@ pub fn resolve_add(pm: String, version: String, opts: AddOptions) -> napi::Resul
             }
             args.extend(opts.packages);
         }
-        "deno" => {
-            // `deno install -g <spec>` installs an executable globally.
-            // `deno add <spec>` adds to deno.json imports / package.json
-            // deps. The two share no code path, so split here.
-            if opts.global {
-                args.push("install".into());
-                args.push("-g".into());
-                if opts.exact {
-                    warnings
-                        .push("deno install has no --exact flag; the requested version is pinned as written.".into());
-                }
-                if opts.save_dev || opts.peer || opts.optional {
-                    warnings.push(
-                        "deno install (global) ignores dependency-section flags (--save-dev / --peer / --optional)."
-                            .into(),
-                    );
-                }
-                args.extend(opts.packages);
-            } else {
-                args.push("add".into());
-                if opts.save_dev {
-                    args.push("--dev".into());
-                }
-                if opts.exact {
-                    warnings.push("deno add has no --exact flag; the requested version is pinned as written.".into());
-                }
-                if opts.peer {
-                    warnings.push("deno does not support peer dependencies.".into());
-                }
-                if opts.optional {
-                    warnings.push("deno does not support optional dependencies.".into());
-                }
-                if !opts.filter.is_empty() || opts.workspace || opts.workspace_root {
-                    warnings.push("deno add operates on the current workspace; --filter / --workspace / --workspace-root are ignored.".into());
-                }
-                args.extend(opts.packages);
-            }
-        }
         _ => unreachable!(),
     }
 
@@ -461,9 +385,9 @@ pub struct RemoveOptions {
 pub fn resolve_remove(pm: String, version: String, opts: RemoveOptions) -> napi::Result<ResolvedCommand> {
     validate_pm(&pm)?;
     let mut args = Vec::new();
-    let mut warnings = Vec::new();
+    let warnings = Vec::new();
 
-    if opts.global && pm != "bun" && pm != "deno" {
+    if opts.global && pm != "bun" {
         let mut a = vec!["uninstall".into(), "--global".into()];
         a.extend(opts.packages);
         return Ok(ResolvedCommand { bin: "npm".into(), args: a, warnings });
@@ -539,28 +463,6 @@ pub fn resolve_remove(pm: String, version: String, opts: RemoveOptions) -> napi:
             }
             args.extend(opts.packages);
         }
-        "deno" => {
-            // Globally-installed binaries are removed via `deno
-            // uninstall -g <name>`; non-global removal uses
-            // `deno remove <pkg>`.
-            if opts.global {
-                args.push("uninstall".into());
-                args.push("-g".into());
-            } else {
-                args.push("remove".into());
-                if opts.save_dev {
-                    warnings.push(
-                        "deno remove has no --save-dev flag; section is inferred from where the package lives.".into(),
-                    );
-                }
-                if !opts.filter.is_empty() || opts.recursive || opts.workspace_root {
-                    warnings.push(
-                        "deno remove operates on the current workspace; --filter / --recursive / --workspace-root are ignored.".into(),
-                    );
-                }
-            }
-            args.extend(opts.packages);
-        }
         _ => unreachable!(),
     }
 
@@ -599,14 +501,6 @@ pub fn resolve_dedupe(pm: String, version: String, check: bool) -> napi::Result<
         "bun" => {
             warnings.push("bun does not support dedupe operations.".into());
             return Ok(ResolvedCommand { bin: "bun".into(), args: vec!["install".into()], warnings });
-        }
-        "deno" => {
-            // Deno has no dedupe subcommand. Mirror the bun fallback:
-            // run `deno install` so the lockfile is rewritten from
-            // current sources. Callers wanting nypm's "rm lockfile +
-            // reinstall" flow should delete `deno.lock` first.
-            warnings.push("deno does not support dedupe operations. Falling back to `deno install`.".into());
-            return Ok(ResolvedCommand { bin: "deno".into(), args: vec!["install".into()], warnings });
         }
         _ => unreachable!(),
     }
@@ -711,20 +605,6 @@ pub fn resolve_why(pm: String, version: String, opts: WhyOptions) -> napi::Resul
             if let Some(d) = opts.depth {
                 args.push("--depth".into());
                 args.push(d.to_string());
-            }
-            args.extend(opts.packages);
-        }
-        "deno" => {
-            // Deno has no `why` subcommand. `deno info <module>`
-            // prints a dependency graph but is module-rooted, not
-            // package-rooted, so the output shape diverges. Surface a
-            // warning and best-effort dispatch.
-            warnings.push(
-                "deno does not have a `why` subcommand; falling back to `deno info` (module dependency graph).".into(),
-            );
-            args.push("info".into());
-            if opts.json {
-                args.push("--json".into());
             }
             args.extend(opts.packages);
         }
@@ -839,24 +719,6 @@ pub fn resolve_outdated(pm: String, version: String, opts: OutdatedOptions) -> n
             }
             args.extend(opts.packages);
         }
-        "deno" => {
-            // `deno outdated` shipped in Deno 2.x. JSON output and
-            // filters are not supported.
-            args.push("outdated".into());
-            if opts.compatible {
-                args.push("--compatible".into());
-            }
-            if opts.format == "json" {
-                warnings.push("deno outdated does not support JSON output.".into());
-            }
-            if !opts.filter.is_empty() {
-                warnings.push("deno outdated has no --filter flag.".into());
-            }
-            if opts.global {
-                warnings.push("deno outdated has no --global flag.".into());
-            }
-            args.extend(opts.packages);
-        }
         _ => unreachable!(),
     }
 
@@ -883,18 +745,6 @@ fn is_path_like(target: &str) -> bool {
 #[napi(catch_unwind)]
 pub fn resolve_link(pm: String, version: String, target: Option<String>) -> napi::Result<ResolvedCommand> {
     validate_pm(&pm)?;
-
-    // Deno has no `link` subcommand. Treat the call as unsupported and
-    // fall back to a no-op so callers can choose to skip the run rather
-    // than executing an erroring command.
-    if pm == "deno" {
-        let mut warnings =
-            vec!["deno does not support `link`. Use `deno add ./relative/path` to depend on a local package.".into()];
-        if target.is_some() {
-            warnings.push("Ignoring link target on deno.".into());
-        }
-        return Ok(ResolvedCommand { bin: "deno".into(), args: vec!["--help".into()], warnings });
-    }
 
     let mut args = vec!["link".to_string()];
     let mut warnings = Vec::new();
@@ -985,18 +835,6 @@ pub fn resolve_unlink(
             args.push("unlink".into());
             if recursive {
                 warnings.push("bun does not support --recursive for unlink.".into());
-            }
-            args.extend(packages);
-        }
-        "deno" => {
-            // Deno has no `unlink`. Closest: `deno uninstall -g` for
-            // global binaries, `deno remove` for workspace deps. We
-            // can't pick the right one without more context, so warn
-            // and fall back to `deno remove`.
-            warnings.push("deno does not support `unlink`. Falling back to `deno remove` (use `vis remove -g` for global binaries).".into());
-            args.push("remove".into());
-            if recursive {
-                warnings.push("deno remove has no --recursive flag.".into());
             }
             args.extend(packages);
         }
@@ -1105,40 +943,6 @@ pub fn resolve_dlx(pm: String, version: String, opts: DlxOptions) -> napi::Resul
             args.push(opts.package);
             args.extend(opts.args);
         }
-        "deno" => {
-            // Deno's dlx-equivalent is `deno run -A npm:<spec>`. We
-            // pass `-A` (allow-all) because the user explicitly asked
-            // to run a remote package and any narrower permission set
-            // would need to come from CLI flags vis does not yet
-            // surface. Additional packages have no equivalent on
-            // deno; warn so the user knows to invoke them separately.
-            args.push("run".into());
-            args.push("-A".into());
-            if opts.silent {
-                args.push("--quiet".into());
-            }
-            if !opts.additional_packages.is_empty() {
-                warnings.push("deno run has no equivalent of `--package`; additional packages are ignored.".into());
-            }
-            if opts.shell_mode {
-                warnings.push("deno run does not support shell mode.".into());
-            }
-            // If the spec already carries a registry prefix, pass
-            // through; otherwise prepend `npm:` since the npm registry
-            // is the most common case and deno requires the prefix.
-            let spec = if opts.package.starts_with("npm:")
-                || opts.package.starts_with("jsr:")
-                || opts.package.starts_with("https://")
-                || opts.package.starts_with("http://")
-                || opts.package.starts_with("file:")
-            {
-                opts.package.clone()
-            } else {
-                format!("npm:{}", opts.package)
-            };
-            args.push(spec);
-            args.extend(opts.args);
-        }
         _ => unreachable!(),
     }
 
@@ -1234,20 +1038,6 @@ pub fn resolve_exec(pm: String, version: String, opts: ExecOptions) -> napi::Res
             args.push(opts.command);
             args.extend(opts.args);
         }
-        "deno" => {
-            // `deno task <name>` runs deno.json tasks; closest match
-            // for `<pm> exec`. Workspace fan-out (recursive / filter
-            // / parallel) has no native deno equivalent.
-            args.push("task".into());
-            if opts.shell_mode {
-                warnings.push("deno task does not support shell mode.".into());
-            }
-            if opts.recursive || !opts.filter.is_empty() || opts.parallel || opts.reverse {
-                warnings.push("deno task has no workspace fan-out flags (--recursive / --filter / --parallel / --reverse) — ignoring.".into());
-            }
-            args.push(opts.command);
-            args.extend(opts.args);
-        }
         _ => unreachable!(),
     }
 
@@ -1304,31 +1094,6 @@ pub fn resolve_pm_command(
                 args.extend(extra_args);
                 return Ok(ResolvedCommand { bin: "bun".into(), args, warnings });
             }
-            "deno" => {
-                // Deno has no `cache clean` / `cache dir` mirror.
-                // `deno info` prints the cache root; `deno cache <module>`
-                // pre-populates the cache. Map `cache dir` and `cache clean`
-                // to their nearest deno equivalents and warn for the gaps.
-                let sub = extra_args.first().map(|s| s.as_str());
-                match sub {
-                    Some("dir") => {
-                        args.push("info".into());
-                        warnings
-                            .push("deno has no `cache dir`; printing `deno info` (DENO_DIR is in the output).".into());
-                    }
-                    Some("clean") => {
-                        warnings.push(
-                            "deno has no `cache clean`. Remove DENO_DIR (default: ~/.cache/deno) manually.".into(),
-                        );
-                        args.push("--help".into());
-                    }
-                    _ => {
-                        args.push("cache".into());
-                        args.extend(extra_args);
-                    }
-                }
-                return Ok(ResolvedCommand { bin: "deno".into(), args, warnings });
-            }
             _ => {
                 args.push("cache".into());
                 args.extend(extra_args);
@@ -1346,15 +1111,6 @@ pub fn resolve_pm_command(
                 args.extend(extra_args);
                 return Ok(ResolvedCommand { bin: "bun".into(), args, warnings });
             }
-            "deno" => {
-                // Deno has no `list`. `deno info` prints the resolved
-                // module graph; closest analogue. Warn so callers know
-                // the output shape differs.
-                warnings.push("deno has no `list`; falling back to `deno info`.".into());
-                args.push("info".into());
-                args.extend(extra_args);
-                return Ok(ResolvedCommand { bin: "deno".into(), args, warnings });
-            }
             _ => {
                 args.push("list".into());
                 args.extend(extra_args);
@@ -1371,14 +1127,6 @@ pub fn resolve_pm_command(
                 args.push("pack".into());
                 args.extend(extra_args);
                 return Ok(ResolvedCommand { bin: "bun".into(), args, warnings });
-            }
-            "deno" => {
-                warnings.push(
-                    "deno does not support `pack`. Use `deno publish --dry-run` to preview a JSR publish.".into(),
-                );
-                args.push("publish".into());
-                args.push("--dry-run".into());
-                return Ok(ResolvedCommand { bin: "deno".into(), args, warnings });
             }
             _ => {
                 args.push("pack".into());
@@ -1409,27 +1157,6 @@ pub fn resolve_pm_command(
                 args.push("view".into());
                 args.extend(extra_args);
             }
-            "deno" => {
-                // `deno info <module>` is module-rooted (graph
-                // metadata), not registry-rooted. For npm specs prefix
-                // with `npm:` to match the dlx behaviour above.
-                args.push("info".into());
-                let mut prefixed = Vec::with_capacity(extra_args.len());
-                for arg in &extra_args {
-                    if arg.starts_with("npm:")
-                        || arg.starts_with("jsr:")
-                        || arg.starts_with("https://")
-                        || arg.starts_with("http://")
-                        || arg.starts_with("file:")
-                        || arg.starts_with('-')
-                    {
-                        prefixed.push(arg.clone());
-                    } else {
-                        prefixed.push(format!("npm:{arg}"));
-                    }
-                }
-                args.extend(prefixed);
-            }
             _ => {
                 args.push("view".into());
                 args.extend(extra_args);
@@ -1439,10 +1166,10 @@ pub fn resolve_pm_command(
     }
 
     // Unsupported checks
-    if subcommand == "prune" && (pm == "yarn" || pm == "bun" || pm == "deno") {
+    if subcommand == "prune" && (pm == "yarn" || pm == "bun") {
         warnings.push(format!("{pm} does not support 'prune'. It prunes automatically on install."));
     }
-    if subcommand == "rebuild" && (pm == "yarn" || pm == "bun" || pm == "deno") {
+    if subcommand == "rebuild" && (pm == "yarn" || pm == "bun") {
         warnings.push(format!("{pm} does not support 'rebuild'."));
     }
 

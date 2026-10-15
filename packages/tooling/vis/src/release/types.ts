@@ -593,24 +593,6 @@ export interface PerPackageReleaseConfig {
      */
     extraFiles?: ExtraFileRule[];
 
-    /**
-     * Relative path from the package directory to the JSR manifest
-     * (`jsr.json` or `deno.json`) for the `jsr` versionActions. Set
-     * automatically by the `jsr()` preset from its `manifestPath`
-     * option. Defaults to `"jsr.json"`.
-     */
-    jsrConfigPath?: string;
-
-    /**
-     * Extra arguments forwarded verbatim to `jsr publish` for the `jsr`
-     * versionActions (the `jsr()` preset wires this from its `publishArgs` /
-     * `allowSlowTypes` options). The most common entry is
-     * `"--allow-slow-types"`, which JSR requires for packages whose public
-     * API has types it can't statically infer. `--allow-dirty` is always
-     * passed by vis (the version is bumped on disk before publish) and need
-     * not be listed here.
-     */
-    jsrPublishArgs?: string[];
     /** Hard opt-in/out — overrides every other rule. */
     managed?: boolean;
 
@@ -686,7 +668,7 @@ export interface PerPackageReleaseConfig {
 
     /**
      * Built-in id (`"npm"`, `"native-addon"`, `"private"`, `"shell"`,
-     * `"cargo"`, `"python"`, `"maven"`, `"container"`, `"jsr"`) or a
+     * `"cargo"`, `"python"`, `"maven"`, `"container"`) or a
      * path to a custom implementation module.
      */
     versionActions?: string;

@@ -146,7 +146,7 @@ export interface Toolbox<
     /**
      * Runtime process info — cwd, env, argv, exit, platform, arch, stdin —
      * captured at CLI construction. Prefer `toolbox.process` over reaching for
-     * the global `process` so commands stay portable across Node, Deno, Bun,
+     * the global `process` so commands stay portable across Node, Bun,
      * and mocked test runtimes. `process.exit` honors the `CliOptions.exit`
      * override, which lets tests assert exit codes without killing the runner.
      */

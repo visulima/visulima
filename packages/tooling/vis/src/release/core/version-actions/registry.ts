@@ -7,7 +7,7 @@
  * This is the single source of truth for the dispatch — previously the same
  * `switch` was copy-pasted into `orchestrator.ts`, `version-resolver.ts` and
  * the doctor handler, and the copies had already diverged (some omitted
- * `jsr`/`container`/`maven`/…). A new id only needs to be wired up here.
+ * `container`/`maven`/…). A new id only needs to be wired up here.
  *
  * The module imports only the leaf action classes (which depend on
  * `interface.ts`/`types.ts`, never on the orchestrator), so importing it from
@@ -22,7 +22,6 @@ import { GoVersionActions } from "./go";
 import { GradleVersionActions } from "./gradle";
 import { HexVersionActions } from "./hex";
 import type { VersionActions } from "./interface";
-import { JsrVersionActions } from "./jsr";
 import { MavenVersionActions } from "./maven";
 import { NativeAddonVersionActions } from "./native-addon";
 import { NpmVersionActions } from "./npm";
@@ -38,7 +37,7 @@ import { ZigVersionActions } from "./zig";
  *
  * Unknown ids fall back to npm — the historical default and the only safe
  * choice for a JS workspace package without explicit configuration.
- * @param id versionActions id (e.g. `npm`, `cargo`, `jsr`, `container`).
+ * @param id versionActions id (e.g. `npm`, `cargo`, `container`).
  * @returns a fresh {@link VersionActions} instance.
  */
 export const createVersionActions = (id: string): VersionActions => {
@@ -67,9 +66,6 @@ export const createVersionActions = (id: string): VersionActions => {
         }
         case "hex": {
             return new HexVersionActions();
-        }
-        case "jsr": {
-            return new JsrVersionActions();
         }
         case "maven": {
             return new MavenVersionActions();

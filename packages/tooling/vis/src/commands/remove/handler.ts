@@ -13,7 +13,7 @@ const execute = async ({ argument, logger, options, rawUnknown, visConfig, works
     }
 
     const cwd = process.cwd();
-    const runtime = resolveCommandRuntime({ logger, options, visConfig }, wsRoot ?? cwd);
+    const runtime = resolveCommandRuntime({ options, visConfig }, wsRoot ?? cwd);
     const pm = resolveInstaller(wsRoot ?? cwd, {
         backend: runtimeInstallerBackend(runtime),
         configBackend: visConfig?.install?.backend,

@@ -7,7 +7,7 @@ use std::path::{Path, PathBuf};
 
 #[derive(Clone, Debug)]
 pub struct DetectedPackageManager {
-    /// The package manager name: "pnpm", "npm", "yarn", "bun", or "deno".
+    /// The package manager name: "pnpm", "npm", "yarn", or "bun".
     pub name: String,
     /// The version string from the packageManager field, or None if unknown.
     pub version: Option<String>,
@@ -159,7 +159,6 @@ fn detect_from_package_json(dir: &Path) -> Option<PmInfo> {
             "npm" => "npm",
             "yarn" => "yarn",
             "bun" => "bun",
-            "deno" => "deno",
             _ => return None,
         };
 
@@ -179,7 +178,6 @@ fn detect_from_lockfiles(dir: &Path) -> Option<PmInfo> {
         ("npm-shrinkwrap.json", "npm"),
         ("bun.lock", "bun"),
         ("bun.lockb", "bun"),
-        ("deno.lock", "deno"),
     ];
 
     for (file, pm) in checks {
@@ -192,14 +190,8 @@ fn detect_from_lockfiles(dir: &Path) -> Option<PmInfo> {
 }
 
 fn detect_from_config_files(dir: &Path) -> Option<PmInfo> {
-    let checks: &[(&str, &'static str)] = &[
-        (".pnpmfile.cjs", "pnpm"),
-        ("pnpmfile.cjs", "pnpm"),
-        ("bunfig.toml", "bun"),
-        ("yarn.config.cjs", "yarn"),
-        ("deno.json", "deno"),
-        ("deno.jsonc", "deno"),
-    ];
+    let checks: &[(&str, &'static str)] =
+        &[(".pnpmfile.cjs", "pnpm"), ("pnpmfile.cjs", "pnpm"), ("bunfig.toml", "bun"), ("yarn.config.cjs", "yarn")];
 
     for (file, pm) in checks {
         if dir.join(file).exists() {
@@ -224,7 +216,6 @@ fn detect_from_user_agent() -> Option<PmInfo> {
         "npm" => "npm",
         "yarn" => "yarn",
         "bun" => "bun",
-        "deno" => "deno",
         _ => return None,
     };
 
@@ -236,7 +227,6 @@ fn detect_from_user_agent() -> Option<PmInfo> {
 fn detect_workspace(dir: &Path, pm: &str, cached_pkg: Option<&serde_json::Value>) -> bool {
     match pm {
         "pnpm" => dir.join("pnpm-workspace.yaml").exists(),
-        "deno" => detect_deno_workspace(dir),
         _ => {
             if let Some(json) = cached_pkg {
                 return json.get("workspaces").is_some();
@@ -251,24 +241,6 @@ fn detect_workspace(dir: &Path, pm: &str, cached_pkg: Option<&serde_json::Value>
             false
         }
     }
-}
-
-/// Deno reads its workspace declaration from a top-level `workspace` array in
-/// `deno.json` / `deno.jsonc`.
-fn detect_deno_workspace(dir: &Path) -> bool {
-    for file in &["deno.json", "deno.jsonc"] {
-        if let Ok(content) = fs::read_to_string(dir.join(file)) {
-            if let Ok(json) = serde_json::from_str::<serde_json::Value>(&content) {
-                if json.get("workspace").is_some() {
-                    return true;
-                }
-            } else if content.contains("\"workspace\"") {
-                return true;
-            }
-        }
-    }
-
-    false
 }
 
 #[cfg(test)]

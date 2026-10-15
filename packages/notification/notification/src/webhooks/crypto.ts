@@ -3,7 +3,7 @@
  *
  * These are thin wrappers over the shared {@link ../providers/utils/webcrypto Web Crypto}
  * layer (`globalThis.crypto.subtle`, `TextEncoder`, `btoa`) — no `node:crypto`, no
- * `Buffer` — so the verifiers stay runnable on Cloudflare Workers, Deno and other edge
+ * `Buffer` — so the verifiers stay runnable on Cloudflare Workers and other edge
  * runtimes.
  */
 

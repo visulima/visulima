@@ -9,7 +9,7 @@ Add packages using the detected package manager. Before installing, vis runs a *
 
 ## Secure-by-default behavior
 
-`vis add` blocks dependency lifecycle scripts on every package manager (npm, pnpm, yarn, bun, aube, deno) — the same pnpm v10 default applied universally. The newly-installed package's `preinstall` / `install` / `postinstall` / `prepare` scripts will not run unless:
+`vis add` blocks dependency lifecycle scripts on every package manager (npm, pnpm, yarn, bun, aube) — the same pnpm v10 default applied universally. The newly-installed package's `preinstall` / `install` / `postinstall` / `prepare` scripts will not run unless:
 
 - the package is listed in `security.policies.installScripts.allow` in `vis.config.ts` (vis runs its scripts post-install), or
 - you pass `--run-scripts` to opt out for one run.
@@ -75,7 +75,7 @@ flowchart TD
     E -- no --> G
     E -- yes --> F["Fetch security reports\n(Socket.dev / deps.dev)"]
     F --> H{Score below\nthreshold?}
-    H -- no --> G["Detect package manager\n(pnpm, npm, yarn, bun, deno)"]
+    H -- no --> G["Detect package manager\n(pnpm, npm, yarn, bun)"]
     H -- yes --> I{User\nconfirms?}
     I -- yes --> G
     I -- no --> Z
@@ -121,4 +121,4 @@ See [`vis init`](/docs/commands/init) to configure either provider, or the [Secu
 
 `--auto-install-peers` mirrors nypm's `installPeerDependencies` behavior. After the primary `add` succeeds, vis reads each freshly-installed package's `package.json`, collects its non-optional `peerDependencies` (entries flagged `optional: true` in `peerDependenciesMeta` are skipped), and recursively adds the peers that aren't already present in the workspace.
 
-The flag is **opt-in**, matching nypm's default. Deno is excluded — it has no peer dependency concept; the recursive add is a no-op there.
+The flag is **opt-in**, matching nypm's default.

@@ -1,6 +1,6 @@
 # Fetch API Upload Example
 
-This example demonstrates how to use the Visulima Upload package with modern frameworks that support the Web Fetch API, including Hono, Cloudflare Workers, Deno, Bun, and other Web API environments.
+This example demonstrates how to use the Visulima Upload package with modern frameworks that support the Web Fetch API, including Hono, Cloudflare Workers, Bun, and other Web API environments.
 
 ## Features
 
@@ -13,7 +13,7 @@ This example demonstrates how to use the Visulima Upload package with modern fra
 - CORS support
 - Local disk storage
 - **Swagger/OpenAPI documentation** - Interactive API documentation
-- Compatible with Hono, Cloudflare Workers, Deno, Bun, and other Web API frameworks
+- Compatible with Hono, Cloudflare Workers, Bun, and other Web API frameworks
 
 ## Choosing the Right Upload Method
 
@@ -351,7 +351,6 @@ This example works with any framework that supports the Web Fetch API:
 
 - **Hono** - Lightweight web framework
 - **Cloudflare Workers** - Serverless edge functions
-- **Deno** - Secure runtime
 - **Bun** - Fast JavaScript runtime
 - **Next.js 15+** - With Web API support
 - **Any Web API compatible environment**

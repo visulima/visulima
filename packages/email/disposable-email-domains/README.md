@@ -54,21 +54,21 @@ pnpm add @visulima/disposable-email-domains
 
 | Repository | Domains | Success | Performance |
 |------------|---------|---------|-------------|
-| disposable/disposable-email-domains | 98,610 | ✅ | 0.58s (1.5 MB) |
-| willwhite/freemail | 88,162 | ✅ | 0.52s (1.3 MB) |
-| FGRibreau/mailchecker | 56,512 | ✅ | 0.13s (848.5 KB) |
-| wesbos/burner-email-providers | 27,277 | ✅ | 0.07s (388.0 KB) |
-| groundcat/disposable-email-domain-list | 21,453 | ✅ | 0.08s (329.4 KB) |
-| 7c/fakefilter | 10,642 | ✅ | 0.02s (146.2 KB) |
-| sublime-security/static-files | 10,522 | ✅ | 0.35s (144.0 KB) |
-| disposable-email-domains/disposable-email-domains | 9,881 | ✅ | 0.29s (139.6 KB) |
-| eser/sanitizer-svc | 3,855 | ✅ | 0.14s (48.9 KB) |
-| unkn0w/disposable-email-domain-list | 3,616 | ✅ | 0.03s (45.7 KB) |
-| MattKetmo/EmailChecker | 2,515 | ✅ | 0.08s (32.4 KB) |
-| GeroldSetz/emailondeck.com-domains | 1,121 | ✅ | 0.08s (15.4 KB) |
-| castle/disposable-email-domains | 1,000 | ✅ | 0.01s (13.1 KB) |
-| jespernissen/disposable-maildomain-list | 982 | ✅ | 0.11s (12.6 KB) |
-| TheDahoom/disposable-email | 18 | ✅ | 0.13s (234 B) |
+| disposable/disposable-email-domains | 98,610 | ✅ | 0.46s (1.5 MB) |
+| willwhite/freemail | 88,162 | ✅ | 0.40s (1.3 MB) |
+| FGRibreau/mailchecker | 56,512 | ✅ | 0.24s (848.5 KB) |
+| wesbos/burner-email-providers | 27,277 | ✅ | 0.18s (388.0 KB) |
+| groundcat/disposable-email-domain-list | 21,453 | ✅ | 0.35s (329.4 KB) |
+| 7c/fakefilter | 10,642 | ✅ | 0.20s (146.2 KB) |
+| sublime-security/static-files | 10,522 | ✅ | 0.40s (144.0 KB) |
+| disposable-email-domains/disposable-email-domains | 9,890 | ✅ | 0.28s (139.8 KB) |
+| eser/sanitizer-svc | 3,855 | ✅ | 0.39s (48.9 KB) |
+| unkn0w/disposable-email-domain-list | 3,616 | ✅ | 0.18s (45.7 KB) |
+| MattKetmo/EmailChecker | 2,515 | ✅ | 0.21s (32.4 KB) |
+| GeroldSetz/emailondeck.com-domains | 1,121 | ✅ | 0.31s (15.4 KB) |
+| castle/disposable-email-domains | 1,000 | ✅ | 0.29s (13.2 KB) |
+| jespernissen/disposable-maildomain-list | 982 | ✅ | 0.27s (12.6 KB) |
+| TheDahoom/disposable-email | 18 | ✅ | 1.15s (234 B) |
 
 <!-- END_PLACEHOLDER_CONTRIBUTING -->
 <!-- START_PLACEHOLDER_LAST_UPDATED -->
@@ -171,7 +171,7 @@ isDisposableEmail("user@mailinator.com"); // true, no setup
 
 The list is about 2.8 MB (about 0.9 MB gzipped) of your bundle and cannot be tree-shaken, which is why it is a separate entry: use `/edge` only where you need it, and use the main entry with `setDomains` if you supply your own list.
 
-**Using the main entry instead?** By default the package reads `dist/domains.json` from disk via `node:fs`, the first time a lookup needs it. That is not possible in Cloudflare Workers, Next.js middleware/edge, or bundles that relocate `index.js` away from the data file, and in Deno it needs `process.getBuiltinModule`, `import.meta.url` and read permission for the data file. Importing the package is safe everywhere, but when the loader cannot read the list nothing matches the built-in list (only `customDomains` you pass per call still match) and a single warning is logged.
+**Using the main entry instead?** By default the package reads `dist/domains.json` from disk via `node:fs`, the first time a lookup needs it. That is not possible in Cloudflare Workers, Next.js middleware/edge, or bundles that relocate `index.js` away from the data file. Importing the package is safe everywhere, but when the loader cannot read the list nothing matches the built-in list (only `customDomains` you pass per call still match) and a single warning is logged.
 
 Inject the list once at startup with `setDomains` and, since disposable detection is often a signup gate, call `assertListLoaded()` at startup so a missed or failed load throws instead of failing open (`isListLoaded()` is the non-throwing check):
 

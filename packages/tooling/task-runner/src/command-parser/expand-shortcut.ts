@@ -1,6 +1,6 @@
 import type { ConcurrentCommandConfig } from "../types";
 
-const SHORTCUT_REGEX = /^(npm|yarn|pnpm|bun|node|deno):(\S+)(.*)/;
+const SHORTCUT_REGEX = /^(npm|yarn|pnpm|bun|node):(\S+)(.*)/;
 
 /**
  * Expands package manager shortcuts into full commands.
@@ -13,7 +13,6 @@ const SHORTCUT_REGEX = /^(npm|yarn|pnpm|bun|node|deno):(\S+)(.*)/;
  *   npm:build    -> npm run build
  *   pnpm:test    -> pnpm run test
  *   node:script  -> node --run script
- *   deno:task    -> deno task task
  */
 export const expandShortcut = (config: ConcurrentCommandConfig): ConcurrentCommandConfig => {
     const match = SHORTCUT_REGEX.exec(config.command);
@@ -24,15 +23,7 @@ export const expandShortcut = (config: ConcurrentCommandConfig): ConcurrentComma
 
     const [, prefix, script, args] = match;
 
-    let runPrefix: string;
-
-    if (prefix === "node") {
-        runPrefix = "node --run";
-    } else if (prefix === "deno") {
-        runPrefix = "deno task";
-    } else {
-        runPrefix = `${prefix} run`;
-    }
+    const runPrefix = prefix === "node" ? "node --run" : `${prefix} run`;
 
     return {
         ...config,

@@ -40,7 +40,7 @@ const execute = async ({ argument, logger, options, rawUnknown, visConfig, works
     let code = singlePackage ? runLocalExec(command as string, rest, cwd) : null;
 
     if (code === null) {
-        const runtime = resolveCommandRuntime({ logger, options, visConfig }, cwd);
+        const runtime = resolveCommandRuntime({ options, visConfig }, cwd);
         const pm = resolveInstaller(cwd, {
             backend: runtimeInstallerBackend(runtime),
             configBackend: visConfig?.install?.backend,

@@ -43,7 +43,7 @@ import { dispatchSubcommand } from "./pm-subcommand-dispatch";
  * "use aube if it is on PATH, otherwise fall back to lockfile-detected
  * PM." Any explicit name pins the choice, ignoring detection.
  */
-type InstallBackend = "aube" | "auto" | "bun" | "deno" | "npm" | "pnpm" | "yarn";
+type InstallBackend = "aube" | "auto" | "bun" | "npm" | "pnpm" | "yarn";
 
 /**
  * Allowed `install.corepack` values in `vis.config.ts`. See the type
@@ -53,7 +53,7 @@ type InstallBackend = "aube" | "auto" | "bun" | "deno" | "npm" | "pnpm" | "yarn"
 type CorepackMode = "auto" | boolean;
 
 interface PmInfo {
-    name: "bun" | "deno" | "npm" | "pnpm" | "yarn";
+    name: "bun" | "npm" | "pnpm" | "yarn";
     version: string;
 }
 
@@ -107,7 +107,6 @@ const findNonAubeLockfile = (start: string): PmInfo["name"] | undefined => {
         ["npm-shrinkwrap.json", "npm"],
         ["bun.lock", "bun"],
         ["bun.lockb", "bun"],
-        ["deno.lock", "deno"],
     ];
 
     let dir = start;
@@ -207,8 +206,8 @@ const readPackageManagerField = (cwd: string): string | undefined => {
 };
 
 /**
- * PMs that corepack manages. Bun and deno are excluded — corepack does
- * not ship shims for them. Aube has its own resolver path. npm is
+ * PMs that corepack manages. Bun is excluded — corepack does
+ * not ship shims for it. Aube has its own resolver path. npm is
  * supported by corepack but rarely dispatched that way; we include it
  * so an explicit `install.corepack: true` covers all three managed
  * tools.
@@ -306,7 +305,7 @@ const detectPm = (cwd: string): PmInfo => {
 const applyCorepack = (resolved: ResolvedCommand, pm: InstallerInfo): ResolvedCommand => {
     // Skip wrapping when:
     //   - corepack is disabled for this installer,
-    //   - the resolved PM is not corepack-managed (bun, deno, aube),
+    //   - the resolved PM is not corepack-managed (bun, aube),
     //   - the command is already corepack-wrapped (idempotency), or
     //   - the resolved bin diverges from the installer's PM (e.g. the
     //     subcommand dispatcher rewrote `pnpm whoami` → `npm whoami` for
@@ -399,14 +398,6 @@ const applyPreferOffline = (resolved: ResolvedCommand, pm: InstallerInfo["name"]
         return resolved;
     }
 
-    if (pm === "deno") {
-        // Deno's equivalent (`--cached-only`) is already wired into the
-        // native install resolver when `offline` is set, so a separate
-        // post-process flag would be redundant and would error if
-        // duplicated.
-        return resolved;
-    }
-
     if (pm === "yarn") {
         // yarn classic: --prefer-offline ✓
         // yarn berry: no equivalent (network policy is configured via
@@ -427,7 +418,7 @@ interface RunInstallExtras extends RunOverrides {
      * pair that the npm security best-practices guide recommends for
      * "lockfile-enforced installations." No-op for every other PM
      * because their frozen-install behavior already covers the cache
-     * (npm ci wipes node_modules; pnpm/bun/deno frozen modes never
+     * (npm ci wipes node_modules; pnpm/bun frozen modes never
      * touch the store mid-install). Yarn classic's `--frozen-lockfile`
      * predates the split and similarly does not write to the cache.
      */
@@ -444,7 +435,7 @@ interface RunInstallExtras extends RunOverrides {
  * `--immutable` is absent — without it, `--immutable-cache` is a yarn
  * error rather than a stricter mode.
  *
- * Only yarn berry has the flag. Yarn classic, pnpm, npm, bun, deno, and
+ * Only yarn berry has the flag. Yarn classic, pnpm, npm, bun, and
  * aube all return the command unchanged.
  */
 const applyImmutableCache = (resolved: ResolvedCommand, pm: InstallerInfo["name"], version: string): ResolvedCommand => {
@@ -534,16 +525,10 @@ const runInstallCaptured = async (
 };
 
 /**
- * Append the PM-specific silent flag. npm/pnpm/bun/yarn (classic +
- * berry) all accept `--silent` (yarn berry treats it as an alias for
- * `--quiet`). Deno only supports `--quiet`. Aube has no flag and
- * forwards verbatim — the resolver already controls its output level.
+ * Append `--silent`. npm/pnpm/bun/yarn (classic + berry) all accept it
+ * (yarn berry treats it as an alias for `--quiet`).
  */
-const applySilent = (resolved: ResolvedCommand, pm: InstallerInfo["name"]): ResolvedCommand => {
-    const flag = pm === "deno" ? "--quiet" : "--silent";
-
-    return { ...resolved, args: [...resolved.args, flag] };
-};
+const applySilent = (resolved: ResolvedCommand): ResolvedCommand => ({ ...resolved, args: [...resolved.args, "--silent"] });
 
 /**
  * Append the PM-specific dry-run flag, or return `null` when the PM
@@ -552,7 +537,6 @@ const applySilent = (resolved: ResolvedCommand, pm: InstallerInfo["name"]): Reso
  * so we never forward a flag the PM is known to reject.
  *
  * - npm / pnpm / bun: support `--dry-run` on install/add/remove.
- * - deno: `deno install --dry-run` exists; on `add` it's accepted too.
  * - yarn classic: no `--dry-run` on add/install. yarn berry has
  *   `--mode=skip-build` but no true dry-run. Both → `null`.
  * - aube: no native dry-run. → `null`.
@@ -590,25 +574,13 @@ const runWithNativeDryRun = (pm: InstallerInfo, resolved: ResolvedCommand, cwd: 
 };
 
 /**
- * Append PM-specific `--ignore-scripts` to a resolved add command. Same
- * post-process pattern as {@link applyPreferOffline} — the native
- * `AddOptions` does not carry `ignoreScripts`, but every supported PM
- * accepts the flag at the CLI surface.
+ * Append `--ignore-scripts` to a resolved add command. Same post-process
+ * pattern as {@link applyPreferOffline} — the native `AddOptions` does
+ * not carry `ignoreScripts`, but every supported PM accepts the flag at
+ * the CLI surface. Aube already skips dependency lifecycle scripts by
+ * default, so the flag is a visible no-op there.
  */
-const applyIgnoreScripts = (resolved: ResolvedCommand, pm: InstallerInfo["name"]): ResolvedCommand => {
-    if (pm === "aube") {
-        // aube already skips dependency lifecycle scripts by default; the
-        // flag is a no-op there. Pass it through so the user's intent is
-        // visible in the resolved command.
-        return { ...resolved, args: [...resolved.args, "--ignore-scripts"] };
-    }
-
-    if (pm === "deno") {
-        // Deno blocks lifecycle scripts by default and rejects an
-        // `--ignore-scripts` flag entirely. Skip the post-process.
-        return resolved;
-    }
-
+const applyIgnoreScripts = (resolved: ResolvedCommand): ResolvedCommand => {
     return { ...resolved, args: [...resolved.args, "--ignore-scripts"] };
 };
 
@@ -628,11 +600,11 @@ const runAdd = (pm: InstallerInfo, options: AddOptions, cwd: string, logger: Con
     let resolved = pm.name === "aube" ? resolveAubeAdd(options) : resolveAdd(pm.name, pm.version, options);
 
     if (extras.ignoreScripts) {
-        resolved = applyIgnoreScripts(resolved, pm.name);
+        resolved = applyIgnoreScripts(resolved);
     }
 
     if (extras.silent) {
-        resolved = applySilent(resolved, pm.name);
+        resolved = applySilent(resolved);
     }
 
     const code = runWithNativeDryRun(pm, resolved, cwd, logger, { dry: extras.dry, env: extras.env });
@@ -737,11 +709,6 @@ const collectExistingDeps = (cwd: string): Set<string> => {
  * exit code.
  */
 const installMissingPeers = (pm: InstallerInfo, options: AddOptions, cwd: string, logger: Console, extras: RunAddExtras): void => {
-    if (pm.name === "deno") {
-        // Deno doesn't model peer dependencies. Skip silently.
-        return;
-    }
-
     const existing = collectExistingDeps(cwd);
     const requested = new Map<string, string>();
 
@@ -802,7 +769,7 @@ const runRemove = (pm: InstallerInfo, options: RemoveOptions, cwd: string, logge
     let resolved = pm.name === "aube" ? resolveAubeRemove(options) : resolveRemove(pm.name, pm.version, options);
 
     if (extras.silent) {
-        resolved = applySilent(resolved, pm.name);
+        resolved = applySilent(resolved);
     }
 
     return runWithNativeDryRun(pm, resolved, cwd, logger, { dry: extras.dry, env: extras.env });
@@ -867,32 +834,6 @@ const resolveInfo = (pm: InstallerInfo, options: InfoOptions): ResolvedCommand =
 
             if (options.json) {
                 args.push("--json");
-            }
-
-            break;
-        }
-        case "deno": {
-            // `deno info <module>` is module-rooted and prints a graph
-            // rather than registry metadata, but it's the closest thing
-            // deno ships. For npm specs prepend `npm:` so the lookup
-            // resolves through deno's npm-compat path.
-            const spec
-                = options.package.startsWith("npm:")
-                    || options.package.startsWith("jsr:")
-                    || options.package.startsWith("https://")
-                    || options.package.startsWith("http://")
-                    || options.package.startsWith("file:")
-                    ? options.package
-                    : `npm:${options.package}`;
-
-            args.push("info", "--", spec);
-
-            if (options.json) {
-                args.push("--json");
-            }
-
-            if (options.fields.length > 0) {
-                warnings.push("deno info does not accept field selectors; ignoring.");
             }
 
             break;
@@ -984,8 +925,8 @@ interface RunDlxExtras extends RunOverrides {
      *
      * Implemented as a TS post-process rather than a native `DlxOptions`
      * field because the flag is purely additive and each PM has its own
-     * spelling: pnpm/npm/yarn-classic-fallback → `--offline`, deno →
-     * `--cached-only`. Bun and yarn berry have no offline dlx mode; the
+     * spelling: pnpm/npm/yarn-classic-fallback → `--offline`. Bun and
+     * yarn berry have no offline dlx mode; the
      * helper logs a warning and forwards the command unchanged so the
      * user knows their intent did not fully apply.
      */
@@ -1034,11 +975,6 @@ const applyDlxOffline = (resolved: ResolvedCommand, pm: InstallerInfo["name"], v
                     "bun x does not support --offline. Pre-install the package via `vis install` so bun x resolves from the local cache.",
                 ],
             };
-        }
-        case "deno": {
-            // deno run takes --cached-only. Insert after `run` and before
-            // `-A` to keep the flag list in flag-before-spec order.
-            return insertAt("--cached-only", 1);
         }
         case "npm": {
             // npm exec --offline. Insert at 1 (after `exec`); `--yes` and

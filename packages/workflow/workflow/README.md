@@ -38,7 +38,7 @@
 `ctx.step` / `ctx.sleep` / `ctx.waitForEvent` make it **resumable** — it survives process restarts, hour-long delays and
 waits for external events, replaying deterministically from an append-only history. It is **infra-free** (bring any
 store you already run), **ESM-only**, **tree-shakeable**, and **edge-ready** — the core is `fetch` + Web Crypto with zero
-Node built-ins, so it runs on Cloudflare Workers, Vercel Edge, Deno and Bun.
+Node built-ins, so it runs on Cloudflare Workers, Vercel Edge and Bun.
 
 The lifecycle (running → suspended/waiting → completed/failed) is modelled with [XState](https://stately.ai/docs), whose
 persisted snapshot is what your store keeps; durability is delegated to a small [`WorkflowStore`](#bring-your-own-store)
@@ -211,7 +211,7 @@ race-free cross-process exclusion (see the concurrency note above).
 ## Runtime support
 
 The engine core and the in-memory / unstorage stores are `fetch` + Web Crypto only — no `node:*` — so they run on
-**Node.js**, **Cloudflare Workers**, **Vercel Edge**, **Deno** and **Bun**. Node-only durability (Postgres/Redis) lives
+**Node.js**, **Cloudflare Workers**, **Vercel Edge** and **Bun**. Node-only durability (Postgres/Redis) lives
 behind your own `WorkflowStore` adapter.
 
 ## Related

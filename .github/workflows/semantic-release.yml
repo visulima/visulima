@@ -76,7 +76,7 @@ jobs:
                   # Workflows that also run on pushes to release branches but must not
                   # gate (or time out) the release: Tests already passed on the PR that
                   # produced this commit and only runs here to warm the Nx cache and cover
-                  # the bun/deno legs, so a post-merge flake must not block publishing;
+                  # the bun legs, so a post-merge flake must not block publishing;
                   # Coverage baseline only
                   # reports to Codecov and runs the full suite (well past this deadline).
                   # Their jobs are looked up by workflow name each poll, as job names

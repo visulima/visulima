@@ -306,7 +306,7 @@ To opt **in** to only specific detectors, set the rest to `false` — there is n
 | App frameworks    | `nuxt`, `next`, `remix`, `astro`, `gatsby`, `docusaurus` — emit `build`, `dev`, `start`/`preview`/`serve`, plus framework-specific (`generate`, `develop`, …) |
 | Bundlers          | `vite`, `rolldown`, `tsdown`, `tsup`, `packem`, `rollup`, `webpack` — emit `build` (and `dev`/`preview` where the tool supports it)                           |
 | Server frameworks | `nest` — emits `build`, `dev`, `start`                                                                                                                        |
-| Test runners      | `vitest`, `jest`, `bun`, `deno`, `playwright`, `cypress` — emit `test`, `test:watch`, `test:e2e`, `cypress:open`                                              |
+| Test runners      | `vitest`, `jest`, `bun`, `playwright`, `cypress` — emit `test`, `test:watch`, `test:e2e`, `cypress:open`                                              |
 | Stories           | `storybook` — emits `storybook`, `build-storybook`                                                                                                            |
 | Typecheck / docs  | `typescript` (→ `typecheck`), `typedoc` (→ `docs`), `vitepress` (→ `docs:dev`, `docs:build`, `docs:preview`)                                                  |
 | Lint / format     | `eslint`, `prettier`, `biome`, `oxlint`, `oxfmt`, `stylelint` (→ `lint:css`), `knip` (→ `knip`)                                                               |
@@ -317,17 +317,17 @@ To opt **in** to only specific detectors, set the rest to `false` — there is n
 When two detectors would emit the same target name, the earlier one in the registry wins. Practical conflicts:
 
 - `build`: nuxt > next > remix > astro > gatsby > docusaurus > vite > nest > rolldown > tsdown > tsup > packem > rollup > webpack
-- `test`: vitest > jest > bun > deno
+- `test`: vitest > jest > bun
 - `test:e2e`: playwright > cypress
-- `lint`: eslint > biome > oxlint > deno
+- `lint`: eslint > biome > oxlint
 - `format` / `format:check`: prettier > biome > oxfmt
 - `db:*`: prisma > drizzle
 
-Stylelint and knip use distinct names (`lint:css`, `knip`) so they coexist with the primary linter. Mutating commands (`prettier --write`, `oxfmt`, `deno fmt`) deliberately omit `type` so the cache won't skip a re-format the user expected.
+Stylelint and knip use distinct names (`lint:css`, `knip`) so they coexist with the primary linter. Mutating commands (`prettier --write`, `oxfmt`) deliberately omit `type` so the cache won't skip a re-format the user expected.
 
 #### Trigger surface
 
-Most detectors fire when **either** a config file or a known dependency is present. Tools that frequently appear as transitive deps require a config file to avoid phantom targets — currently: `vite`, `rolldown`, `rollup`, `webpack`, `storybook`, `nest`, `remix`, `vitepress`, `bun`, `deno`, `changeset`. Detectors with a `fallbackDependency` (e.g. `vitest`) work even with the tool's default config (no `vitest.config.ts` needed).
+Most detectors fire when **either** a config file or a known dependency is present. Tools that frequently appear as transitive deps require a config file to avoid phantom targets — currently: `vite`, `rolldown`, `rollup`, `webpack`, `storybook`, `nest`, `remix`, `vitepress`, `bun`, `changeset`. Detectors with a `fallbackDependency` (e.g. `vitest`) work even with the tool's default config (no `vitest.config.ts` needed).
 
 ### Constraints
 
@@ -581,7 +581,7 @@ Pin which package manager runs `vis install`, `vis add`, `vis remove`, `vis upda
 ```typescript
 export default defineConfig({
     install: {
-        backend: "auto", // "auto" | "aube" | "pnpm" | "npm" | "yarn" | "bun" | "deno"
+        backend: "auto", // "auto" | "aube" | "pnpm" | "npm" | "yarn" | "bun"
     },
 });
 ```
@@ -590,7 +590,7 @@ export default defineConfig({
 | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
 | `"auto"` _(default)_                               | Use `aube` when it's on `PATH`, otherwise fall back to the lockfile-detected PM                                |
 | `"aube"`                                           | Always use aube. Errors with an actionable message when the binary is missing instead of silently falling back |
-| `"pnpm"` / `"npm"` / `"yarn"` / `"bun"` / `"deno"` | Pin to the named PM regardless of what's on PATH                                                               |
+| `"pnpm"` / `"npm"` / `"yarn"` / `"bun"`            | Pin to the named PM regardless of what's on PATH                                                               |
 
 #### Resolution precedence
 

@@ -2,7 +2,7 @@
  * Encodes a `Uint8Array` to a Base64 string in a runtime-agnostic way.
  *
  * Prefers the standardized `Uint8Array.prototype.toBase64` (Node ≥ 24, modern
- * browsers). Falls back to `btoa` (browsers/Deno) and finally to Node's
+ * browsers). Falls back to `btoa` (browsers) and finally to Node's
  * `Buffer`, so callers stay usable in xterm.js / browser bundles without
  * pulling in `node:buffer`.
  * @param data The bytes to encode.

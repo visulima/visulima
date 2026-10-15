@@ -9,8 +9,7 @@
  *   5. default → node
  *
  * Pure fs + path, so this hits the real filesystem via temp dirs — no
- * `#native` binding involved. Deno is deferred: explicit requests hard-error;
- * a detected deno.lock falls back to node with a notice.
+ * `#native` binding involved.
  */
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -84,7 +83,6 @@ describe(resolveRuntime, () => {
 
             expect(result.runtime).toBe("node");
             expect(result.source).toBe("default");
-            expect(result.deferredNotice).toBeUndefined();
         });
     });
 
@@ -134,29 +132,6 @@ describe(resolveRuntime, () => {
         });
     });
 
-    describe("deferred runtimes (deno)", () => {
-        it("hard-errors on an explicit --runtime deno", () => {
-            expect.hasAssertions();
-            expect(() => resolveRuntime(root, { env: {}, flag: "deno" })).toThrow(/not supported yet/i);
-        });
-
-        it("hard-errors on VIS_RUNTIME=deno", () => {
-            expect.hasAssertions();
-            expect(() => resolveRuntime(root, { env: { VIS_RUNTIME: "deno" } })).toThrow(/not supported yet/i);
-        });
-
-        it("falls back to node with a notice when deno.lock is detected", () => {
-            expect.hasAssertions();
-
-            touch("deno.lock");
-
-            const result = resolveRuntime(root, { env: {} });
-
-            expect(result.runtime).toBe("node");
-            expect(result.deferredNotice).toMatch(/deno/i);
-        });
-    });
-
     describe("validation", () => {
         it("hard-errors on an unknown runtime", () => {
             expect.hasAssertions();
@@ -171,7 +146,6 @@ describe(resolveRuntime, () => {
             const result = resolveRuntime(root, { env: {} });
 
             expect(result.adapter.id).toBe("bun");
-            expect(result.adapter.scriptSource).toBe("package.json");
         });
     });
 });

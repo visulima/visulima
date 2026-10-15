@@ -255,9 +255,6 @@
                         "biome": {
                             "$ref": "#/$defs/LintFmtAdapterOverride"
                         },
-                        "deno-fmt": {
-                            "$ref": "#/$defs/LintFmtAdapterOverride"
-                        },
                         "dprint": {
                             "$ref": "#/$defs/LintFmtAdapterOverride"
                         },
@@ -290,7 +287,7 @@
                 }
             },
             "additionalProperties": false,
-            "description": "Configuration for `vis fmt` — the formatter orchestrator.\n\nTunes adapter detection precedence, per-extension routing, and per-adapter overrides. Flags on the CLI always win over config.\n\nThe default fmt precedence is `oxfmt → biome → dprint → prettier → deno-fmt`. When multiple adapters claim the same extension, the first in this order owns it unless overridden here."
+            "description": "Configuration for `vis fmt` — the formatter orchestrator.\n\nTunes adapter detection precedence, per-extension routing, and per-adapter overrides. Flags on the CLI always win over config.\n\nThe default fmt precedence is `oxfmt → biome → dprint → prettier`. When multiple adapters claim the same extension, the first in this order owns it unless overridden here."
         },
         "gem": {
             "type": "object",
@@ -367,7 +364,7 @@
                     "type": "boolean"
                 }
             ],
-            "description": "Auto-create targets from detected config files (Project Crystal-style). Detectors run by default; set `false` to disable them entirely, or use the object form to disable individual ones. See the note at the bottom of this block for what \"unset\" allows versus an explicit `true`.\n\nInferred targets sit *below* explicit ones — the command from `package.json#scripts`, `project.json#targets`, or `vis.task.ts` always wins per-key, so enrichment never changes what runs. As a caching aid, when a `package.json` script's command *is* a detector's command (optionally with extra flags, no shell chaining) and the script declares no `inputs`/`outputs`, the detector's `inputs`/`outputs` are adopted so the script target can cache precisely and restore its artifacts. Customised/compound scripts are left untouched.\n\nBuilt-in detectors and the targets they synthesize:\n\n- **App frameworks** — `nuxt` (build/dev/preview/generate),   `next` (build/dev/start), `remix` (build/dev/start), `astro`   (build/dev), `gatsby` (build/develop/serve), `docusaurus`   (build/start/serve).\n- **Bundlers** — `vite` (build/dev/preview), `rolldown` (build),   `tsdown` (build), `tsup` (build), `packem` (build), `rollup`   (build), `webpack` (build).\n- **Docs sites** — `vitepress` (docs:build/docs:dev/docs:preview),   `typedoc` (docs).\n- **Server frameworks** — `nest` (build/start/start:dev).\n- **Test runners** — `vitest` (test/test:watch), `jest`   (test/test:watch), `bun` (test), `playwright` (test:e2e),   `cypress` (test:e2e/cypress:open).\n- **Stories** — `storybook` (storybook/build-storybook).\n- **Type checking** — `typescript` (typecheck via `tsc --noEmit`).\n- **Lint / format** — `eslint` (lint), `prettier` (format /   format:check), `biome` (lint, format), `oxlint` (lint),   `oxfmt` (format / format:check), `stylelint` (lint:css),   `knip` (knip).\n- **Runtimes** — `deno` (test/lint/fmt/check).\n- **Database tooling** — `prisma` (db:generate/db:migrate/   db:push/db:studio), `drizzle` (db:generate/db:migrate/   db:push/db:studio).\n- **Codegen / release** — `graphql-codegen` (codegen),   `api-extractor` (api-extract), `changeset` (changeset:version /   changeset:publish / changeset:status).\n\nTrigger: presence of any matching config file in the project root. Most detectors additionally match when their framework appears in `dependencies` / `devDependencies` / `peerDependencies` / `optionalDependencies` — covering convention-only setups (e.g. vitest with default config). Detectors that intentionally require a config file (because the package frequently appears transitively and a dep-only match would synthesize broken commands): `vite`, `rolldown`, `rollup`, `webpack`, `storybook`, `nest`, `remix`, `vitepress`, `bun`, `deno`, `changeset`.\n\nConflict resolution: detectors are evaluated in registration order (see `BUILT_IN_DETECTORS`) and the first to claim a target name wins. Per-name priorities: `build` → nuxt > next > remix > astro > gatsby > docusaurus > vite > nest > rolldown > tsdown > tsup > packem > rollup > webpack; `test` → vitest > jest > bun > deno; `test:e2e` → playwright > cypress; `lint` → eslint > biome > oxlint > deno; `format` → prettier > biome > oxfmt; `db:*` → prisma > drizzle.\n\nAlso accepts an object form (`{ vite: false, vitest: true }`) to opt individual detectors in or out by name. Detectors omitted from the object run at their default (enabled). Useful when one detector misfires for a given workspace without disabling the rest.\n\n**Leaving this unset is not the same as setting `true`.** Detectors always *enrich* the targets a project already has — adopting their `type`, `inputs` and `outputs`, which is the caching aid and changes nothing about what runs. *Synthesizing* a target the project never had does change what runs, so on the unset default it is limited to projects that declare no scripts and no targets of their own. Setting this to `true` (or the object form) opts in to synthesis everywhere.\n\nThe distinction exists because a package can deliberately omit a script: a shared eslint-config ships an `eslint.config.js` but no `lint` script, because linting its own flat-config export crashes eslint. Synthesizing `lint` there turned a package `pnpm -r run lint` had always skipped into a failing task, on a workspace that had never asked for inference.\n\nDeliberately no `@default` tag: there is no single value that describes the unset behaviour, and advertising `true` would invite tooling to write it into a config and silently widen synthesis."
+            "description": "Auto-create targets from detected config files (Project Crystal-style). Detectors run by default; set `false` to disable them entirely, or use the object form to disable individual ones. See the note at the bottom of this block for what \"unset\" allows versus an explicit `true`.\n\nInferred targets sit *below* explicit ones — the command from `package.json#scripts`, `project.json#targets`, or `vis.task.ts` always wins per-key, so enrichment never changes what runs. As a caching aid, when a `package.json` script's command *is* a detector's command (optionally with extra flags, no shell chaining) and the script declares no `inputs`/`outputs`, the detector's `inputs`/`outputs` are adopted so the script target can cache precisely and restore its artifacts. Customised/compound scripts are left untouched.\n\nBuilt-in detectors and the targets they synthesize:\n\n- **App frameworks** — `nuxt` (build/dev/preview/generate),   `next` (build/dev/start), `remix` (build/dev/start), `astro`   (build/dev), `gatsby` (build/develop/serve), `docusaurus`   (build/start/serve).\n- **Bundlers** — `vite` (build/dev/preview), `rolldown` (build),   `tsdown` (build), `tsup` (build), `packem` (build), `rollup`   (build), `webpack` (build).\n- **Docs sites** — `vitepress` (docs:build/docs:dev/docs:preview),   `typedoc` (docs).\n- **Server frameworks** — `nest` (build/start/start:dev).\n- **Test runners** — `vitest` (test/test:watch), `jest`   (test/test:watch), `bun` (test), `playwright` (test:e2e),   `cypress` (test:e2e/cypress:open).\n- **Stories** — `storybook` (storybook/build-storybook).\n- **Type checking** — `typescript` (typecheck via `tsc --noEmit`).\n- **Lint / format** — `eslint` (lint), `prettier` (format /   format:check), `biome` (lint, format), `oxlint` (lint),   `oxfmt` (format / format:check), `stylelint` (lint:css),   `knip` (knip).\n- **Database tooling** — `prisma` (db:generate/db:migrate/   db:push/db:studio), `drizzle` (db:generate/db:migrate/   db:push/db:studio).\n- **Codegen / release** — `graphql-codegen` (codegen),   `api-extractor` (api-extract), `changeset` (changeset:version /   changeset:publish / changeset:status).\n\nTrigger: presence of any matching config file in the project root. Most detectors additionally match when their framework appears in `dependencies` / `devDependencies` / `peerDependencies` / `optionalDependencies` — covering convention-only setups (e.g. vitest with default config). Detectors that intentionally require a config file (because the package frequently appears transitively and a dep-only match would synthesize broken commands): `vite`, `rolldown`, `rollup`, `webpack`, `storybook`, `nest`, `remix`, `vitepress`, `bun`, `changeset`.\n\nConflict resolution: detectors are evaluated in registration order (see `BUILT_IN_DETECTORS`) and the first to claim a target name wins. Per-name priorities: `build` → nuxt > next > remix > astro > gatsby > docusaurus > vite > nest > rolldown > tsdown > tsup > packem > rollup > webpack; `test` → vitest > jest > bun; `test:e2e` → playwright > cypress; `lint` → eslint > biome > oxlint; `format` → prettier > biome > oxfmt; `db:*` → prisma > drizzle.\n\nAlso accepts an object form (`{ vite: false, vitest: true }`) to opt individual detectors in or out by name. Detectors omitted from the object run at their default (enabled). Useful when one detector misfires for a given workspace without disabling the rest.\n\n**Leaving this unset is not the same as setting `true`.** Detectors always *enrich* the targets a project already has — adopting their `type`, `inputs` and `outputs`, which is the caching aid and changes nothing about what runs. *Synthesizing* a target the project never had does change what runs, so on the unset default it is limited to projects that declare no scripts and no targets of their own. Setting this to `true` (or the object form) opts in to synthesis everywhere.\n\nThe distinction exists because a package can deliberately omit a script: a shared eslint-config ships an `eslint.config.js` but no `lint` script, because linting its own flat-config export crashes eslint. Synthesizing `lint` there turned a package `pnpm -r run lint` had always skipped into a failing task, on a workspace that had never asked for inference.\n\nDeliberately no `@default` tag: there is no single value that describes the unset behaviour, and advertising `true` would invite tooling to write it into a config and silently widen synthesis."
         },
         "install": {
             "type": "object",
@@ -395,7 +392,7 @@
                             "type": "boolean"
                         }
                     ],
-                    "description": "Whether to dispatch PM invocations through `corepack`.\n- `\"auto\"` (default): use corepack only when the workspace   pins a PM via the `packageManager` field AND `corepack` is   on PATH AND the PM is one corepack manages (pnpm/yarn/npm).\n- `true`: always prefix `corepack` when the binary is on PATH   and the PM is corepack-managed (errors loudly otherwise).\n- `false`: never go through corepack — invoke the PM directly.\n\nMirrors nypm's `corepack: true` flag. Bun, deno, and aube are never wrapped — corepack does not manage them.",
+                    "description": "Whether to dispatch PM invocations through `corepack`.\n- `\"auto\"` (default): use corepack only when the workspace   pins a PM via the `packageManager` field AND `corepack` is   on PATH AND the PM is one corepack manages (pnpm/yarn/npm).\n- `true`: always prefix `corepack` when the binary is on PATH   and the PM is corepack-managed (errors loudly otherwise).\n- `false`: never go through corepack — invoke the PM directly.\n\nMirrors nypm's `corepack: true` flag. Bun and aube are never wrapped — corepack does not manage them.",
                     "default": "auto"
                 }
             },
@@ -409,9 +406,6 @@
                     "type": "object",
                     "properties": {
                         "biome": {
-                            "$ref": "#/$defs/LintFmtAdapterOverride"
-                        },
-                        "deno-lint": {
                             "$ref": "#/$defs/LintFmtAdapterOverride"
                         },
                         "eslint": {
@@ -448,7 +442,7 @@
                 }
             },
             "additionalProperties": false,
-            "description": "Configuration for `vis lint` — the linter orchestrator.\n\nTunes adapter detection precedence and per-adapter overrides. Flags on the CLI always win over config.\n\nThe default lint precedence is `oxlint → biome → eslint → stylelint → deno-lint`. Override with `order` to e.g. let biome fire before oxlint when the workspace standardises on biome."
+            "description": "Configuration for `vis lint` — the linter orchestrator.\n\nTunes adapter detection precedence and per-adapter overrides. Flags on the CLI always win over config.\n\nThe default lint precedence is `oxlint → biome → eslint → stylelint`. Override with `order` to e.g. let biome fire before oxlint when the workspace standardises on biome."
         },
         "maven": {
             "type": "object",
@@ -3639,9 +3633,6 @@
                         "bun": {
                             "type": "string"
                         },
-                        "deno": {
-                            "type": "string"
-                        },
                         "go": {
                             "type": "string"
                         },
@@ -3939,7 +3930,6 @@
             "type": "string",
             "enum": [
                 "biome",
-                "deno-fmt",
                 "dprint",
                 "oxfmt",
                 "prettier",
@@ -3951,7 +3941,6 @@
             "type": "string",
             "enum": [
                 "biome",
-                "deno-lint",
                 "eslint",
                 "markdownlint",
                 "oxlint",
@@ -5122,17 +5111,6 @@
                     },
                     "description": "Per-package `extra-files` rules with paths relative to the package directory. Merged with workspace-level `release.publish.extraFiles` (per-package wins on path collision)."
                 },
-                "jsrConfigPath": {
-                    "type": "string",
-                    "description": "Relative path from the package directory to the JSR manifest (`jsr.json` or `deno.json`) for the `jsr` versionActions. Set automatically by the `jsr()` preset from its `manifestPath` option. Defaults to `\"jsr.json\"`."
-                },
-                "jsrPublishArgs": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    },
-                    "description": "Extra arguments forwarded verbatim to `jsr publish` for the `jsr` versionActions (the `jsr()` preset wires this from its `publishArgs` / `allowSlowTypes` options). The most common entry is `\"--allow-slow-types\"`, which JSR requires for packages whose public API has types it can't statically infer. `--allow-dirty` is always passed by vis (the version is bumped on disk before publish) and need not be listed here."
-                },
                 "managed": {
                     "type": "boolean",
                     "description": "Hard opt-in/out — overrides every other rule."
@@ -5194,7 +5172,7 @@
                 },
                 "versionActions": {
                     "type": "string",
-                    "description": "Built-in id (`\"npm\"`, `\"native-addon\"`, `\"private\"`, `\"shell\"`, `\"cargo\"`, `\"python\"`, `\"maven\"`, `\"container\"`, `\"jsr\"`) or a path to a custom implementation module."
+                    "description": "Built-in id (`\"npm\"`, `\"native-addon\"`, `\"private\"`, `\"shell\"`, `\"cargo\"`, `\"python\"`, `\"maven\"`, `\"container\"`) or a path to a custom implementation module."
                 },
                 "versionFiles": {
                     "type": "array",
@@ -5715,7 +5693,7 @@
                 "bun",
                 "node"
             ],
-            "description": "JS runtimes vis can target today. `\"deno\"` is deferred."
+            "description": "JS runtimes vis can target today."
         },
         "ScopedTasksBlock": {
             "type": "object",

@@ -6,17 +6,15 @@ import type { AdapterId, AdapterKind, ToolAdapter, ToolPresence } from "./config
  * After filtering by `kind` (or `both`), the resulting sequence
  * becomes:
  *
- *   lint: oxlint → biome → eslint → stylelint → deno-lint → typecheck
- *   fmt:  oxfmt  → biome → dprint → prettier → deno-fmt
+ *   lint: oxlint → biome → eslint → stylelint → typecheck
+ *   fmt:  oxfmt  → biome → dprint → prettier
  *
  * Rust-native tools come first so they get a chance to short-circuit
  * cheap classes of issues before slower tools run. Biome sits in the
  * middle because it's "both": its lint position is between oxlint and
  * eslint; its fmt position between oxfmt and dprint. Stylelint is a
  * CSS-only late entry — it never collides on JS/TS files so order
- * with the others doesn't matter. Deno's two adapters come last
- * because Deno workspaces typically don't co-exist with the npm
- * toolchain; when they do, the npm-native tooling wins.
+ * with the others doesn't matter.
  *
  * Users can override with `lint.order` / `fmt.order` in
  * `vis.config.ts`. Adapters are imported lazily by their consumers —
@@ -35,8 +33,6 @@ const ADAPTER_ORDER: ReadonlyArray<AdapterId> = [
     "ruff-fmt",
     "markdownlint",
     "shellcheck",
-    "deno-lint",
-    "deno-fmt",
     "typecheck",
 ];
 
@@ -190,4 +186,27 @@ const resolveAdapterForExtension = (
     }
 
     return undefined;
+};
+
+/**
+ * Warn about `order` / `adapters` entries that name no adapter vis knows.
+ * Those keys are otherwise skipped without a word, so a leftover such as
+ * `deno-fmt` after the Deno removal quietly falls back to the defaults.
+ * @param logger Console-like sink for the warning.
+ * @param scope Config section the entries came from, for the message.
+ * @param config The `lint` or `fmt` config section, if any.
+ */
+export const warnUnknownAdapterIds = (
+    logger: Pick<Console, "warn">,
+    scope: "fmt" | "lint",
+    config: { adapters?: Partial<Record<string, unknown>>; order?: ReadonlyArray<string> } | undefined,
+): void => {
+    const known = new Set<string>(ADAPTER_ORDER);
+    const named = new Set([...(config?.order ?? []), ...Object.keys(config?.adapters ?? {})]);
+
+    for (const id of named) {
+        if (!known.has(id)) {
+            logger.warn(`vis.config ${scope}: unknown adapter "${id}" is ignored.`);
+        }
+    }
 };

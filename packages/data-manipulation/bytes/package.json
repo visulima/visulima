@@ -77,7 +77,6 @@
         "@arethetypeswrong/cli": "catalog:dev",
         "@cloudflare/vitest-pool-workers": "catalog:test",
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
-        "@std/bytes": "jsr:1.0.6",
         "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
         "@visulima/packem": "catalog:dev",

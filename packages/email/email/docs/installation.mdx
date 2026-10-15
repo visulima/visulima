@@ -38,7 +38,7 @@ pnpm add @visulima/email
 
 ### Universal Runtimes
 
-The following providers work in **Node.js**, **Deno**, **Bun**, and **Cloudflare Workers**:
+The following providers work in **Node.js**, **Bun**, and **Cloudflare Workers**:
 
 - **Resend** - Uses Fetch API
 - **Brevo** - Uses Fetch API
@@ -76,36 +76,36 @@ The following providers require Node.js built-in modules (`node:crypto`, `node:n
 
 ### Runtime Compatibility Table
 
-| Provider      | Node.js | Deno | Bun  | Cloudflare Workers |
-| ------------- | ------- | ---- | ---- | ------------------ |
-| Resend        | ✅      | ✅   | ✅   | ✅                 |
-| Brevo         | ✅      | ✅   | ✅   | ✅                 |
-| Mailgun       | ✅      | ✅   | ✅   | ✅                 |
-| Mailjet       | ✅      | ✅   | ✅   | ✅                 |
-| MailerSend    | ✅      | ✅   | ✅   | ✅                 |
-| Mandrill      | ✅      | ✅   | ✅   | ✅                 |
-| MailPace      | ✅      | ✅   | ✅   | ✅                 |
-| Mailtrap      | ✅      | ✅   | ✅   | ✅                 |
-| Postal        | ✅      | ✅   | ✅   | ✅                 |
-| Postmark      | ✅      | ✅   | ✅   | ✅                 |
-| Azure         | ✅      | ✅   | ✅   | ✅                 |
-| Infobip       | ✅      | ✅   | ✅   | ✅                 |
-| Scaleway      | ✅      | ✅   | ✅   | ✅                 |
-| AhaSend       | ✅      | ✅   | ✅   | ✅                 |
-| Mailomat      | ✅      | ✅   | ✅   | ✅                 |
-| Sweego        | ✅      | ✅   | ✅   | ✅                 |
-| SendGrid      | ✅      | ✅   | ✅   | ✅                 |
-| Zeptomail     | ✅      | ✅   | ✅   | ✅                 |
-| Plunk         | ✅      | ✅   | ✅   | ✅                 |
-| HTTP          | ✅      | ✅   | ✅   | ✅                 |
-| Mock          | ✅      | ✅   | ✅   | ✅                 |
-| AWS SES       | ✅      | ❌   | ❌   | ❌                 |
-| SMTP          | ✅      | ❌   | ❌   | ❌                 |
-| MailCrab      | ✅      | ❌   | ❌   | ❌                 |
-| Nodemailer    | ✅      | ❌   | ❌   | ❌                 |
-| Failover      | ✅\*    | ✅\* | ✅\* | ✅\*               |
-| Round Robin   | ✅\*    | ✅\* | ✅\* | ✅\*               |
-| OpenTelemetry | ✅\*    | ✅\* | ✅\* | ✅\*               |
+| Provider      | Node.js | Bun  | Cloudflare Workers |
+| ------------- | ------- | ---- | ------------------ |
+| Resend        | ✅      | ✅   | ✅                 |
+| Brevo         | ✅      | ✅   | ✅                 |
+| Mailgun       | ✅      | ✅   | ✅                 |
+| Mailjet       | ✅      | ✅   | ✅                 |
+| MailerSend    | ✅      | ✅   | ✅                 |
+| Mandrill      | ✅      | ✅   | ✅                 |
+| MailPace      | ✅      | ✅   | ✅                 |
+| Mailtrap      | ✅      | ✅   | ✅                 |
+| Postal        | ✅      | ✅   | ✅                 |
+| Postmark      | ✅      | ✅   | ✅                 |
+| Azure         | ✅      | ✅   | ✅                 |
+| Infobip       | ✅      | ✅   | ✅                 |
+| Scaleway      | ✅      | ✅   | ✅                 |
+| AhaSend       | ✅      | ✅   | ✅                 |
+| Mailomat      | ✅      | ✅   | ✅                 |
+| Sweego        | ✅      | ✅   | ✅                 |
+| SendGrid      | ✅      | ✅   | ✅                 |
+| Zeptomail     | ✅      | ✅   | ✅                 |
+| Plunk         | ✅      | ✅   | ✅                 |
+| HTTP          | ✅      | ✅   | ✅                 |
+| Mock          | ✅      | ✅   | ✅                 |
+| AWS SES       | ✅      | ❌   | ❌                 |
+| SMTP          | ✅      | ❌   | ❌                 |
+| MailCrab      | ✅      | ❌   | ❌                 |
+| Nodemailer    | ✅      | ❌   | ❌                 |
+| Failover      | ✅\*    | ✅\* | ✅\*               |
+| Round Robin   | ✅\*    | ✅\* | ✅\*               |
+| OpenTelemetry | ✅\*    | ✅\* | ✅\*               |
 
 \* Runtime support depends on the wrapped providers. Works if all wrapped providers support the runtime.
 

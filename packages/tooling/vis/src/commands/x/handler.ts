@@ -11,7 +11,7 @@ import { runFile } from "./run-file";
  * in help/completion and works through the full CLI (where the vis-config
  * `runtime:` pin is honoured). Shares the actual execution with `run-file.ts`.
  */
-const execute = async ({ argument, logger, options, rawUnknown, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, XOptions>): Promise<void> => {
+const execute = async ({ argument, options, rawUnknown, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, XOptions>): Promise<void> => {
     const positionals = argument ?? [];
     const [file, ...rest] = positionals;
 
@@ -24,7 +24,7 @@ const execute = async ({ argument, logger, options, rawUnknown, visConfig, works
     // Positional args after the file, plus anything after `--`.
     const scriptArguments = [...rest, ...(rawUnknown ?? [])];
 
-    const { runtime } = resolveCommandRuntime({ logger, options, visConfig }, wsRoot ?? cwd);
+    const { runtime } = resolveCommandRuntime({ options, visConfig }, wsRoot ?? cwd);
 
     const code = await runFile(absoluteFile, scriptArguments, runtime, cwd);
 

@@ -28,8 +28,6 @@ describe(runtimeVersionCheckPlugin, () => {
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
         delete (globalThis as any).Bun;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-        delete (globalThis as any).Deno;
 
         if (originalEnvValue === undefined) {
             delete process.env.CEREBRO_MIN_NODE_VERSION;
@@ -139,58 +137,5 @@ describe(runtimeVersionCheckPlugin, () => {
 
         expect(context.logger.error).toHaveBeenCalledWith(expect.stringContaining("cerebro requires bun"));
         expect(exitSpy).toHaveBeenCalledWith(1);
-    });
-
-    it("detects Deno and validates against the provided deno requirement", async () => {
-        expect.assertions(1);
-
-        const denoExit = vi.fn();
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-        (globalThis as any).Deno = {
-            env: {
-                get: () => undefined,
-                has: () => false,
-                set: () => {},
-                toObject: () => {
-                    return {};
-                },
-            },
-            exit: denoExit,
-            version: { deno: "2.1.0" },
-        };
-
-        const context = createContext();
-
-        await runtimeVersionCheckPlugin({ runtimes: { deno: { minVersion: 1 } } }).init?.(context);
-
-        expect(denoExit).not.toHaveBeenCalled();
-    });
-
-    it("detects Deno with a missing version object and exits when below the requirement", () => {
-        expect.assertions(2);
-
-        const denoExit = vi.fn();
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-        (globalThis as any).Deno = {
-            env: {
-                get: () => undefined,
-                has: () => false,
-                set: () => {},
-                toObject: () => {
-                    return {};
-                },
-            },
-            exit: denoExit,
-        };
-
-        const context = createContext();
-
-        // The runtime-process Deno exit wrapper throws after calling exit because
-        // the mocked exit returns instead of terminating the process.
-        expect(() => runtimeVersionCheckPlugin({ runtimes: { deno: { minVersion: 5 } } }).init?.(context)).toThrow("Deno exit failed");
-
-        expect(denoExit).toHaveBeenCalledWith(1);
     });
 });

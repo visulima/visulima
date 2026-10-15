@@ -1,6 +1,6 @@
 # Modern Frameworks (Fetch API)
 
-Use Visulima upload with modern frameworks that support the Web Fetch API, including Hono, Cloudflare Workers, Deno, Bun, and other Web API environments.
+Use Visulima upload with modern frameworks that support the Web Fetch API, including Hono, Cloudflare Workers, Bun, and other Web API environments.
 
 ## Installation
 
@@ -28,7 +28,6 @@ Visulima Storage provides framework-specific import paths for convenience:
 - **`@visulima/storage/handler/http/hono`** - Hono framework (includes `createStorageHandler` helper)
 - **`@visulima/storage/handler/http/bun`** - Bun runtime (alias for fetch)
 - **`@visulima/storage/handler/http/cloudflare`** - Cloudflare Workers (alias for fetch)
-- **`@visulima/storage/handler/http/deno`** - Deno runtime (alias for fetch)
 - **`@visulima/storage/handler/http/edge`** - Edge runtimes (Vercel, Netlify) (alias for fetch)
 
 > **Note**: Most framework-specific paths are aliases to `./handler/http/fetch`. The Hono path (`/handler/http/hono`) provides an additional `createStorageHandler` function that automatically registers routes. Use the framework-specific path for clarity, or use the generic `fetch` path - both work identically.
@@ -180,53 +179,6 @@ export default {
 ```ts
 import { S3Storage } from "@visulima/storage/provider/aws";
 import { Multipart } from "@visulima/storage/handler/http/fetch";
-```
-
-## Deno
-
-Deno provides native TypeScript support and Web API compatibility.
-
-### Using Framework-Specific Import
-
-```ts
-import { DiskStorage } from "npm:@visulima/storage";
-import { Multipart } from "npm:@visulima/storage/handler/http/deno";
-```
-
-### Using Generic Fetch Import
-
-```ts
-import { DiskStorage } from "npm:@visulima/storage";
-import { Multipart } from "npm:@visulima/storage/handler/http/fetch";
-
-// Initialize storage and handler
-const storage = new DiskStorage({ directory: "./uploads" });
-const multipart = new Multipart({ storage });
-
-// HTTP server
-Deno.serve(async (request: Request) => {
-    const url = new URL(request.url);
-
-    try {
-        // Route requests
-        if (url.pathname === "/upload" && request.method === "POST") {
-            return await multipart.fetch(request);
-        }
-
-        if (url.pathname === "/files" && request.method === "GET") {
-            return await multipart.fetch(request);
-        }
-
-        if (url.pathname.startsWith("/files/") && request.method === "GET") {
-            return await multipart.fetch(request);
-        }
-
-        return new Response("Not found", { status: 404 });
-    } catch (error) {
-        console.error("Request error:", error);
-        return Response.json({ error: "Internal server error" }, { status: 500 });
-    }
-});
 ```
 
 ## Bun
@@ -477,7 +429,6 @@ The `fetch` method works with any framework or runtime that supports the Web Fet
 
 - **Hono** - Lightweight web framework (use `/handler/http/hono`)
 - **Cloudflare Workers** - Serverless functions (use `/handler/http/cloudflare`)
-- **Deno** - Secure runtime (use `/handler/http/deno`)
 - **Bun** - Fast JavaScript runtime (use `/handler/http/bun`)
 - **Next.js 15+** - With Web API support (use `/handler/http/fetch` or `/handler/http/edge`)
 - **Vercel Edge Functions** - Serverless edge functions (use `/handler/http/edge`)
