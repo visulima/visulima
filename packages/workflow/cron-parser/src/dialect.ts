@@ -129,7 +129,7 @@ const DIALECTS: Record<CronDialect, { features: CronFeatures; rules: CronRules }
  * @returns The resolved features and rules.
  * @throws {CronParseError} When the dialect is not one of the named ones.
  */
-const resolveFeatures = (dialect?: CronDialect, features?: Partial<CronFeatures>): ResolvedFeatures => {
+const resolveFeatures = (dialect?: CronDialect, features?: Partial<Omit<CronFeatures, "seconds">>, seconds?: CronSeconds): ResolvedFeatures => {
     const name = dialect ?? "extended";
 
     if (!Object.hasOwn(DIALECTS, name)) {
@@ -141,7 +141,7 @@ const resolveFeatures = (dialect?: CronDialect, features?: Partial<CronFeatures>
 
     const preset = DIALECTS[name];
 
-    return { ...preset.features, ...features, ...preset.rules };
+    return { ...preset.features, ...features, ...seconds === undefined ? {} : { seconds }, ...preset.rules };
 };
 
 export { resolveFeatures };

@@ -147,8 +147,8 @@ describe("the dialect option", () => {
         expect(() => CronExpressionParser.parse("0 0 * * *", { strict: true })).not.toThrow();
         expect(() => CronExpressionParser.parse("0 0 0 * * *", { strict: true })).not.toThrow();
         expect(() => CronExpressionParser.parse("0 0 * *", { strict: true })).toThrow(CronParseError);
-        expect(() => CronExpressionParser.parse("0 0 * * *", { features: { seconds: "require" }, strict: true })).toThrow(CronParseError);
-        expect(() => CronExpressionParser.parse("0 0 0 * * *", { features: { seconds: "forbid" }, strict: true })).toThrow(CronParseError);
+        expect(() => CronExpressionParser.parse("0 0 * * *", { seconds: "require", strict: true })).toThrow(CronParseError);
+        expect(() => CronExpressionParser.parse("0 0 0 * * *", { seconds: "forbid", strict: true })).toThrow(CronParseError);
     });
 
     it("rejects a dialect it does not know", () => {
@@ -160,10 +160,10 @@ describe("the dialect option", () => {
     it("treats the seconds field as forbidden, optional or required", () => {
         expect.hasAssertions();
 
-        expect(() => CronExpressionParser.parse("0 0 0 * * *", { features: { seconds: "forbid" } })).toThrow(CronParseError);
-        expect(() => CronExpressionParser.parse("0 0 0 * * *", { features: { seconds: "require" } })).not.toThrow();
-        expect(() => CronExpressionParser.parse("0 0 * * *", { features: { seconds: "require" } })).toThrow(CronParseError);
-        expect(() => CronExpressionParser.parse("0 0 * * *", { features: { seconds: "optional" } })).not.toThrow();
+        expect(() => CronExpressionParser.parse("0 0 0 * * *", { seconds: "forbid" })).toThrow(CronParseError);
+        expect(() => CronExpressionParser.parse("0 0 0 * * *", { seconds: "require" })).not.toThrow();
+        expect(() => CronExpressionParser.parse("0 0 * * *", { seconds: "require" })).toThrow(CronParseError);
+        expect(() => CronExpressionParser.parse("0 0 * * *", { seconds: "optional" })).not.toThrow();
     });
 
     it("reports the extensions an expression is made of", () => {

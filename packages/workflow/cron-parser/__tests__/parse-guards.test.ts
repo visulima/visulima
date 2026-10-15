@@ -20,14 +20,14 @@ describe("nicknames under a forbidden seconds field", () => {
     it("judges the field count on the written expression, not on the six field expansion", () => {
         expect.hasAssertions();
 
-        expect(() => CronExpressionParser.parse("@daily", { ...atStart, features: { seconds: "forbid" } })).not.toThrow();
+        expect(() => CronExpressionParser.parse("@daily", { ...atStart, seconds: "forbid" })).not.toThrow();
         expect(() => CronExpressionParser.parse("@daily", { ...atStart, dialect: "cloudflare", features: { nicknames: true } })).not.toThrow();
     });
 
     it("still rejects a six field expression when seconds are forbidden", () => {
         expect.hasAssertions();
 
-        expect(errorFrom("0 0 0 * * *", { features: { seconds: "forbid" } }).code).toBe("FIELD_COUNT");
+        expect(errorFrom("0 0 0 * * *", { seconds: "forbid" }).code).toBe("FIELD_COUNT");
     });
 
     it("falls back to every minute for an empty expression under a five field dialect", () => {

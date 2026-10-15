@@ -1,6 +1,6 @@
 import { CronDate } from "./cron-date";
 import type { CronFieldCollection } from "./cron-field-collection";
-import type { CronDialect, CronFeature, CronFeatures } from "./dialect";
+import type { CronDialect, CronFeature, CronFeatures, CronSeconds } from "./dialect";
 import { readDayOfMonthText } from "./fields/day-of-month-text";
 import type { ScheduleSpec } from "./schedule";
 import { findRun } from "./schedule";
@@ -11,10 +11,11 @@ type CronExpressionOptions = {
     /** The named grammar to hold the expression to; `extended` when none is given. */
     dialect?: CronDialect;
     endDate?: Date | string | number | CronDate;
-    expression?: string;
-    /** Syntax to turn on or off on top of the dialect. */
-    features?: Partial<CronFeatures>;
+    /** Syntax to turn on or off on top of the dialect. `seconds` has its own option, below. */
+    features?: Partial<Omit<CronFeatures, "seconds">>;
     hashSeed?: string;
+    /** Whether a sixth, seconds field is forbidden, allowed or required; the dialect's setting when none is given. */
+    seconds?: CronSeconds;
     startDate?: Date | string | number | CronDate;
     strict?: boolean;
     tz?: string;
@@ -38,6 +39,9 @@ const LOOPS_LIMIT_EXCEEDED_ERROR_MESSAGE = "Invalid expression, loop limit excee
  */
 class CronExpression {
     readonly #options: CronExpressionOptions;
+
+    /** The expression as it was written, or as a nickname expanded it; `toString` reports it. */
+    readonly #source?: string;
 
     readonly #tz?: string;
 
@@ -70,9 +74,12 @@ class CronExpression {
      * @param fields The parsed fields.
      * @param options Where to start, the time zone and the bounds.
      * @param usedFeatures The syntax extensions the expression is made of, when it was parsed.
+     * @param source The expression as it was written, when it was parsed from text.
+     * @internal
      */
-    public constructor(fields: CronFieldCollection, options: CronExpressionOptions, usedFeatures?: Iterable<CronFeature>) {
+    public constructor(fields: CronFieldCollection, options: CronExpressionOptions, usedFeatures?: Iterable<CronFeature>, source?: string) {
         this.#options = options;
+        this.#source = source;
         this.#usedFeatures = new Set(usedFeatures);
         this.#tz = options.tz;
         this.#fields = fields;
@@ -165,8 +172,13 @@ class CronExpression {
         for (let remaining = Math.abs(limit); remaining > 0; remaining -= 1) {
             try {
                 items.push(step());
-            } catch {
-                break;
+            } catch (error) {
+                // Running out of the span is the normal end of a bounded run; anything else is a real failure.
+                if (error instanceof Error && error.message === TIME_SPAN_OUT_OF_BOUNDS_ERROR_MESSAGE) {
+                    break;
+                }
+
+                throw error;
             }
         }
 
@@ -211,7 +223,7 @@ class CronExpression {
      * @returns The expression as given, or rebuilt from its fields.
      */
     public toString(): string {
-        return this.#options.expression ?? this.stringify(true);
+        return this.#source ?? this.stringify(true);
     }
 
     /**

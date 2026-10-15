@@ -133,7 +133,7 @@ class CronExpressionParser {
     public static parse(expression: string, options: CronExpressionOptions = {}): CronExpression {
         const { hashSeed, strict = false } = options;
         const context: ParseContext = {
-            features: resolveFeatures(options.dialect, options.features),
+            features: resolveFeatures(options.dialect, options.features, options.seconds),
             rand: seededRandom(hashSeed),
             strict,
             used: new Set<CronFeature>(),
@@ -182,7 +182,7 @@ class CronExpressionParser {
             second: new CronSecond(second, { rawValue: rawFields.second }),
         });
 
-        return new CronExpression(fields, { ...options, expression }, used);
+        return new CronExpression(fields, options, used, expression);
     }
 
     /**
