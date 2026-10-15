@@ -1,6 +1,6 @@
 {
     "name": "@visulima/yaml",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "description": "A fast, zero-dependency YAML 1.2 parser and serializer with a drop-in API for both `yaml` and `js-yaml`.",
     "keywords": [
         "yaml",
