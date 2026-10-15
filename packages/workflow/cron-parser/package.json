@@ -1,6 +1,6 @@
 {
     "name": "@visulima/cron-parser",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Fast, zero-dependency cron expression parser with time zone and DST support, for Node.js, Deno, Bun and Workers",
     "keywords": [
         "cron",
