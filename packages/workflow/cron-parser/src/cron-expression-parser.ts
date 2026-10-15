@@ -690,6 +690,11 @@ function parseRepeat(field: CronUnit, value: string, constraints: CronConstraint
 
     if (atoms.length === 2) {
         const [range, step] = atoms as [string, string];
+
+        if (!/^[+-]?\d+$/.test(step)) {
+            throw new CronParseError(`Constraint error, invalid step ${step}`, { code: "INVALID_STEP", field: fieldName(field), token: value });
+        }
+
         const stepNumber = Number.parseInt(step, 10);
 
         assertStepWithinField(field, stepNumber, constraints, features);
@@ -909,7 +914,7 @@ export function parse(expression: string, options: CronExpressionOptions = {}): 
         used: new Set<CronFeature>(),
     };
 
-    const predefined = PredefinedExpressions[expression as keyof typeof PredefinedExpressions] as string | undefined;
+    const predefined = Object.hasOwn(PredefinedExpressions, expression) ? PredefinedExpressions[expression as keyof typeof PredefinedExpressions] : undefined;
 
     if (predefined !== undefined) {
         requireFeature("nicknames", context, undefined, expression);

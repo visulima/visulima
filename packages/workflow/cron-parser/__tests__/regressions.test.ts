@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parse } from "../src";
+import { CronParseError, parse } from "../src";
 import { getZone } from "../src/zone";
 
 /**
@@ -173,9 +173,7 @@ describe("schedule lookups across clock changes", () => {
         it("finds the fifth Wednesday of February after 2040", () => {
             expect.assertions(1);
 
-            expect(parse("0 0 * 2 3#5", { currentDate: "2040-03-01T00:00:00.000Z", tz: "UTC" }).next().toISOString()).toBe(
-                "2068-02-29T00:00:00.000Z",
-            );
+            expect(parse("0 0 * 2 3#5", { currentDate: "2040-03-01T00:00:00.000Z", tz: "UTC" }).next().toISOString()).toBe("2068-02-29T00:00:00.000Z");
         });
     });
 
@@ -294,5 +292,16 @@ describe("input that used to be read as something else", () => {
 
         // The first probe lands 500 ms after New York's 2026-03-08 transition; narrowing used to stall there for good.
         expect(getZone("America/New_York").offset(Date.UTC(2026, 2, 7, 7, 0, 0, 500))).toBe(-300);
+    });
+    it.each(["*/2-3", "1-10/2-3"])("rejects a step that is not a plain integer: %s", (expression) => {
+        expect.assertions(1);
+
+        expect(() => parse(`${expression} * * * *`)).toThrow(expect.objectContaining({ code: "INVALID_STEP" }));
+    });
+
+    it.each(["constructor", "toString", "__proto__", "hasOwnProperty"])("treats the inherited name %s as an invalid expression", (name) => {
+        expect.assertions(1);
+
+        expect(() => parse(name)).toThrow(CronParseError);
     });
 });
