@@ -2,6 +2,24 @@
 
 This guide documents breaking changes and migration steps for the `@visulima/storage` package.
 
+## Upgrading: Deno handler subpath removed
+
+`@visulima/storage/handler/http/deno` is gone. It was an alias of the fetch handler, so import the same module under its fetch path.
+
+### Before
+
+```ts
+import { Rest } from "@visulima/storage/handler/http/deno";
+```
+
+### After
+
+```ts
+import { Rest } from "@visulima/storage/handler/http/fetch";
+```
+
+Nothing else changes: the handler, its options and its behaviour are identical. Deno itself is no longer a supported runtime.
+
 ## Upgrading past 2.0.23: file listing is opt-in (security fix)
 
 ### Summary
