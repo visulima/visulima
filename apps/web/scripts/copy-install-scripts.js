@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Copies the vis install scripts into `apps/web/public/` so Netlify serves
+// Copies the vis install scripts from visulima/vis into `apps/web/public/` so Netlify serves
 // them directly at:
 //
 //   https://visulima.com/install.sh
@@ -18,42 +18,42 @@
 // is versioned atomically with the rest of the site.
 
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync, existsSync } from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
-
-const ROOT = path.resolve(dirname, "..", "..", "..");
-const SOURCE = path.join(ROOT, "packages", "tooling", "vis", "scripts");
 const DESTINATION = path.join(dirname, "..", "public");
-const VIS_PACKAGE_JSON = path.join(ROOT, "packages", "tooling", "vis", "package.json");
 
-const SCRIPTS = ["install.sh", "install.ps1"];
+// The install scripts live in the visulima/vis repository, next to the package they
+// install. Fetch them from a pinned ref so a deploy always gets a known revision.
+const VIS_REPO = "visulima/vis";
+const VIS_REF = process.env.VIS_REF || "main";
+const VIS_PACKAGE_DIR = "packages/tooling/vis";
+const rawUrl = (file) => `https://raw.githubusercontent.com/${VIS_REPO}/${VIS_REF}/${VIS_PACKAGE_DIR}/${file}`;
+
+const fetchText = async (file) => {
+    const response = await fetch(rawUrl(file));
+
+    if (!response.ok) {
+        throw new Error(`[copy-install-scripts] ${file} from ${VIS_REPO}@${VIS_REF}: HTTP ${response.status}`);
+    }
+
+    return response.text();
+};
 
 if (!existsSync(DESTINATION)) {
     mkdirSync(DESTINATION, { recursive: true });
 }
 
-const missing = SCRIPTS.filter((script) => !existsSync(path.join(SOURCE, script)));
-
-if (missing.length > 0) {
-    // Fail hard: a missing install script means visulima.com/<script>
-    // 404s silently. Better to break the build than to ship a broken
-    // cold-start flow.
-    console.error(`[copy-install-scripts] Missing source file(s): ${missing.join(", ")}`);
-    console.error(`[copy-install-scripts]   expected under ${SOURCE}`);
-    process.exit(1);
-}
+const SCRIPTS = ["install.sh", "install.ps1"];
 
 let visVersion;
 
 try {
-    const parsed = JSON.parse(readFileSync(VIS_PACKAGE_JSON, "utf8"));
-
-    visVersion = parsed.version;
+    visVersion = JSON.parse(await fetchText("package.json")).version;
 } catch (cause) {
     // Use String(cause) so non-Error throwables (string, plain object,
     // …) still print readable output instead of "undefined".
@@ -100,9 +100,8 @@ const stampVersion = (script, body) => {
 };
 
 for (const script of SCRIPTS) {
-    const source = path.join(SOURCE, script);
     const destination = path.join(DESTINATION, script);
-    const body = readFileSync(source, "utf8");
+    const body = await fetchText(`scripts/${script}`);
     const stamped = stampVersion(script, body);
 
     if (!stamped) {
