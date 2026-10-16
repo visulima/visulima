@@ -8,7 +8,6 @@ on: # yamllint disable-line rule:truthy
         branches: ["main", "alpha", "next", "beta"]
     merge_group: # yamllint disable-line rule:empty-values
     # No `push` trigger: a PR's lint already ran on its merge with main, so a
-    # post-merge run would repeat it. The Nx cache steps below still let later
     # pushes to the same PR reuse that PR's earlier results.
 
 concurrency:
@@ -21,7 +20,6 @@ permissions:
 env:
     NX_BRANCH: "${{ github.event.number }}"
     NX_RUN_GROUP: "${{ github.run_id }}"
-    # Bound the Nx cache that is saved/restored between runs (GitHub's 10 GB
     # cache quota is shared with the pnpm store caches).
     NX_MAX_CACHE_SIZE: "1GB"
     HEAD_REF: "${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }}"
@@ -40,8 +38,6 @@ jobs:
             frontend_lintable: "${{ steps.changes.outputs.frontend_lintable || steps.changes_retry.outputs.frontend_lintable }}"
             yaml_lintable: "${{ steps.changes.outputs.yaml_lintable || steps.changes_retry.outputs.yaml_lintable }}"
             package_json_lintable: "${{ steps.changes.outputs.package_json_lintable || steps.changes_retry.outputs.package_json_lintable }}"
-            rust_lintable: "${{ steps.changes.outputs.rust_lintable || steps.changes_retry.outputs.rust_lintable }}"
-            vis_schemas_lintable: "${{ steps.changes.outputs.vis_schemas_lintable || steps.changes_retry.outputs.vis_schemas_lintable }}"
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920" # v2.20.0
@@ -104,7 +100,6 @@ jobs:
                   node-version: "24"
                   install-node-gyp: "true"
                   cache-prefix: "lint"
-                  # Replaced by the explicit Nx cache restore/save steps below.
                   enable-nx-cache: "false"
                   run-npm-audit: true
                   # TODO: re-enable once npm arborist fixes alias-name + installed-version mismatch for npm: aliases (e.g. vite-plugin-inspect's "vite": "npm:rolldown-vite@...")
@@ -147,7 +142,6 @@ jobs:
 
     # fallow codebase-intelligence over the affected graph. `health` is a report
     # (prints each project's score, exits 0) — it surfaces dead code / dupes /
-    # complexity drift without blocking merges. fetch-depth 0 so `nx affected`
     # can diff against the base ref. No build needed — fallow is static source
     # analysis.
     fallow:
@@ -213,7 +207,6 @@ jobs:
                   node-version: "24"
                   install-node-gyp: "true"
                   cache-prefix: "lint"
-                  # Replaced by the explicit Nx cache restore/save steps below.
                   enable-nx-cache: "false"
                   run-npm-audit: true
                   # TODO: re-enable once npm arborist fixes alias-name + installed-version mismatch for npm: aliases (e.g. vite-plugin-inspect's "vite": "npm:rolldown-vite@...")
@@ -242,44 +235,6 @@ jobs:
               with:
                   path: ".nx/cache"
                   key: "${{ steps.nx-cache.outputs.cache-primary-key }}"
-
-    vis-schemas-drift:
-        if: "needs.files-changed.outputs.vis_schemas_lintable == 'true'"
-        needs: "files-changed"
-        name: "Lint (vis schemas drift)"
-        runs-on: "ubuntu-latest"
-        timeout-minutes: 30
-        steps:
-            - name: "Harden Runner"
-              uses: "step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920" # v2.20.0
-              with:
-                  egress-policy: "audit"
-
-            - name: "Git checkout"
-              uses: "anolilab/workflows/step/checkout-with-retry@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # main
-
-            - name: "Setup resources and environment"
-              uses: "anolilab/workflows/step/node@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # v19.0.4 # main
-              with:
-                  node-version: "24"
-                  install-node-gyp: "true"
-                  cache-prefix: "lint"
-                  run-npm-audit: true
-                  # TODO: re-enable once npm arborist fixes alias-name + installed-version mismatch for npm: aliases (e.g. vite-plugin-inspect's "vite": "npm:rolldown-vite@...")
-                  run-signatures-audit: false
-
-            - name: "Build vis upstream deps"
-              # Schema generation walks the workspace type graph: VisTargetConfiguration
-              # extends @visulima/task-runner's TargetConfiguration, so we need that
-              # package's d.ts on disk for ts-json-schema-generator to see its fields.
-              run: "pnpm --filter '@visulima/vis^...' run build"
-
-            - name: "Regenerate vis schemas and fail on drift"
-              run: |
-                  pnpm --filter @visulima/vis run check:schemas-drift || {
-                      echo "::error::vis schemas are out of sync with src/config/types.ts. Run: pnpm --filter @visulima/vis run generate:schemas, then commit the changes under packages/tooling/vis/schemas/."
-                      exit 1
-                  }
 
     yaml-lint:
         if: "needs.files-changed.outputs.yaml_lintable == 'true'"
@@ -349,42 +304,12 @@ jobs:
 
                   ./jactionlint --color --shellcheck=
 
-    rust-fmt:
-        if: "needs.files-changed.outputs.rust_lintable == 'true'"
-        needs: "files-changed"
-        name: "Lint (rustfmt)"
-        runs-on: "ubuntu-latest"
-        timeout-minutes: 30
-        steps:
-            - name: "Harden Runner"
-              uses: "step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920" # v2.20.0
-              with:
-                  egress-policy: "audit"
-
-            - name: "Git checkout"
-              uses: "anolilab/workflows/step/checkout-with-retry@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # main
-
-            - name: "Install Rust toolchain"
-              uses: "oxc-project/setup-rust@3d6fb132fbe7cdcb66bf8ec193911c2945369d12" # v1.0.17
-              with:
-                  components: "rustfmt"
-                  restore-cache: false
-
-            - name: "Check formatting (task-runner)"
-              run: "cargo fmt --check --manifest-path packages/tooling/task-runner/native/Cargo.toml"
-
-            - name: "Check formatting (tui)"
-              run: "cargo fmt --check --manifest-path packages/terminal/tui/native/Cargo.toml"
-
-            - name: "Check formatting (vis)"
-              run: "cargo fmt --check --manifest-path packages/tooling/vis/native/Cargo.toml"
-
     # Single aggregated required check for branch protection — mirrors test.yml's
     # "Check Test Run". `if: always()` so it runs even when lint jobs are skipped
     # (file-filtered); the step fails red only if a dependency actually failed,
     # so a genuine lint failure blocks the merge.
     lint-required-check:
-        needs: ["files-changed", "ts-lint", "fallow", "package-json-lint", "vis-schemas-drift", "yaml-lint", "lint-workflows", "rust-fmt"]
+        needs: ["files-changed", "ts-lint", "fallow", "package-json-lint", "yaml-lint", "lint-workflows"]
         name: "Check Lint Run"
         if: "always()"
         runs-on: "ubuntu-24.04"

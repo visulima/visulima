@@ -11,7 +11,6 @@ on: # yamllint disable-line rule:truthy
 permissions:
     contents: "read" # to fetch code (actions/checkout)
 
-# Preview builds wait on Build Native and can run for many minutes; a new push
 # to the same PR should supersede the in-flight preview rather than stack on it.
 concurrency:
     group: "${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}"
@@ -26,7 +25,6 @@ env:
 jobs:
     preview:
         name: "Preview Release"
-        # Fork PRs can't download this repo's Build Native artifacts (allow_forks:
         # false) or write the PR comment, so they'd only fail.
         if: "github.repository == 'visulima/visulima' && github.event.pull_request.head.repo.full_name == github.repository"
         runs-on: "ubuntu-latest"
@@ -73,22 +71,6 @@ jobs:
                   # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
                   run-signatures-audit: false
                   run-npm-audit: false
-
-            # Publish only after every target of this commit's Build Native run has
-            # finished, with the same loaders, binaries and sidecars a release ships.
-            # Any missing artifact fails the job; a preview with a missing binary would
-            # be a broken package.
-            - name: "Wait for Build Native"
-              uses: "./.github/actions/wait-for-native-build"
-              with:
-                  ref: "${{ github.event.pull_request.head.sha }}"
-                  github-token: "${{ secrets.GITHUB_TOKEN }}"
-
-            - name: "Native release artifacts"
-              uses: "./.github/actions/native-release-artifacts"
-              with:
-                  ref: "${{ github.event.pull_request.head.sha }}"
-                  github-token: "${{ secrets.GITHUB_TOKEN }}"
 
             - name: "Build"
               run: "pnpm run build:affected:prod:packages"

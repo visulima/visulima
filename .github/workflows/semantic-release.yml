@@ -30,14 +30,12 @@ permissions:
     contents: "read" # for checkout
 
 env:
-    # Bound the Nx cache saved between release runs (GitHub's 10 GB cache quota is
     # shared with the Tests and pnpm store caches).
     NX_MAX_CACHE_SIZE: "1GB"
 
 jobs:
     # Wait runs in its own job so the prerequisite check-run polling can't eat
     # into the release job's 30-minute budget. Previously a single job did
-    # both, and on a slow Build Native + CodSpeed run the wait would consume
     # 20+ minutes — leaving the full monorepo `build:packages:prod`, tests,
     # codecov upload and multi-semantic-release with too little time to finish
     # before the job timeout cancelled the entire workflow.
@@ -65,7 +63,6 @@ jobs:
               # darwin-24/25 only, so macOS runners on darwin-23 fail bundle install.
               # Plain shell + gh api waits for every check-run on the commit
               # except this job, the release job, and the ignore list to terminate in success.
-              # Build Native alone takes ~40 minutes from the push, so the deadline is 55.
               timeout-minutes: 58
               shell: "bash"
               env:
@@ -75,7 +72,6 @@ jobs:
                   SELF_CHECK_NAME: "Wait for tests to succeed"
                   # Workflows that also run on pushes to release branches but must not
                   # gate (or time out) the release: Tests already passed on the PR that
-                  # produced this commit and only runs here to warm the Nx cache and cover
                   # the bun legs, so a post-merge flake must not block publishing;
                   # Coverage baseline only
                   # reports to Codecov and runs the full suite (well past this deadline).
@@ -144,8 +140,6 @@ jobs:
                       sleep 30
                   done
 
-    # Runs alongside wait-for-tests (which mostly waits on Build Native), so the
-    # release job finds a warm Nx cache and replays the prod build instead of
     # rebuilding cold. Holds no release secrets: dependency install scripts and
     # package builds never run next to the npm or GitHub release credentials.
     build:
@@ -175,7 +169,6 @@ jobs:
                   node-version: "24"
                   install-node-gyp: "true"
                   cache-prefix: "semantic-release"
-                  # Replaced by the explicit Nx cache restore/save steps below.
                   enable-nx-cache: "false"
                   run-signatures-audit: false
                   run-npm-audit: false
@@ -244,29 +237,17 @@ jobs:
                   node-version: "24"
                   install-node-gyp: "true"
                   cache-prefix: "semantic-release"
-                  # Replaced by the explicit Nx cache restore below.
                   enable-nx-cache: "false"
                   # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
                   run-signatures-audit: false
                   run-npm-audit: false
 
-            # Loaders + binaries + sidecars from this commit's Build Native run, laid out
-            # as published and verified complete (shared with preview-release.yaml).
-            # wait-for-tests already waited for Check Native Build on this commit.
-            - name: "Native release artifacts"
-              uses: "./.github/actions/native-release-artifacts"
-              with:
-                  ref: "${{ github.sha }}"
-                  github-token: "${{ secrets.GITHUB_TOKEN }}"
-
-            # The cache the build job just saved for this exact run.
             - name: "Restore Nx cache"
               uses: "actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9" # v6.1.0
               with:
                   path: ".nx/cache"
                   key: "${{ needs.build.outputs.nx-cache-key }}"
 
-            # Replays the build job's outputs from the Nx cache. Runs after the native
             # artifacts are laid out on purpose: a package whose freshly generated
             # loader (index.js / index.d.ts) differs from the committed one gets a cache
             # miss and is rebuilt against it, so its published types match the binaries.
@@ -297,7 +278,7 @@ jobs:
                   export GIT_CONFIG_COUNT=1
                   export GIT_CONFIG_KEY_0="http.https://github.com/.extraheader"
                   export GIT_CONFIG_VALUE_0="AUTHORIZATION: basic ${auth}"
-                  pnpm exec multi-semantic-release --ignore-packages='packages/tooling/task-runner/npm/**,packages/terminal/tui/npm/**,packages/tooling/vis/npm/**,packages/tooling/secret-scanner/npm/**'
+                  pnpm exec multi-semantic-release
 
             # multi-semantic-release pushes per-package `chore(release)` commits that
             # bump each package.json (and any cross-package dependency ranges), but

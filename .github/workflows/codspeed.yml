@@ -15,9 +15,9 @@ concurrency:
     cancel-in-progress: true
 
 permissions:
-    actions: "read" # to find this commit's Tests / Preview Release runs and Build Native artifacts
+    actions: "read"
     contents: "read"
-    checks: "read" # to poll Check Native Build via gh api
+    checks: "read"
 
 env:
     NX_BRANCH: "${{ github.event.number || github.ref_name }}"
@@ -27,7 +27,6 @@ jobs:
     discover:
         name: "Discover affected benches"
         runs-on: "ubuntu-latest"
-        # Waits for Build Native (up to 80 min on saturated runner queues) and
         # then for this commit's Tests / Preview Release (up to 120 min) before
         # the ~2 min of discovery itself.
         timeout-minutes: 210
@@ -45,16 +44,6 @@ jobs:
               with:
                   fetch-depth: 0
 
-            - name: "Wait for Build Native"
-              uses: "./.github/actions/wait-for-native-build"
-              with:
-                  ref: "${{ github.event.pull_request.head.sha || github.sha }}"
-                  github-token: "${{ secrets.GITHUB_TOKEN }}"
-
-            # Benchmarks run last: wait until this commit's Tests (and, on PRs, the
-            # Preview Release) have finished, so the bench matrix doesn't compete with
-            # them for runners. Proceeds whatever their outcome; a workflow that never
-            # starts (e.g. filtered out) stops being waited for after 10 minutes.
             - name: "Wait for Tests and Preview Release"
               shell: "bash"
               env:
@@ -166,14 +155,6 @@ jobs:
                   # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
                   run-signatures-audit: false
                   run-npm-audit: false
-
-            # Host-matching native bindings from this commit's Build Native run, so
-            # benches that need a compiled binding (tui, task-runner, …) can load it.
-            - name: "Native test artifacts"
-              uses: "./.github/actions/native-test-artifacts"
-              with:
-                  ref: "${{ github.event.pull_request.head.sha || github.sha }}"
-                  github-token: "${{ secrets.GITHUB_TOKEN }}"
 
             - name: "Build only this bench's library dependencies"
               env:

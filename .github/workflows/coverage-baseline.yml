@@ -35,8 +35,8 @@ concurrency:
     cancel-in-progress: true
 
 permissions:
-    actions: "read" # to download this commit's Build Native artifacts
-    checks: "read" # to poll Check Native Build via gh api
+    actions: "read"
+    checks: "read"
     contents: "read" # to fetch code (actions/checkout)
 
 env:
@@ -47,7 +47,6 @@ jobs:
         name: "Upload coverage baseline"
         if: "github.repository == 'visulima/visulima'"
         runs-on: "ubuntu-latest"
-        # Up to 80 minutes waiting for Build Native (see the composite action), then
         # a full build + coverage run of the whole tree.
         timeout-minutes: 150
         steps:
@@ -73,15 +72,6 @@ jobs:
                   run-npm-audit: false
                   run-signatures-audit: false
 
-            - name: "Native test artifacts"
-              uses: "./.github/actions/native-test-artifacts"
-              with:
-                  ref: "${{ github.sha }}"
-                  github-token: "${{ secrets.GITHUB_TOKEN }}"
-
-            # Shares the cache family of the test.yml coverage leg: a task whose
-            # inputs are unchanged restores the very coverage it produced, so only
-            # what changed actually runs - while the report still covers every package.
             - name: "Restore Nx cache"
               id: "nx-cache"
               uses: "actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9" # v6.1.0

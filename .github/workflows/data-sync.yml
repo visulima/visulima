@@ -54,12 +54,7 @@ jobs:
               working-directory: "packages/email/disposable-email-domains"
               run: "pnpm run --filter disposable-email-domains generate:domains"
 
-            - name: "Sync typosquats blocklist"
-              if: "success()"
-              working-directory: "packages/tooling/vis"
-              run: "node scripts/sync-blocklist.ts"
-
-            # Only README.md and typosquats.json are tracked. The generated domain
+            # Only the disposable domains README is tracked. The generated domain
             # list lands in disposable-email-domains/dist/, which is gitignored and
             # shipped from the npm tarball — listing it here stages nothing. Leave
             # skip_dirty_check off so a run that produces no diff is a no-op instead
@@ -70,8 +65,7 @@ jobs:
               with:
                   file_pattern: |
                       packages/email/disposable-email-domains/README.md
-                      packages/tooling/vis/data/typosquats.json
-                  commit_message: "fix: sync data sources (disposable email domains, typosquats blocklist)"
+                  commit_message: "fix: sync data sources (disposable email domains)"
                   commit_user_name: "github-actions-shell"
                   commit_user_email: "github-actions[bot]@users.noreply.github.com"
                   commit_author: "github-actions-shell <github-actions[bot]@users.noreply.github.com>"
