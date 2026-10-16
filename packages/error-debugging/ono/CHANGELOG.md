@@ -1,3 +1,9 @@
+## @visulima/ono [3.0.1](https://github.com/visulima/visulima/compare/@visulima/ono@3.0.0...@visulima/ono@3.0.1) (2026-10-16)
+
+### Bug Fixes
+
+* **deps:** patch critical tanstack router xss ([#977](https://github.com/visulima/visulima/issues/977)) ([9a56da4](https://github.com/visulima/visulima/commit/9a56da4873ac61d40c52c6d2bbf600d30d2d8f71))
+
 ## @visulima/ono [3.0.0](https://github.com/visulima/visulima/compare/@visulima/ono@2.1.28...@visulima/ono@3.0.0) (2026-10-15)
 
 ### ⚠ BREAKING CHANGES
