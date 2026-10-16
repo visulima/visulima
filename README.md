@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  44+ independent, production-ready packages. Pick only what you need.
+  49 independent, production-ready packages. Pick only what you need.
 </p>
 
 <div align="center">
@@ -62,7 +62,7 @@ Already using one of these? Swap it out without changing your code:
 
 ## Powered by native Rust
 
-Performance-critical packages ship with NAPI bindings and a JS fallback. Fast where it matters, portable everywhere.
+Performance-critical packages ship with NAPI bindings and a JS fallback. Fast where it matters, portable everywhere. The packages that need a Rust toolchain are developed in [visulima/vis](https://github.com/visulima/vis).
 
 - **[`@visulima/tui`](https://github.com/visulima/vis/tree/main/packages/terminal/tui#readme)** uses a native Rust diff engine for the React-to-terminal renderer.
 - **[`@visulima/secret-scanner`](https://github.com/visulima/vis/tree/main/packages/tooling/secret-scanner#readme)** is a Rust port of gitleaks detection, exposed via NAPI.
@@ -209,7 +209,16 @@ Visit <a aria-label="visulima learn" href="https://visulima.com/learn"> https://
 
 ## Documentation
 
-Visit [https://visulima.com/docs](https://visulima.com/docs) to view the full documentation.
+Visit [https://visulima.com/docs](https://visulima.com/docs) to view the full documentation. The site is built from [visulima/docs](https://github.com/visulima/docs), which collects the docs from the repositories below.
+
+## Repositories
+
+| Repository                                                | What is in it                                                                                               |
+| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| [visulima/visulima](https://github.com/visulima/visulima) | This monorepo: the TypeScript packages, one per folder under `packages/`                                    |
+| [visulima/vis](https://github.com/visulima/vis)           | The Rust-backed packages: `vis`, `vis-mcp`, `task-runner`, `task-runner-client`, `secret-scanner` and `tui` |
+| [visulima/packem](https://github.com/visulima/packem)     | The packem bundler                                                                                          |
+| [visulima/docs](https://github.com/visulima/docs)         | The documentation site at visulima.com                                                                      |
 
 ## Community
 
