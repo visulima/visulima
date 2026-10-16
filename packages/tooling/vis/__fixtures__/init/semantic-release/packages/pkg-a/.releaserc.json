@@ -1,4 +1,0 @@
-{
-    "extends": "@anolilab/semantic-release-preset/pnpm",
-    "branches": ["main"]
-}

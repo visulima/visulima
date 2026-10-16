@@ -1,5 +1,0 @@
-*.node
-vis-native-cli
-vis-native-cli.exe
-native/target/
-examples/**/.task-runner-cache
