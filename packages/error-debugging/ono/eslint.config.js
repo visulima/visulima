@@ -18,6 +18,7 @@ export default createConfig(
             "package.json",
             "README.md",
             "CHANGELOG.md",
+            "MIGRATION-GUIDE.md",
             "prettier.config.js",
             "src/types/launch-editor-middleware.d.ts",
             // Till the eslint is fixed

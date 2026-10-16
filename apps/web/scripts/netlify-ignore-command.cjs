@@ -31,7 +31,7 @@ if (commitMessage.startsWith("[skip ci]")) {
 // Keep in sync with `apps/web/scripts/copy-install-scripts.js`: any
 // file that's pulled into `apps/web/public/` at build time must appear
 // here, or the Netlify edge will keep serving the stale copy.
-const requiredChanges = ["apps/web/", "/docs/", "pnpm-lock.yaml", "packages/tooling/vis/scripts/"];
+const requiredChanges = ["apps/web/", "/docs/", "pnpm-lock.yaml"];
 
 const changedFiles = getChangedFiles();
 

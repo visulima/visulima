@@ -15,13 +15,6 @@ packages:
   - "!packages/tooling/package/__fixtures__/workspaces/**"
   - "!packages/storage/storage/src/adapter/nuxt"
   - "!packages/storage/storage/dist/adapter/nuxt"
-  - "!packages/tooling/vis/examples/sample-workspace/**"
-  - "!packages/tooling/vis/__fixtures__/sherif-lint/**"
-  - "!packages/tooling/vis/__fixtures__/init/**"
-  - "!packages/tooling/vis/__tests__/release/fixtures/**"
-  - "!packages/tooling/vis/__bench__/cli/fixtures/**"
-  - "!packages/tooling/vis/examples/docker/packages/api"
-  - "!packages/tooling/vis/examples/service-preflight/packages/api"
 
 allowBuilds:
   '@firebase/util': false
@@ -345,9 +338,9 @@ catalogs:
     '@tailwindcss/node': 4.3.3
     '@tailwindcss/oxide': 4.3.3
     '@tailwindcss/postcss': 4.3.3
-    '@tanstack/react-router': 1.170.25
+    '@tanstack/react-router': 1.170.41
     '@tanstack/react-router-devtools': 1.167.1
-    '@tanstack/react-start': 1.168.42
+    '@tanstack/react-start': 1.168.60
     '@tanstack/react-virtual': 3.14.9
     '@tsconfig/svelte': ^5.0.8
     '@unpic/react': 1.0.2
@@ -505,7 +498,7 @@ catalogs:
     '@shikijs/langs': ^4.4.3
     '@sindresorhus/slugify': ^3.0.0
     '@sindresorhus/transliterate': 2.3.1
-    '@tanstack/router-plugin': 1.168.29
+    '@tanstack/router-plugin': 1.168.42
     '@tinyhttp/accepts': ^2.3.1
     '@ungap/structured-clone': ^1.3.3
     '@visulima/boxen': 4.0.0
@@ -923,7 +916,8 @@ overrides:
   # generator loop indefinitely. The v5 line already resolves to a patched
   # 5.1.16; only the v3 copies need forcing to the 3.3.17 backport.
   nanoid@<3.3.17: '>=3.3.17'
-  '@tanstack/start-server-core@<1.167.30': '>=1.167.30'
+  # GHSA-qx66-fv34-fjm8 (critical): TanStack Router reflected XSS. Patched in 1.169.39.
+  '@tanstack/start-server-core@<1.169.39': '>=1.169.39'
   fastify@<5.7.2: '>=5.7.2'
   fastify@<=5.7.2: '>=5.7.3'
   fastify@>=5.3.2 <=5.8.4: '>=5.8.5'

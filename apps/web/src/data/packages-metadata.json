@@ -170,14 +170,6 @@
         "displayName": "Storage Client",
         "features": ["React support", "Vue support", "Solid and Svelte support", "Easy file uploads"]
     },
-    "vis": {
-        "displayName": "Vis",
-        "features": ["Task running with caching", "Dependency graph visualization", "Affected project detection", "Git hooks management"]
-    },
-    "task-runner": {
-        "displayName": "Task Runner",
-        "features": ["Native Rust performance", "File and task hashing", "Graph-based scheduling", "Remote caching support"]
-    },
     "find-ai-runner": {
         "displayName": "Find AI Runner",
         "features": ["AI runner discovery", "Multiple provider support", "Configuration detection", "CLI integration"]

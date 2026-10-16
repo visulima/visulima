@@ -12,10 +12,7 @@ Visulima is a pnpm monorepo with 50+ TypeScript packages organized under `packag
 
 A few packages have non-trivial architecture or load-bearing conventions worth knowing about before editing:
 
-- **`packages/terminal/cerebro`** — CLI framework used by `vis`. As of v5 alpha, the toolbox now ships injectable `fs`/`console`/`process`, plus `Cli.clone()` and `Cli.getAction()`. Command handlers should accept these via toolbox rather than importing `node:fs`/`node:process` directly — this is the foundation for MCP/sandboxed runtimes.
-- **`packages/tooling/vis`** — Workflow CLI built on cerebro. Command handlers use `toolbox.fs` / `toolbox.process`.
-- **`packages/tooling/vis-mcp`** — MCP server companion to `vis`. The MCP surface is paired with a separate Claude Skill (declarative instructions, not a bridge).
-- **`packages/tooling/task-runner`** — Native Rust + NAPI bindings; see the Native Rust Packages section below.
+- **`packages/terminal/cerebro`** — CLI framework used by `vis`, which now lives in visulima/vis. As of v5 alpha, the toolbox now ships injectable `fs`/`console`/`process`, plus `Cli.clone()` and `Cli.getAction()`. Command handlers should accept these via toolbox rather than importing `node:fs`/`node:process` directly — this is the foundation for MCP/sandboxed runtimes.
 - **`packages/api/api-platform`** — Migrated to zod v4 / swagger v5; zod is a non-optional peer (packem inlines optional-peer type namespaces).
 - **`packages/storage/storage-client`** — TUS-protocol client; ongoing work on fingerprint/upload-control/url-storage modules.
 
@@ -116,16 +113,6 @@ The packages page at `apps/web/` is auto-generated:
 - Runs automatically during `build` and `dev`
 
 To add a new package to the website: add `category:<slug>` tag to its `project.json`, optionally add metadata to `packages-metadata.json`.
-
-### Native Rust Packages (task-runner)
-
-`packages/tooling/task-runner/` has native NAPI bindings:
-
-- 8 platform-specific packages in `npm/` (darwin, linux, windows × x64, arm64)
-- Built by `.github/workflows/build-native.yml` (matrix across all targets)
-- Published via `scripts/semantic-release-native-addons.mjs` (local semantic-release plugin, runs in `verifyConditions` + `prepare`)
-- Platform packages are excluded from `multi-semantic-release` via `--ignore-packages`
-- `binding.js` handles runtime platform detection and fallback to JS implementations
 
 ### Dependency Catalog
 

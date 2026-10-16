@@ -71,7 +71,6 @@ storybook-static/
 dist
 
 !packages/data-manipulation/iso-locale/src/data/
-!packages/tooling/vis/data/
 
 # Claude
 .claude/settings.local.json
@@ -81,7 +80,6 @@ dist
 
 .codex
 
-packages/tooling/vis/examples/**/.vis/
 
 # Local git worktrees (Agent tool isolation)
 .worktrees/

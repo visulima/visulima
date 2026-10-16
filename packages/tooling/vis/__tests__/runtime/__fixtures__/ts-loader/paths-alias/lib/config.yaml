@@ -1,2 +1,0 @@
-service: aliased-yaml
-replicas: 3

@@ -1,4 +1,0 @@
----
-if: mode == "prod"
----
-// Production build for {{ name }}

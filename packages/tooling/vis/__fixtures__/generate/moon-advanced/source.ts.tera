@@ -1,6 +1,0 @@
----
-to: "out/{{ name | kebab_case }}/index.ts"
-force: true
----
-{% include "layouts/header" %}
-export const mode = "{{ mode }}";

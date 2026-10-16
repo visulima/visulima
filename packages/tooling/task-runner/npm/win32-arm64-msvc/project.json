@@ -1,7 +1,0 @@
-{
-    "name": "task-runner-binding-win32-arm64-msvc",
-    "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
-    "projectType": "library",
-    "tags": ["task-runner", "type:native-binding"],
-    "implicitDependencies": ["task-runner"]
-}

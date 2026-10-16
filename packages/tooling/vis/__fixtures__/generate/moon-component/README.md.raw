@@ -1,2 +1,0 @@
-This is a {{ raw }} README that should NOT be rendered by Tera.
-The {% if x %}block{% endif %} should appear verbatim.
