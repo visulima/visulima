@@ -1,0 +1,55 @@
+# Sends a dispatch to visulima/docs on pushes to main and for pull requests from this
+# repository, so the docs site rebuilds and previews the package docs.
+name: "Docs dispatch"
+
+on: # yamllint disable-line rule:truthy
+    push:
+        branches:
+            - "main"
+    pull_request:
+        branches:
+            - "main"
+        types:
+            - "opened"
+            - "synchronize"
+            - "reopened"
+
+permissions: {}
+
+jobs:
+    dispatch:
+        name: "Notify visulima/docs"
+        if: "github.repository == 'visulima/visulima'"
+        runs-on: "ubuntu-latest"
+        timeout-minutes: 5
+        steps:
+            - name: "Send the dispatch"
+              env:
+                  DOCS_DISPATCH_TOKEN: "${{ secrets.DOCS_DISPATCH_TOKEN }}"
+                  EVENT: "${{ github.event_name }}"
+                  REPO: "${{ github.repository }}"
+                  SHA: "${{ github.event.pull_request.head.sha || github.sha }}"
+                  PR: "${{ github.event.pull_request.number }}"
+                  HEAD_REPO: "${{ github.event.pull_request.head.repo.full_name }}"
+              run: |
+                  set -euo pipefail
+
+                  if [ "$EVENT" = "push" ]; then
+                    body=$(jq -n --arg repo "$REPO" --arg sha "$SHA" \
+                      '{event_type: "source-updated", client_payload: {repo: $repo, sha: $sha}}')
+                  else
+                    # Fork pull requests get no secrets, so they can't have a preview.
+                    if [ "$HEAD_REPO" != "$REPO" ]; then
+                      echo "Pull request from a fork, no docs preview."
+                      exit 0
+                    fi
+
+                    body=$(jq -n --arg repo "$REPO" --arg sha "$SHA" --arg pr "$PR" \
+                      '{event_type: "source-preview", client_payload: {repo: $repo, sha: $sha, pr: $pr}}')
+                  fi
+
+                  curl --fail-with-body --silent --show-error -X POST \
+                    -H "Accept: application/vnd.github+json" \
+                    -H "Authorization: Bearer ${DOCS_DISPATCH_TOKEN}" \
+                    https://api.github.com/repos/visulima/docs/dispatches \
+                    -d "$body"
