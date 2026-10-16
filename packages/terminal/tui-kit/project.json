@@ -6,8 +6,5 @@
     "tags": [
         "type:package",
         "category:cli-terminal"
-    ],
-    "implicitDependencies": [
-        "tui"
     ]
 }

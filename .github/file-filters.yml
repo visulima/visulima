@@ -15,27 +15,6 @@ yaml_lintable:
     - "**/*.yaml"
     - "pnpm-lock.yaml"
 
-rust_lintable:
-    - "**/native/src/**/*.rs"
-    - "**/native/Cargo.toml"
-    - "**/native/Cargo.lock"
-    - "rustfmt.toml"
-    - "rust-toolchain.toml"
-
-vis_schemas_lintable:
-    - "packages/tooling/vis/src/config/**"
-    - "packages/tooling/vis/scripts/generate-schemas.ts"
-    - "packages/tooling/vis/schemas/**"
-    - "packages/tooling/vis/tsconfig.json"
-
-packages: &packages
-    - "**/tsconfig*.json"
-    - "pnpm-lock.yaml"
-    - "package.json"
-    - "packages/**"
-
-# Scopes the TypeScript-version matrix leg of the Tests workflow to changes that
-# can affect @visulima/tsconfig's cross-version parity.
 tsconfig:
     - "packages/tooling/tsconfig/**"
     - "pnpm-lock.yaml"

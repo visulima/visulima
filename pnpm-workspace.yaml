@@ -15,13 +15,6 @@ packages:
   - "!packages/tooling/package/__fixtures__/workspaces/**"
   - "!packages/storage/storage/src/adapter/nuxt"
   - "!packages/storage/storage/dist/adapter/nuxt"
-  - "!packages/tooling/vis/examples/sample-workspace/**"
-  - "!packages/tooling/vis/__fixtures__/sherif-lint/**"
-  - "!packages/tooling/vis/__fixtures__/init/**"
-  - "!packages/tooling/vis/__tests__/release/fixtures/**"
-  - "!packages/tooling/vis/__bench__/cli/fixtures/**"
-  - "!packages/tooling/vis/examples/docker/packages/api"
-  - "!packages/tooling/vis/examples/service-preflight/packages/api"
 
 allowBuilds:
   '@firebase/util': false

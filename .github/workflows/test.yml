@@ -15,18 +15,16 @@ on: # yamllint disable-line rule:truthy
 
 concurrency:
     group: "${{ github.workflow }}-${{ github.ref }}"
-    # Don't cancel main runs mid-way: a cancelled run never saves its Nx cache.
     cancel-in-progress: "${{ github.event_name != 'push' }}"
 
 permissions:
     actions: "read" # nx-set-shas looks up the last successful main run on push events
     contents: "read" # to fetch code (actions/checkout)
-    checks: "read" # to poll Check Native Build via gh api
+    checks: "read"
 
 env:
     NX_BRANCH: "${{ github.event.number }}"
     NX_RUN_GROUP: "${{ github.run_id }}"
-    # Bound the Nx cache that is saved/restored between runs (GitHub's 10 GB
     # cache quota is shared with the pnpm store caches).
     NX_MAX_CACHE_SIZE: "1GB"
     HEAD_REF: "${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }}"
@@ -85,7 +83,6 @@ jobs:
           Test (node-${{ matrix.node_version }}, ${{ matrix.os }}${{ matrix.bun_version && format(', bun {0}', matrix.bun_version) || '' }})
         if: "needs.files-changed.outputs.packages == 'true'"
         needs: "files-changed"
-        # "Wait for Build Native workflow" routinely burns 17-22 min on this
         # job before tests even start; runner-queue spikes have pushed that
         # past 30 and, on saturated days, past the old 50-min cap. 130 min
         # absorbs an 80-min wait (with cushion) plus the ~20-min test phase,
@@ -95,7 +92,6 @@ jobs:
             matrix:
                 # PRs: ubuntu node-24 (the coverage leg), node-26, macOS, Windows.
                 # Pushes to main: drop ubuntu node-24 - coverage-baseline.yml runs the
-                # full suite on that setup and saves the same Nx cache - and add the
                 # bun leg. It only adds a binary to PATH (the suite still runs
                 # on Node via vitest), so it runs post-merge instead of on every PR.
                 include: "${{ fromJSON(format('[{0}{1}]', '{\"os\":\"ubuntu-latest\",\"node_version\":\"26\"},{\"os\":\"macos-15\",\"node_version\":\"24\"},{\"os\":\"windows-latest\",\"node_version\":\"24\"}', github.event_name == 'push' && ',{\"os\":\"ubuntu-latest\",\"node_version\":\"24\",\"bun_version\":\"latest\"}' || ',{\"os\":\"ubuntu-latest\",\"node_version\":\"24\"}')) }}"
@@ -126,7 +122,6 @@ jobs:
                   install-node-gyp: "true"
                   install-bun: "matrix.os == 'ubuntu-latest'"
                   skip-playwright: "true"
-                  # Replaced by the explicit Nx cache restore/save steps below.
                   enable-nx-cache: "false"
                   # The setup action's default `npm install --global npm@latest` exists only
                   # to enable publish provenance, which the test job never needs. npm@12 dropped
@@ -143,19 +138,6 @@ jobs:
               with:
                   bun-version: "${{ matrix.bun_version }}"
 
-            # Wait for this commit's Build Native run and drop its host-matching
-            # bindings into the package roots (shared with coverage-baseline.yml).
-            - name: "Native test artifacts"
-              uses: "./.github/actions/native-test-artifacts"
-              with:
-                  ref: "${{ github.event.pull_request.head.sha || github.sha }}"
-                  github-token: "${{ secrets.GITHUB_TOKEN }}"
-
-            # The codecov step below consumes the changed-files list; nx
-            # affected detection itself uses NX_BASE/NX_HEAD env vars set
-            # by nrwl/nx-set-shas, so we don't pass --files= to the build/
-            # test scripts (that hits the kernel argv size limit on long
-            # diffs).
             - name: "Get changed files"
               id: "files"
               uses: "tj-actions/changed-files@9426d40962ed5378910ee2e21d5f8c6fcbf2dd96" # v47.0.6
@@ -197,7 +179,6 @@ jobs:
                   key: "${{ steps.nx-cache.outputs.cache-primary-key }}"
 
             # Inlined replacement for `anolilab/workflows/step/codecov`.
-            # Upstream discovers projects via `pnpm nx show projects --projects "packages/*"`,
             # which (a) returns nothing here because our packages live at
             # `packages/<category>/<name>/`, and (b) leaks pnpm
             # platform-mismatch warnings (one per NAPI subpackage) into the
@@ -234,7 +215,6 @@ jobs:
     # isolate rather than Node with a mocked global.
     #
     # None of the opted-in packages need a compiled native binding, so this job
-    # skips the "Wait for Build Native" gate the other test jobs need and runs
     # in minutes. Linux-only: workerd is the same binary everywhere, so a host
     # matrix would only re-test Cloudflare's runtime, not our code.
     workerd-test:
@@ -268,7 +248,6 @@ jobs:
                   install-node-gyp: "true"
                   cache-prefix: "workerd"
                   skip-playwright: "true"
-                  # Replaced by the explicit Nx cache restore/save steps below.
                   enable-nx-cache: "false"
                   # This job never publishes, so the provenance-only npm upgrade is unneeded.
                   upgrade-npm-version: false
@@ -309,7 +288,6 @@ jobs:
     # catalog version. The suite version-gates specs tied to a particular release
     # (see `__tests__/helpers.ts` `tsAtLeast`/`tsBelow`), so every leg is expected
     # to be green (with some specs skipped per version). This is pure TypeScript —
-    # no native bindings — so it skips the Build Native wait the other jobs need.
     tsconfig-ts-versions:
         name: "Test tsconfig (typescript ${{ matrix.ts_version }})"
         if: "needs.files-changed.outputs.tsconfig == 'true'"

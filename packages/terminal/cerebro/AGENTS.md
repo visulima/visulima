@@ -44,5 +44,5 @@ Downstream CLIs must declare both halves. `@visulima/vis` wraps this in a `negat
 
 ## Related
 
-- Foundation for `@visulima/vis` (the meta-CLI). See `packages/tooling/vis/` — its command handlers are the canonical reference for the toolbox injection pattern.
+- Foundation for `@visulima/vis` (the meta-CLI), which lives in visulima/vis. Its command handlers are the canonical reference for the toolbox injection pattern.
 - Roadmap item #5 calls for an MCP server + Claude Skill on top of cerebro; the injectable toolbox is the substrate.

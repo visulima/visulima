@@ -1,7 +1,0 @@
-{
-    "name": "service-preflight-example",
-    "private": true,
-    "workspaces": [
-        "packages/*"
-    ]
-}
