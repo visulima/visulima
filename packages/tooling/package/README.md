@@ -6,7 +6,7 @@
 
 </a>
 
-<h3 align="center">A comprehensive package management utility that helps you find root directories, monorepos, package managers, and parse package.json, package.yaml, and package.json5 files with advanced features like catalog resolution.</h3>
+<h3 align="center">Find monorepo roots and package managers, and parse package.json, package.yaml and package.json5 files, with catalog resolution.</h3>
 
 <!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 

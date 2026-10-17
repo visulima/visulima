@@ -1,7 +1,7 @@
 {
     "name": "@visulima/storage",
     "version": "3.0.0",
-    "description": "Server-side file-storage abstraction - store files in a web-accessible location via a simplified API. Includes S3, Azure, GCS, local filesystem and 20+ other backends with TUS/multipart/REST upload handlers and the most convenient features of each.",
+    "description": "Server-side file storage abstraction with S3, Azure, GCS, local filesystem and 20+ backends, plus TUS, multipart and REST upload handlers.",
     "keywords": [
         "anolilab",
         "astro",
@@ -61,6 +61,7 @@
         "visulima"
     ],
     "homepage": "https://visulima.com/packages/storage",
+    "bugs": "https://github.com/visulima/visulima/issues",
     "repository": {
         "type": "git",
         "url": "https://github.com/visulima/visulima.git",

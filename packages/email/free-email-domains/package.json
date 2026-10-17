@@ -3,12 +3,16 @@
     "version": "2.0.0",
     "description": "A regularly updated list of free email service provider domains.",
     "keywords": [
+        "domain-list",
         "email-domains",
+        "email-providers",
         "email-validation",
         "free-email",
         "free-email-domains",
         "free-email-providers",
-        "visulima"
+        "gmail",
+        "visulima",
+        "webmail"
     ],
     "homepage": "https://visulima.com/packages/free-email-domains",
     "bugs": "https://github.com/visulima/visulima/issues",
