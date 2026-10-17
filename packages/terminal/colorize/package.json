@@ -56,6 +56,7 @@
         "yellow"
     ],
     "homepage": "https://visulima.com/packages/colorize/",
+    "bugs": "https://github.com/visulima/visulima/issues",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/visulima/visulima.git",

@@ -6,7 +6,7 @@
 
 </a>
 
-<h3 align="center">A reusable, ESM-only, edge-ready durable workflow engine: code-first workflows with resumable steps, delays and external-event waits, backed by a pluggable store</h3>
+<h3 align="center">Edge-ready, ESM-only durable workflow engine with resumable steps, delays, external-event waits and a pluggable store.</h3>
 
 <!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 

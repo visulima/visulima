@@ -6,7 +6,7 @@
 
 </a>
 
-<h3 align="center">Server-side file-storage abstraction - store files in a web-accessible location via a simplified API. Includes S3, Azure, GCS, local filesystem and 20+ other backends with TUS/multipart/REST upload handlers and the most convenient features of each.</h3>
+<h3 align="center">Server-side file storage abstraction with S3, Azure, GCS, local filesystem and 20+ backends, plus TUS, multipart and REST upload handlers.</h3>
 
 <!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 

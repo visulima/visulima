@@ -1,7 +1,7 @@
 {
     "name": "@visulima/deep-clone",
     "version": "5.0.0",
-    "description": "Fastest deep clone implementation.",
+    "description": "Fast deep clone for plain objects, arrays and nested values.",
     "keywords": [
         "anolilab",
         "clone",
@@ -38,6 +38,7 @@
         "visulima"
     ],
     "homepage": "https://visulima.com/packages/deep-clone/",
+    "bugs": "https://github.com/visulima/visulima/issues",
     "repository": {
         "type": "git",
         "url": "https://github.com/visulima/visulima.git",

@@ -1,7 +1,7 @@
 {
     "name": "@visulima/vite-overlay",
     "version": "2.0.41",
-    "description": "Improved vite overlay",
+    "description": "Improved Vite error overlay that shows readable, source-mapped errors in the browser for React, Vue and Svelte.",
     "keywords": [
         "error-handling",
         "error-overlay",

@@ -6,7 +6,7 @@
 
 </a>
 
-<h3 align="center">A library built to provide support for defining service health for node services. It allows you to register async health checks for your dependencies and the service itself, provides a health endpoint that exposes their status, and health metrics.</h3>
+<h3 align="center">Define async health checks for your dependencies and service, and expose their status on a health endpoint.</h3>
 
 <!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 

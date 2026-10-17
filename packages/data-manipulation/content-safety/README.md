@@ -6,7 +6,7 @@
 
 </a>
 
-<h3 align="center">Content safety filtering with multi-language banned word detection. Supports 19 languages with word-boundary matching, match position reporting, and both browser and server runtime compatibility.</h3>
+<h3 align="center">Multi-language banned-word and profanity detection for 19 languages, with word-boundary matching and match positions.</h3>
 
 <!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 

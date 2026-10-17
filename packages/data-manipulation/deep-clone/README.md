@@ -6,7 +6,7 @@
 
 </a>
 
-<h3 align="center">Fastest deep clone implementation.</h3>
+<h3 align="center">Fast deep clone for plain objects, arrays and nested values.</h3>
 
 <!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 
