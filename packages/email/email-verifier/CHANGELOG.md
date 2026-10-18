@@ -1,3 +1,14 @@
+## @visulima/email-verifier [1.0.47](https://github.com/visulima/visulima/compare/@visulima/email-verifier@1.0.46...@visulima/email-verifier@1.0.47) (2026-10-18)
+
+### Miscellaneous Chores
+
+* improve npm search metadata ([#979](https://github.com/visulima/visulima/issues/979)) ([3f4ed10](https://github.com/visulima/visulima/commit/3f4ed1087286a57b5abbccbb481e352e8a9d4f58))
+
+
+### Dependencies
+
+* **@visulima/disposable-email-domains:** upgraded to 2.0.3
+
 ## @visulima/email-verifier [1.0.46](https://github.com/visulima/visulima/compare/@visulima/email-verifier@1.0.45...@visulima/email-verifier@1.0.46) (2026-10-17)
 
 

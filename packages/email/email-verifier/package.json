@@ -1,6 +1,6 @@
 {
     "name": "@visulima/email-verifier",
-    "version": "1.0.46",
+    "version": "1.0.47",
     "description": "Email verification and enrichment: syntax, MX/SMTP probing, disposable and role detection, catch-all, and a 0–100 quality score.",
     "keywords": [
         "accept-all",
@@ -127,7 +127,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/disposable-email-domains": "2.0.2",
+        "@visulima/disposable-email-domains": "2.0.3",
         "@visulima/email-provider-mx": "1.0.1",
         "@visulima/free-email-domains": "2.0.0",
         "lru-cache": "catalog:prod"
