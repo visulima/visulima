@@ -54,26 +54,26 @@ pnpm add @visulima/disposable-email-domains
 
 | Repository | Domains | Success | Performance |
 |------------|---------|---------|-------------|
-| disposable/disposable-email-domains | 98,876 | ✅ | 0.80s (1.5 MB) |
-| willwhite/freemail | 88,162 | ✅ | 0.75s (1.3 MB) |
-| FGRibreau/mailchecker | 56,512 | ✅ | 0.21s (848.5 KB) |
+| disposable/disposable-email-domains | 98,904 | ✅ | 0.53s (1.5 MB) |
+| willwhite/freemail | 88,162 | ✅ | 0.54s (1.3 MB) |
+| FGRibreau/mailchecker | 56,512 | ✅ | 0.30s (848.5 KB) |
 | wesbos/burner-email-providers | 27,277 | ✅ | 0.08s (388.0 KB) |
-| groundcat/disposable-email-domain-list | 21,453 | ✅ | 0.16s (329.4 KB) |
-| 7c/fakefilter | 10,657 | ✅ | 0.05s (146.5 KB) |
-| sublime-security/static-files | 10,522 | ✅ | 0.58s (144.0 KB) |
-| disposable-email-domains/disposable-email-domains | 9,901 | ✅ | 0.19s (139.9 KB) |
-| eser/sanitizer-svc | 3,855 | ✅ | 0.23s (48.9 KB) |
-| unkn0w/disposable-email-domain-list | 3,616 | ✅ | 0.09s (45.7 KB) |
-| MattKetmo/EmailChecker | 2,515 | ✅ | 0.09s (32.4 KB) |
-| GeroldSetz/emailondeck.com-domains | 1,121 | ✅ | 0.09s (15.4 KB) |
-| castle/disposable-email-domains | 1,000 | ✅ | 0.35s (12.9 KB) |
-| jespernissen/disposable-maildomain-list | 981 | ✅ | 0.07s (12.6 KB) |
-| TheDahoom/disposable-email | 18 | ✅ | 0.21s (234 B) |
+| groundcat/disposable-email-domain-list | 19,523 | ✅ | 0.12s (300.0 KB) |
+| 7c/fakefilter | 10,658 | ✅ | 0.13s (146.5 KB) |
+| sublime-security/static-files | 10,522 | ✅ | 0.25s (144.0 KB) |
+| disposable-email-domains/disposable-email-domains | 9,913 | ✅ | 0.14s (140.0 KB) |
+| eser/sanitizer-svc | 3,855 | ✅ | 0.15s (48.9 KB) |
+| unkn0w/disposable-email-domain-list | 3,616 | ✅ | 0.12s (45.7 KB) |
+| MattKetmo/EmailChecker | 2,515 | ✅ | 0.12s (32.4 KB) |
+| GeroldSetz/emailondeck.com-domains | 1,121 | ✅ | 0.13s (15.4 KB) |
+| castle/disposable-email-domains | 1,000 | ✅ | 0.02s (13.0 KB) |
+| jespernissen/disposable-maildomain-list | 980 | ✅ | 0.14s (12.6 KB) |
+| TheDahoom/disposable-email | 18 | ✅ | 0.14s (234 B) |
 
 <!-- END_PLACEHOLDER_CONTRIBUTING -->
 <!-- START_PLACEHOLDER_LAST_UPDATED -->
 
-_Last updated: 2026-10-19_
+_Last updated: 2026-10-20_
 
 <!-- END_PLACEHOLDER_LAST_UPDATED -->
 
