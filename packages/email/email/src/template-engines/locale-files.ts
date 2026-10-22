@@ -148,7 +148,7 @@ export const loadLocaleTemplates = async (directory: string, name: string, optio
 
     assertDistinctLocales([...localeFiles.keys()]);
 
-    if (hasBaseFile && defaultLocale !== undefined && localeFiles.has(defaultLocale)) {
+    if (hasBaseFile && defaultLocale !== undefined && [...localeFiles.keys()].some((locale) => locale.toLowerCase() === defaultLocale.toLowerCase())) {
         throw new EmailError(COMPONENT, `"${name}${extension}" and "${name}.${defaultLocale}${extension}" both exist; keep one`);
     }
 

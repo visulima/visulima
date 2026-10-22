@@ -106,6 +106,14 @@ describe("locale files", () => {
             await expect(loadLocaleTemplates(directory, "welcome", { defaultLocale: "en" })).rejects.toThrow("both exist");
         });
 
+        it("matches the default locale to its file without regard to case", async () => {
+            expect.assertions(1);
+
+            await writeFile(join(directory, "welcome.en.html"), "Hi");
+
+            await expect(loadLocaleTemplates(directory, "welcome", { defaultLocale: "EN" })).rejects.toThrow("both exist");
+        });
+
         it("throws when two locales differ only by case", async () => {
             expect.assertions(1);
 
