@@ -37,6 +37,7 @@ Providers are responsible for actually sending emails. @visulima/email supports 
 - **[Failover](/docs/packages/email/providers/failover)** - Automatic failover between multiple providers
 - **[Round Robin](/docs/packages/email/providers/roundrobin)** - Load balancing across multiple providers
 - **[MailCrab](/docs/packages/email/providers/mailcrab)** - Local development email testing ([Docs](https://mailcrab.app/))
+- **[File](/docs/packages/email/providers/file)** - Writes messages to `.eml` files instead of sending them
 - **[OpenTelemetry](/docs/packages/email/providers/opentelemetry)** - OpenTelemetry instrumentation wrapper for observability ([API Docs](https://opentelemetry.io/docs/))
 
 ## Runtime Support
@@ -80,6 +81,7 @@ These providers require Node.js built-in modules and only work in **Node.js**:
 - ⚠️ **AWS SES** - Requires `node:crypto` for AWS Signature V4 signing
 - ⚠️ **SMTP** - Requires `node:net` and `node:tls` for SMTP connections
 - ⚠️ **MailCrab** - Wraps SMTP provider (requires Node.js)
+- ⚠️ **File** - Writes to the local filesystem (requires Node.js)
 - ⚠️ **Nodemailer** - Requires the `nodemailer` package (Node.js only)
 
 ### Runtime Compatibility
@@ -111,6 +113,7 @@ These providers require Node.js built-in modules and only work in **Node.js**:
 | AWS SES       | ✅      | ❌   | ❌                 |
 | SMTP          | ✅      | ❌   | ❌                 |
 | MailCrab      | ✅      | ❌   | ❌                 |
+| File          | ✅      | ❌   | ❌                 |
 | Nodemailer    | ✅      | ❌   | ❌                 |
 | Failover      | ✅\*    | ✅\* | ✅\*               |
 | Round Robin   | ✅\*    | ✅\* | ✅\*               |
