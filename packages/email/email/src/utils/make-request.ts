@@ -13,6 +13,16 @@ const hasBuffer = globalThis.Buffer !== undefined;
 export const REQUEST_TIMEOUT_CODE = "ETIMEDOUT";
 
 /**
+ * Tells whether a failed HTTP status would be rejected again if the same request were repeated.
+ *
+ * Every 4xx is permanent except `408` and `429`, which the server sends for a transient reason and
+ * which are the complement of the retryable set in `is-retryable-result.ts`.
+ * @param statusCode The HTTP status code of the response.
+ * @returns True when the status is a 4xx that a retry cannot fix.
+ */
+export const isPermanentStatusCode = (statusCode: number): boolean => statusCode >= 400 && statusCode < 500 && statusCode !== 408 && statusCode !== 429;
+
+/**
  * Request options compatible with both Fetch API and Node.js http
  */
 export interface RequestOptions {
@@ -108,8 +118,12 @@ export const makeRequest = async (url: string | URL, options: RequestOptions = {
                     headers: headersObject,
                     statusCode: response.status,
                 },
-                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                error: isSuccess ? undefined : new EmailError("http", `Request failed with status ${response.status}`, { code: response.status.toString() }),
+                error: isSuccess
+                    ? undefined
+                    : new EmailError("http", `Request failed with status ${String(response.status)}`, {
+                        code: response.status.toString(),
+                        permanent: isPermanentStatusCode(response.status),
+                    }),
                 success: isSuccess,
             };
         } catch (error) {
