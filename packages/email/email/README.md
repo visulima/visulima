@@ -1122,6 +1122,27 @@ mock.reset();
 - `waitForMessage(predicate, timeout)` - Wait for matching message
 - `reset()` - Reset to initial state
 
+### Extracting Links in Tests
+
+`extractLinks` from `@visulima/email/test` returns the http(s) URLs in a message, so a test can follow a verification or reset link. It returns `href` targets from the HTML, then bare URLs from the visible HTML text and from the plain text, without duplicates. Image sources and CSS URLs are not links and are ignored. Entities are decoded in HTML, including the hexadecimal entities that template engines use to escape `=`.
+
+Pass markup as `{ html }`. A bare string is always treated as plain text.
+
+```typescript
+import { createTestEmail, extractLinks } from "@visulima/email/test";
+
+const email = createTestEmail();
+
+await email.mail.send({
+    from: { email: "app@example.com" },
+    html: '<a href="https://app.example.com/verify?token=abc&amp;lang=en">Verify</a>',
+    subject: "Verify",
+    to: { email: "user@example.com" },
+});
+
+const [verifyUrl] = extractLinks(email.sent()[0]!.options);
+```
+
 ### MailCrab Provider (for Development)
 
 MailCrab is a local SMTP server for testing emails during development. This provider is a convenience wrapper around the SMTP provider with MailCrab defaults.

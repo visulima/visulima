@@ -148,6 +148,27 @@ it("captures the outbox", async () => {
 });
 ```
 
+## Extracting Links
+
+`extractLinks` returns the http(s) URLs in a message, so a test can follow a verification or reset link. It returns `href` targets from the HTML, then bare URLs from the visible HTML text and from the plain text, without duplicates. Image sources and CSS URLs are not links and are ignored. Entities are decoded in HTML, including the hexadecimal entities that template engines use to escape `=`.
+
+Pass markup as `{ html }`. A bare string is always treated as plain text.
+
+```typescript
+import { createTestEmail, extractLinks } from "@visulima/email/test";
+
+const email = createTestEmail();
+
+await email.mail.send({
+    from: { email: "app@example.com" },
+    html: '<a href="https://app.example.com/verify?token=abc&amp;lang=en">Verify</a>',
+    subject: "Verify",
+    to: { email: "user@example.com" },
+});
+
+const [verifyUrl] = extractLinks(email.sent()[0]!.options);
+```
+
 ## Using the Matchers Manually
 
 If you prefer not to register the matchers globally, pass the raw `emailMatchers` map to `expect.extend(...)` yourself:
