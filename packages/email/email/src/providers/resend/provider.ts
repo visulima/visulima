@@ -25,6 +25,11 @@ const DEFAULT_TIMEOUT = 30_000;
 const DEFAULT_RETRIES = 3;
 
 /**
+ * Resend accepts an `Idempotency-Key` of up to 256 visible ASCII characters.
+ */
+const IDEMPOTENCY_KEY_PATTERN = /^[\u0021-\u007E]{1,256}$/;
+
+/**
  * Validates tag format for Resend API.
  * Tags can only contain ASCII letters, numbers, underscores, or dashes.
  * @param tag The tag object to validate.
@@ -80,6 +85,7 @@ const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailOptions>
                 batchSending: true,
                 customHeaders: true,
                 html: true,
+                idempotency: true,
                 replyTo: true,
                 scheduling: true,
                 tagging: true,
@@ -246,6 +252,13 @@ const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailOptions>
                         };
                     }
 
+                    if (emailOptions.idempotencyKey !== undefined && !IDEMPOTENCY_KEY_PATTERN.test(emailOptions.idempotencyKey)) {
+                        return {
+                            error: new EmailError(PROVIDER_NAME, "Invalid idempotency key: must be 1-256 visible ASCII characters"),
+                            success: false,
+                        };
+                    }
+
                     await providerState.ensureInitialized(() => this.initialize(), PROVIDER_NAME);
 
                     const payload: Record<string, unknown> = {
@@ -331,6 +344,10 @@ const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailOptions>
                         Authorization: `Bearer ${options.apiKey}`,
                         "Content-Type": "application/json",
                     };
+
+                    if (emailOptions.idempotencyKey !== undefined) {
+                        headers["Idempotency-Key"] = emailOptions.idempotencyKey;
+                    }
 
                     const result = await retry(
                         async () =>

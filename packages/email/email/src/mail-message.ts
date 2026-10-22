@@ -96,6 +96,8 @@ class MailMessage {
 
     private tagsValue: string[] = [];
 
+    private idempotencyKeyValue?: string;
+
     private signer?: EmailSigner;
 
     private encrypter?: EmailEncrypter;
@@ -514,6 +516,18 @@ class MailMessage {
     }
 
     /**
+     * Sets an idempotency key so the provider can drop a repeated send of the same message.
+     * Honoured only by providers that declare `features.idempotency`.
+     * @param key The caller-chosen key, unique per logical message.
+     * @returns This instance for method chaining.
+     */
+    public idempotencyKey(key: string): this {
+        this.idempotencyKeyValue = key;
+
+        return this;
+    }
+
+    /**
      * Signs the email message with an S/MIME signer.
      *
      * DKIM is not accepted here and `DkimSigner` deliberately does not satisfy `EmailSigner`: a
@@ -836,6 +850,10 @@ class MailMessage {
 
         if (this.tagsValue.length > 0) {
             emailOptions.tags = this.tagsValue;
+        }
+
+        if (this.idempotencyKeyValue !== undefined) {
+            emailOptions.idempotencyKey = this.idempotencyKeyValue;
         }
 
         if (this.icalEventBuilder) {

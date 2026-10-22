@@ -154,6 +154,23 @@ import { checkFeatureSupport } from "@visulima/email";
 const { supported, violations } = checkFeatureSupport(message, provider.features);
 ```
 
+### Idempotency Keys
+
+Pass an `idempotencyKey` to tell the provider that a repeated send is the same message, so it is not delivered twice. The key is set on the message builder or on `EmailOptions`:
+
+```ts
+await mail.send(
+    new MailMessage()
+        .from("orders@example.com")
+        .to("user@example.com")
+        .subject("Order confirmed")
+        .text("Thanks for your order")
+        .idempotencyKey(`order-${orderId}-confirmation`),
+);
+```
+
+The key is sent as an `Idempotency-Key` HTTP header and never appears in the message headers or the MIME body. Only providers that declare `features.idempotency` (currently Resend) use it; other providers ignore the key. Keys must be 1–256 visible ASCII characters. `sendBatch` does not apply a batch-level key to each recipient, because that would make every recipient look like a repeat of the first.
+
 ### Creating Draft Emails
 
 You can create draft emails in EML (RFC 822) format without sending them. The `draft()` method returns the email as an EML string with an `X-Unsent: 1` header automatically added:
