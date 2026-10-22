@@ -1124,7 +1124,7 @@ mock.reset();
 
 ### Extracting Links in Tests
 
-`extractLinks` from `@visulima/email/test` returns the http(s) URLs in a message, so a test can follow a verification or reset link. It returns `href` targets from the HTML, then bare URLs from the visible HTML text and from the plain text, without duplicates. Image sources and CSS URLs are not links and are ignored. Entities are decoded in HTML, including the hexadecimal entities that template engines use to escape `=`.
+`extractLinks` from `@visulima/email/test` returns the http(s) URLs in a message, so a test can follow a verification or reset link. It returns `href` targets from the HTML, then bare URLs from the visible HTML text and from the plain text, without duplicates. Only `a` and `area` elements contribute `href` targets, so image sources, stylesheet and base links, CSS URLs, and the contents of `script`, `style` and comments are ignored. Entities are decoded in HTML, including the hexadecimal entities that template engines use to escape `=`.
 
 Pass markup as `{ html }`. A bare string is always treated as plain text.
 

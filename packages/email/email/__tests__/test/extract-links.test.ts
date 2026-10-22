@@ -22,6 +22,36 @@ describe(extractLinks, () => {
         ).toStrictEqual([]);
     });
 
+    it("returns only the anchor link from a document with a head stylesheet and a style block", () => {
+        expect.assertions(1);
+
+        expect(
+            extractLinks({
+                html: `<head><link rel="stylesheet" href="https://fonts.example.com/a"><style>@import url(https://fonts.example.com/b);</style></head><body><a href="https://app.example.com/verify">V</a></body>`,
+            }),
+        ).toStrictEqual(["https://app.example.com/verify"]);
+    });
+
+    it("ignores base href and URLs inside script blocks and comments", () => {
+        expect.assertions(1);
+
+        expect(
+            extractLinks({
+                html: `<base href="https://cdn.example.com/"><script>var u = "https://tracker.example.com/x";</script><!-- https://old.example.com/y --><p>Hi</p>`,
+            }),
+        ).toStrictEqual([]);
+    });
+
+    it("reads href on an anchor whatever the tag's case, and ignores data-href", () => {
+        expect.assertions(1);
+
+        expect(
+            extractLinks({
+                html: `<A HREF="https://x.example.com/upper">U</A><AREA HREF="https://x.example.com/area"><span data-href="https://x.example.com/data">S</span>`,
+            }),
+        ).toStrictEqual(["https://x.example.com/upper", "https://x.example.com/area"]);
+    });
+
     it("finds bare URLs in the visible text of HTML", () => {
         expect.assertions(1);
 
