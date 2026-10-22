@@ -89,7 +89,7 @@ const worker = createWorker({
 
 ### Permanent Failures
 
-A failure whose error has `permanent: true` is dead-lettered on its first attempt, without retries. Retrying would only repeat the same rejection. The HTTP providers set this flag on every 4xx response except `408` and `429`, so a 422 from the provider is dead-lettered at once while a `429` rate limit still backs off and retries.
+A failure whose error has `permanent: true` is dead-lettered on its first attempt, without retries. Retrying would only repeat the same rejection. The HTTP providers set this flag on every 4xx response except `408`, `409` and `429`, so a 422 from the provider is dead-lettered at once. A `429` rate limit still backs off and retries, and so does a `409`, which can mean a request with the same idempotency key is still in progress.
 
 Your own `send` function can flag an error the same way: set `permanent: true` on the error you return. `EmailError` accepts it as an option.
 

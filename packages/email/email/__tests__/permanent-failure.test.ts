@@ -43,6 +43,7 @@ describe(isPermanentStatusCode, () => {
         [403, true],
         [404, true],
         [408, false],
+        [409, false],
         [422, true],
         [429, false],
         [500, false],
@@ -63,6 +64,7 @@ describe(makeRequest, () => {
 
     it.each([
         [400, true],
+        [409, false],
         [422, true],
         [429, false],
         [503, false],

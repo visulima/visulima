@@ -1386,7 +1386,7 @@ See [Middleware](https://visulima.com/docs/package/email/middleware/introduction
 
 ## Queue & Worker
 
-Durable background sending via the `EmailQueue` interface: an in-memory `MemoryQueue`, an `UnstorageQueue` (`@visulima/email/queue/unstorage`) backed by any [unstorage](https://unstorage.unjs.io/) store (Redis/FS/KV/Postgres), and a `createWorker(...)` with bounded concurrency, retry/backoff and dead-lettering. Permanent failures, such as HTTP 4xx responses other than `408` and `429`, are dead-lettered on their first attempt.
+Durable background sending via the `EmailQueue` interface: an in-memory `MemoryQueue`, an `UnstorageQueue` (`@visulima/email/queue/unstorage`) backed by any [unstorage](https://unstorage.unjs.io/) store (Redis/FS/KV/Postgres), and a `createWorker(...)` with bounded concurrency, retry/backoff and dead-lettering. Permanent failures, such as HTTP 4xx responses other than `408`, `409` and `429`, are dead-lettered on their first attempt.
 
 ```typescript
 import { createMail } from "@visulima/email";
