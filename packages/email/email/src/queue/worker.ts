@@ -4,6 +4,18 @@ import type { EmailQueue, QueueJob } from "./types";
 const defaultBackoff = (attempts: number): number => 1000 * 2 ** (attempts - 1);
 
 /**
+ * Tells whether a failed result carries an error flagged `permanent`, meaning a retry would fail the
+ * same way. Checked by property rather than class, so a caller's own `send` can flag its errors too.
+ * @param result The failed result.
+ * @returns True when the job should be dead-lettered without another attempt.
+ */
+const isPermanentFailure = (result: Result<EmailResult>): boolean => {
+    const { error } = result;
+
+    return typeof error === "object" && error !== null && "permanent" in error && error.permanent === true;
+};
+
+/**
  * Options for {@link createWorker}.
  */
 export interface WorkerOptions {
@@ -20,7 +32,8 @@ export interface WorkerOptions {
     concurrency?: number;
 
     /**
-     * Maximum delivery attempts before a job is dead-lettered.
+     * Maximum delivery attempts before a job is dead-lettered. A failure whose error is flagged
+     * `permanent` is dead-lettered on its first attempt regardless of this limit.
      * @default 3
      */
     maxAttempts?: number;
@@ -134,7 +147,7 @@ export const createWorker = (options: WorkerOptions): Worker => {
 
         const attemptsMade = job.attempts + 1;
 
-        if (attemptsMade >= maxAttempts) {
+        if (attemptsMade >= maxAttempts || isPermanentFailure(result)) {
             await guardQueueOp(job, () => queue.ack(job.id));
             onDeadLetter?.(job, result);
 
