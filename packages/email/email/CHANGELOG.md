@@ -1,3 +1,9 @@
+## @visulima/email [4.2.0](https://github.com/visulima/visulima/compare/@visulima/email@4.1.0...@visulima/email@4.2.0) (2026-10-23)
+
+### Features
+
+* **email:** add idempotency key for resend ([#982](https://github.com/visulima/visulima/issues/982)) ([53cfa4d](https://github.com/visulima/visulima/commit/53cfa4da67ee38dfdcaf6cd92f518b09adfeaf19))
+
 ## @visulima/email [4.1.0](https://github.com/visulima/visulima/compare/@visulima/email@4.0.0...@visulima/email@4.1.0) (2026-10-23)
 
 ### Features
