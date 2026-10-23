@@ -43,6 +43,10 @@ const logSendResult = (logger: Logger | undefined, result: Result<EmailResult>, 
 const buildPersonalized = async (base: EmailOptions, personalization: Personalization, render?: BatchRenderer): Promise<EmailOptions> => {
     const merged: EmailOptions = { ...base, to: personalization.to };
 
+    // One batch-level key would make every recipient look like a repeat of the first, so each
+    // personalized message is sent without it.
+    delete merged.idempotencyKey;
+
     if (personalization.cc) {
         merged.cc = personalization.cc;
     }
