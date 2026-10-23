@@ -1,6 +1,6 @@
 {
     "name": "@visulima/email",
-    "version": "4.0.0",
+    "version": "4.1.0",
     "description": "A comprehensive email library with multi-provider support, crypto utilities, and template engines",
     "keywords": [
         "ahasend",
@@ -122,6 +122,10 @@
             "types": "./dist/template-engines/i18n.d.ts",
             "default": "./dist/template-engines/i18n.js"
         },
+        "./template/locale-files": {
+            "types": "./dist/template-engines/locale-files.d.ts",
+            "default": "./dist/template-engines/locale-files.js"
+        },
         "./providers/autosend": {
             "types": "./dist/providers/autosend/index.d.ts",
             "default": "./dist/providers/autosend/index.js"
@@ -157,6 +161,10 @@
         "./providers/mailcrab": {
             "types": "./dist/providers/mailcrab/index.d.ts",
             "default": "./dist/providers/mailcrab/index.js"
+        },
+        "./providers/file": {
+            "types": "./dist/providers/file/index.d.ts",
+            "default": "./dist/providers/file/index.js"
         },
         "./providers/nodemailer": {
             "types": "./dist/providers/nodemailer/index.d.ts",

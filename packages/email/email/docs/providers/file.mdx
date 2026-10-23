@@ -1,0 +1,56 @@
+---
+title: File
+description: Write emails to .eml files for local development and tests with @visulima/email
+---
+
+# File Provider
+
+The file provider writes each message to an `.eml` file in a directory instead of sending it. The file contains the same MIME output the SMTP path builds, so you can open it in a mail client or assert on it in tests.
+
+**Runtime Support:** Node.js only (writes to the local filesystem with `node:fs`)
+
+## Usage
+
+```typescript
+import { createMail, MailMessage } from "@visulima/email";
+import { fileProvider } from "@visulima/email/providers/file";
+
+const mail = createMail(fileProvider({ directory: "./tmp/emails" }));
+
+const result = await mail.send(new MailMessage().to("user@example.com").from("sender@example.com").subject("Welcome").html("<h1>Hi</h1>"));
+```
+
+The result's `data.response` holds the path of the written file:
+
+```typescript
+const { path } = result.data?.response as { path: string };
+```
+
+## Configuration
+
+| Option      | Type     | Required | Default | Description                               |
+| ----------- | -------- | -------- | ------- | ----------------------------------------- |
+| `directory` | `string` | Yes      | -       | Directory the `.eml` files are written to |
+
+The directory is created on first use. Creating the provider without a `directory` throws a `RequiredOptionError`.
+
+## File Names
+
+Each file is named `<epoch-ms>-<message-id>.eml`, where the epoch part is the send time. Characters outside `A-Z a-z 0-9 _ . @ + -` in the Message-ID are replaced with `_`, so a Message-ID cannot place a file outside the output directory. Files are never overwritten: sending a message whose file name already exists returns an error result.
+
+## Bcc Recipients
+
+Bcc recipients are written into the file. Nothing is delivered, so the file is the only record of them. Messages sent through a real transport do not include Bcc in the delivered message.
+
+## Feature Support
+
+| Feature            | Supported |
+| ------------------ | --------- |
+| Attachments        | ✅        |
+| HTML content       | ✅        |
+| Reply-To           | ✅        |
+| Custom headers     | ✅        |
+| Tags               | ❌        |
+| Scheduled delivery | ❌        |
+| Provider templates | ❌        |
+| Tracking           | ❌        |

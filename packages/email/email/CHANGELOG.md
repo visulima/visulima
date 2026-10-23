@@ -1,3 +1,12 @@
+## @visulima/email [4.1.0](https://github.com/visulima/visulima/compare/@visulima/email@4.0.0...@visulima/email@4.1.0) (2026-10-23)
+
+### Features
+
+* **email:** add extractLinks test helper ([#984](https://github.com/visulima/visulima/issues/984)) ([183c91f](https://github.com/visulima/visulima/commit/183c91f1e192b364773515da2ce8dbe8deafaa6d))
+* **email:** add file provider for .eml output ([#983](https://github.com/visulima/visulima/issues/983)) ([9768708](https://github.com/visulima/visulima/commit/97687081ff5ac190b0d63a4f0f7442cc64ab0f55))
+* **email:** dead-letter permanent failures early ([#985](https://github.com/visulima/visulima/issues/985)) ([b42d51d](https://github.com/visulima/visulima/commit/b42d51d61e4ab1e4277e4d85e28e877912920651))
+* **email:** load locale-specific template files ([#986](https://github.com/visulima/visulima/issues/986)) ([cfdc461](https://github.com/visulima/visulima/commit/cfdc461091566a46168122096dade10a37477c59))
+
 ## @visulima/email [4.0.0](https://github.com/visulima/visulima/compare/@visulima/email@3.0.28...@visulima/email@4.0.0) (2026-10-15)
 
 ### ⚠ BREAKING CHANGES
