@@ -1,3 +1,10 @@
+## @visulima/html [1.0.32](https://github.com/visulima/visulima/compare/@visulima/html@1.0.31...@visulima/html@1.0.32) (2026-10-23)
+
+
+### Dependencies
+
+* **sanitize-html:** 2.17.7 → 2.18.1
+
 ## @visulima/html [1.0.31](https://github.com/visulima/visulima/compare/@visulima/html@1.0.30...@visulima/html@1.0.31) (2026-10-04)
 
 ## @visulima/html [1.0.30](https://github.com/visulima/visulima/compare/@visulima/html@1.0.29...@visulima/html@1.0.30) (2026-10-04)
