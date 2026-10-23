@@ -59,9 +59,13 @@ const findTemplateFiles = (entries: Dirent[], name: string, extension: string): 
     let hasBaseFile = false;
 
     for (const entry of entries) {
-        if (entry.isFile() && entry.name === baseFile) {
+        if (!entry.isFile()) {
+            continue;
+        }
+
+        if (entry.name === baseFile) {
             hasBaseFile = true;
-        } else if (entry.isFile() && entry.name.startsWith(prefix) && entry.name.endsWith(extension)) {
+        } else if (entry.name.startsWith(prefix) && entry.name.endsWith(extension)) {
             const locale = entry.name.slice(prefix.length, entry.name.length - extension.length);
 
             if (LOCALE_PATTERN.test(locale)) {
@@ -133,29 +137,31 @@ const readLocaleFiles = async (directory: string, localeFiles: Map<string, strin
 export const loadLocaleTemplates = async (directory: string, name: string, options: LocaleFileOptions = {}): Promise<LocaleTemplates> => {
     const extension = options.extension ?? DEFAULT_EXTENSION;
     const { defaultLocale } = options;
+    const baseFile = `${name}${extension}`;
 
     assertSafeInput(name, extension);
 
     const { hasBaseFile, localeFiles } = findTemplateFiles(await listDirectory(directory), name, extension);
+    const locales = [...localeFiles.keys()];
 
     if (hasBaseFile && defaultLocale === undefined) {
-        throw new EmailError(COMPONENT, `"${name}${extension}" exists, so pass defaultLocale to register it`);
+        throw new EmailError(COMPONENT, `"${baseFile}" exists, so pass defaultLocale to register it`);
     }
 
-    if (!hasBaseFile && localeFiles.size === 0) {
+    if (!hasBaseFile && locales.length === 0) {
         throw new EmailError(COMPONENT, `No "${name}" template files with extension "${extension}" in "${directory}"`);
     }
 
-    assertDistinctLocales([...localeFiles.keys()]);
+    assertDistinctLocales(locales);
 
-    if (hasBaseFile && defaultLocale !== undefined && [...localeFiles.keys()].some((locale) => locale.toLowerCase() === defaultLocale.toLowerCase())) {
-        throw new EmailError(COMPONENT, `"${name}${extension}" and "${name}.${defaultLocale}${extension}" both exist; keep one`);
+    if (hasBaseFile && defaultLocale !== undefined && locales.some((locale) => locale.toLowerCase() === defaultLocale.toLowerCase())) {
+        throw new EmailError(COMPONENT, `"${baseFile}" and "${name}.${defaultLocale}${extension}" both exist; keep one`);
     }
 
     const templates: LocaleTemplates = await readLocaleFiles(directory, localeFiles);
 
     if (hasBaseFile && defaultLocale !== undefined) {
-        templates[defaultLocale] = await readFile(join(directory, `${name}${extension}`), "utf8");
+        templates[defaultLocale] = await readFile(join(directory, baseFile), "utf8");
     }
 
     return templates;
