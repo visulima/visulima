@@ -1169,6 +1169,23 @@ const result = await mail.send(message);
 
 **Note:** Make sure MailCrab is running locally before using this provider. MailCrab can be installed via Docker or as a standalone application.
 
+### File Provider (for Development and Testing)
+
+The file provider writes each message to an `.eml` file in a directory instead of sending it. Use it to inspect the exact MIME output during development or in tests.
+
+```typescript
+import { createMail, MailMessage } from "@visulima/email";
+import { fileProvider } from "@visulima/email/providers/file";
+
+const mail = createMail(fileProvider({ directory: "./tmp/emails" }));
+
+const result = await mail.send(new MailMessage().to("user@example.com").from("sender@example.com").subject("Test Email").html("<h1>Test</h1>"));
+
+// result.data.response.path is the written file
+```
+
+Files are named `<epoch-ms>-<message-id>.eml` and are never overwritten. A Message-ID that contains path separators is sanitised before it becomes part of the filename. Bcc recipients are written into the file, since nothing is delivered.
+
 ## Supported Providers
 
 - **AWS SES** - Amazon Simple Email Service
@@ -1176,6 +1193,7 @@ const result = await mail.send(message);
 - **Failover** - Automatic failover between multiple providers
 - **HTTP** - Generic HTTP API provider
 - **MailCrab** - Local development email testing (SMTP wrapper)
+- **File** - Writes messages to `.eml` files instead of sending (Node.js only)
 - **Mailgun** - Developer-friendly email API service
 - **Mailjet** - Email marketing and transactional email platform
 - **MailerSend** - Modern email API for developers
@@ -1246,6 +1264,7 @@ These providers require Node.js built-in modules and only work in **Node.js**:
 - ⚠️ **AWS SES** - Requires `node:crypto` for AWS Signature V4 signing
 - ⚠️ **SMTP** - Requires `node:net` and `node:tls` for SMTP connections
 - ⚠️ **MailCrab** - Wraps SMTP provider (requires Node.js)
+- ⚠️ **File** - Writes to the local filesystem (requires Node.js)
 - ⚠️ **Nodemailer** - Requires the `nodemailer` package (Node.js only)
 
 ### Template Engines
@@ -1301,6 +1320,7 @@ Only file names from the directory listing are read, and a requested locale only
 | AWS SES       | ✅      | ❌   | ❌                 |
 | SMTP          | ✅      | ❌   | ❌                 |
 | MailCrab      | ✅      | ❌   | ❌                 |
+| File          | ✅      | ❌   | ❌                 |
 | Nodemailer    | ✅      | ❌   | ❌                 |
 | Failover      | ✅\*    | ✅\* | ✅\*               |
 | Round Robin   | ✅\*    | ✅\* | ✅\*               |

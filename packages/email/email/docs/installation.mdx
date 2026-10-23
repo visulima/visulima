@@ -72,6 +72,7 @@ The following providers require Node.js built-in modules (`node:crypto`, `node:n
 - **AWS SES** - Requires `node:crypto` for AWS Signature V4 signing
 - **SMTP** - Requires `node:net` and `node:tls` for SMTP connections
 - **MailCrab** - Wraps SMTP provider (requires Node.js)
+- **File** - Writes to the local filesystem (requires Node.js)
 - **Nodemailer** - Requires the `nodemailer` package (Node.js only)
 
 ### Runtime Compatibility Table
@@ -102,6 +103,7 @@ The following providers require Node.js built-in modules (`node:crypto`, `node:n
 | AWS SES       | ✅      | ❌   | ❌                 |
 | SMTP          | ✅      | ❌   | ❌                 |
 | MailCrab      | ✅      | ❌   | ❌                 |
+| File          | ✅      | ❌   | ❌                 |
 | Nodemailer    | ✅      | ❌   | ❌                 |
 | Failover      | ✅\*    | ✅\* | ✅\*               |
 | Round Robin   | ✅\*    | ✅\* | ✅\*               |
@@ -145,6 +147,7 @@ The following providers work without any additional dependencies:
 - **SMTP** - No additional dependencies needed, uses native Node.js SMTP support (`node:net` and `node:tls`)
 - **Nodemailer** - Nodemailer is included as a dependency, no additional installation needed
 - **MailCrab** - No additional dependencies needed, wraps SMTP provider
+- **File** - No additional dependencies needed
 
 ### Composite Providers
 

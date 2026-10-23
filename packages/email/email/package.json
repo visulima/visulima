@@ -162,6 +162,10 @@
             "types": "./dist/providers/mailcrab/index.d.ts",
             "default": "./dist/providers/mailcrab/index.js"
         },
+        "./providers/file": {
+            "types": "./dist/providers/file/index.d.ts",
+            "default": "./dist/providers/file/index.js"
+        },
         "./providers/nodemailer": {
             "types": "./dist/providers/nodemailer/index.d.ts",
             "default": "./dist/providers/nodemailer/index.js"
