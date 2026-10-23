@@ -1258,6 +1258,21 @@ Template engines are optional peer dependencies and work where their underlying 
 - **Vue Email** - Works in Node.js and Bun (where `@vue-email/render` package is available)
 - **HTML-to-Text** - Works in Node.js and Bun (where `html-to-text` package is available)
 
+### Locale Template Files (Node.js)
+
+`@visulima/email/template/locale-files` loads templates from a directory, one file per locale. For a template named `welcome`, `welcome.de.html` is used for `de` (and `de-AT`), and `welcome.html` is the fallback, registered under `defaultLocale`:
+
+```typescript
+import { renderHandlebars } from "@visulima/email/template/handlebars";
+import { createLocaleFileRenderer } from "@visulima/email/template/locale-files";
+
+const render = createLocaleFileRenderer("./emails", renderHandlebars, { defaultLocale: "en" });
+
+const html = await render("welcome", "de-AT", { name: "Ada" });
+```
+
+Only file names from the directory listing are read, and a requested locale only selects a key, so a locale from user input never becomes a path. Templates are read on every call; cache the result if they do not change at runtime. Layouts are not part of this loader.
+
 ### Runtime Requirements Summary
 
 | Provider      | Node.js | Bun  | Cloudflare Workers |
