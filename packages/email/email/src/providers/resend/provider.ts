@@ -252,7 +252,10 @@ const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailOptions>
                         };
                     }
 
-                    if (emailOptions.idempotencyKey !== undefined && !IDEMPOTENCY_KEY_PATTERN.test(emailOptions.idempotencyKey)) {
+                    if (
+                        emailOptions.idempotencyKey !== undefined
+                        && (typeof emailOptions.idempotencyKey !== "string" || !IDEMPOTENCY_KEY_PATTERN.test(emailOptions.idempotencyKey))
+                    ) {
                         return {
                             error: new EmailError(PROVIDER_NAME, "Invalid idempotency key: must be 1-256 visible ASCII characters"),
                             success: false,

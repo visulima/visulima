@@ -169,7 +169,7 @@ await mail.send(
 );
 ```
 
-The key is sent as an `Idempotency-Key` HTTP header and never appears in the message headers or the MIME body. Only providers that declare `features.idempotency` (currently Resend) use it; other providers ignore the key. Keys must be 1–256 visible ASCII characters. `sendBatch` does not apply a batch-level key to each recipient, because that would make every recipient look like a repeat of the first.
+The key is sent as an `Idempotency-Key` HTTP header and never appears in the message headers or the MIME body. Only providers that declare `features.idempotency` (currently Resend) use it; other providers ignore the key. Keys must be 1–256 visible ASCII characters. Resend keeps a key for 24 hours and requires a retry to carry the same payload; a retry with a different payload is rejected, and a retry after 24 hours can deliver the email again. The key is therefore protection against accidental double sends within that window, not a permanent guarantee. `sendBatch` does not apply a batch-level key to each recipient, because that would make every recipient look like a repeat of the first.
 
 ### Creating Draft Emails
 

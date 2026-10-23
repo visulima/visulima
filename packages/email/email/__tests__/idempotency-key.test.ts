@@ -88,6 +88,8 @@ describe("idempotencyKey", () => {
             ["contains a line break", "order\r\nX-Injected: 1"],
             ["is empty", ""],
             ["exceeds 256 characters", "k".repeat(257)],
+            ["is not a string", 42 as unknown as string],
+            ["is null", null as unknown as string],
         ])("rejects a key that %s without calling the API", async (_label, key) => {
             expect.assertions(2);
 
