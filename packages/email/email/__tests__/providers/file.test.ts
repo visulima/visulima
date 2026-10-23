@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { mkdtemp, readdir, readFile, rm } from "node:fs/promises";
+import { chmod, mkdir, mkdtemp, readdir, readFile, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 
@@ -134,5 +134,48 @@ describe(fileProvider, () => {
 
         expect(result.success).toBe(false);
         await expect(readdir(directory)).resolves.toHaveLength(0);
+    });
+
+    it("returns an error result when the MIME message cannot be built", async () => {
+        expect.assertions(2);
+
+        const unreadable = new Promise<Uint8Array>((_resolve, reject) => {
+            setTimeout(() => {
+                reject(new Error("unreadable"));
+            }, 0);
+        });
+        const result = await fileProvider({ directory }).sendEmail({
+            ...message,
+            attachments: [{ content: unreadable, filename: "note.txt" }],
+        });
+
+        expect(result.success).toBe(false);
+        await expect(readdir(directory)).resolves.toHaveLength(0);
+    });
+
+    it("writes files readable only by the owner", async () => {
+        expect.assertions(1);
+
+        const result = await fileProvider({ directory }).sendEmail(message);
+
+        const { path } = result.data?.response as { path: string };
+        const { mode } = await stat(path);
+
+        expect(mode.toString(8).slice(-3)).toBe("600");
+    });
+
+    it("reports the provider as unavailable when the directory is read-only", async () => {
+        expect.assertions(1);
+
+        const readOnly = join(directory, "read-only");
+
+        await mkdir(readOnly);
+        await chmod(readOnly, 0o500);
+
+        try {
+            await expect(fileProvider({ directory: readOnly }).isAvailable()).resolves.toBe(false);
+        } finally {
+            await chmod(readOnly, 0o700);
+        }
     });
 });

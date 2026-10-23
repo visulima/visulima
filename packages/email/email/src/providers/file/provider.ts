@@ -1,5 +1,7 @@
-import { mkdir, writeFile } from "node:fs/promises";
-import { dirname, resolve } from "node:path";
+import { randomUUID } from "node:crypto";
+import { constants } from "node:fs";
+import { access, link, mkdir, rm, writeFile } from "node:fs/promises";
+import { dirname, join, resolve } from "node:path";
 
 import EmailError from "../../errors/email-error";
 import RequiredOptionError from "../../errors/required-option-error";
@@ -58,12 +60,13 @@ const fileProvider: ProviderFactory<FileConfig> = defineProvider((config?: FileC
         },
 
         /**
-         * The file provider is available when the output directory exists or can be created.
+         * The file provider is available when the output directory exists or can be created, and is writable.
          * @returns True when the directory is usable, false otherwise.
          */
         async isAvailable(): Promise<boolean> {
             try {
                 await mkdir(directory, { recursive: true });
+                await access(directory, constants.W_OK);
 
                 return true;
             } catch {
@@ -92,7 +95,6 @@ const fileProvider: ProviderFactory<FileConfig> = defineProvider((config?: FileC
 
             const { headers, messageId } = applyMessageId(emailOptions);
             const timestamp = new Date();
-            const eml = await buildMimeMessage({ ...emailOptions, headers }, { includeBcc: true });
             const name = `${String(timestamp.getTime())}-${toFileStem(messageId)}.eml`;
             const path = resolve(directory, name);
 
@@ -104,9 +106,15 @@ const fileProvider: ProviderFactory<FileConfig> = defineProvider((config?: FileC
                 };
             }
 
+            const temporaryPath = join(directory, `.${name}.${randomUUID()}.tmp`);
+
             try {
+                const eml = await buildMimeMessage({ ...emailOptions, headers }, { includeBcc: true });
+
                 await mkdir(directory, { recursive: true });
-                await writeFile(path, eml, { encoding: "utf8", flag: "wx" });
+                await writeFile(temporaryPath, eml, { encoding: "utf8", flag: "wx", mode: 0o600 });
+                // A hard link publishes the finished file, and unlike rename it fails when the name is taken.
+                await link(temporaryPath, path);
             } catch (error) {
                 const reason = error instanceof Error && "code" in error && error.code === "EEXIST" ? "a file with this name already exists" : String(error);
 
@@ -114,6 +122,8 @@ const fileProvider: ProviderFactory<FileConfig> = defineProvider((config?: FileC
                     error: new EmailError(PROVIDER_NAME, `Failed to write ${name}: ${reason}`),
                     success: false,
                 };
+            } finally {
+                await rm(temporaryPath, { force: true });
             }
 
             return {
