@@ -1153,6 +1153,13 @@ overrides:
   webdriver>undici: ^8.9.0
   vite@>=7.0.0 <=7.3.4: ^7.3.5
   vite@>=8.2.0 <=8.2.3: ^8.2.4
+  # rolldown 1.2.15 (published 2026-10-21) reached this lockfile through open ranges such as
+  # >=1.0.0 and *, which every dedupe resolves to the newest release. 1.2.14 (2026-10-14) is the
+  # newest release older than a week. Drop this pin once 1.2.15 clears the StepSecurity cooldown.
+  rolldown: 1.2.14
+  # Same cause for the oxc type package: auto-installed peers request >=0.98.0 and take the newest.
+  # 0.154.0 (2026-10-13) is the newest release older than a week.
+  '@oxc-project/types': 0.154.0
   '@vitest/mocker@>=4.1.0 <4.1.12': ^4.1.12
   vite@>=8.0.0 <=8.0.15: ^8.0.16
   ws@>=7.0.0 <7.5.11: ^7.5.11
