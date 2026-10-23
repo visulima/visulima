@@ -247,6 +247,28 @@ await render(templates, "fr", { name: "Cleo" }); // falls back to "en" → "Hell
 
 `resolveLocale(templates, locale, defaultLocale?)` is also exported if you only need the resolution logic. `renderI18n` throws an `EmailError` when neither the locale, its language subtag, nor the default locale has a template.
 
+## Locale Template Files (Node.js)
+
+`@visulima/email/template/locale-files` loads templates from a directory, one file per locale. For a template named `welcome`, `welcome.de.html` is used for `de` (and `de-AT`), and `welcome.html` is the fallback, registered under `defaultLocale`:
+
+```typescript
+import { renderHandlebars } from "@visulima/email/template/handlebars";
+import { createLocaleFileRenderer } from "@visulima/email/template/locale-files";
+
+const render = createLocaleFileRenderer("./emails", renderHandlebars, { defaultLocale: "en" });
+
+const html = await render("welcome", "de-AT", { name: "Ada" });
+```
+
+| Option          | Type     | Default | Description                                                                           |
+| --------------- | -------- | ------- | ------------------------------------------------------------------------------------- |
+| `defaultLocale` | `string` | -       | Locale the un-suffixed file is registered under. Required when `welcome.html` exists. |
+| `extension`     | `string` | `.html` | File extension, including the dot. Use `.txt` or `.mjml` for other text templates.    |
+
+`loadLocaleTemplates(directory, name, options)` returns the same map that `renderI18n` takes, if you want to render it with another engine.
+
+Only file names from the directory listing are read, and a requested locale only selects a key, so a locale from user input never becomes a path. A name that contains a path separator or `..` is rejected. Templates are read on every call; cache the result if they do not change at runtime. These are text templates only (Handlebars, MJML, Liquid). Layouts are not supported.
+
 ## Auto-Generated Text Content
 
 When you use `message.view()` or set HTML content with `message.html()`, @visulima/email automatically generates a plain text version using the HTML-to-text converter. This ensures email clients that don't support HTML still display readable content.

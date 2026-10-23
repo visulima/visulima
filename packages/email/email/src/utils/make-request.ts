@@ -4,6 +4,8 @@ import type { Result } from "../types";
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, sonarjs/different-types-comparison
 const hasBuffer = globalThis.Buffer !== undefined;
 
+const TRANSIENT_CLIENT_STATUS_CODES = new Set([408, 409, 429]);
+
 /**
  * Error code carried by the result of a request that was aborted by its own timeout.
  *
@@ -11,6 +13,18 @@ const hasBuffer = globalThis.Buffer !== undefined;
  * the one transport failure a non-idempotent call must not blindly repeat.
  */
 export const REQUEST_TIMEOUT_CODE = "ETIMEDOUT";
+
+/**
+ * Tells whether a failed HTTP status would be rejected again if the same request were repeated.
+ *
+ * Every 4xx is permanent except `408`, `409` and `429`. `408` and `429` are transient. `409` can mean a
+ * request with the same idempotency key is still in progress, which a later retry can resolve. A `409` for
+ * a reused key with a different payload would fail again, but the status alone cannot tell the two apart,
+ * so every `409` is treated as transient.
+ * @param statusCode The HTTP status code of the response.
+ * @returns True when the status is a 4xx that a retry cannot fix.
+ */
+export const isPermanentStatusCode = (statusCode: number): boolean => statusCode >= 400 && statusCode < 500 && !TRANSIENT_CLIENT_STATUS_CODES.has(statusCode);
 
 /**
  * Request options compatible with both Fetch API and Node.js http
@@ -108,8 +122,12 @@ export const makeRequest = async (url: string | URL, options: RequestOptions = {
                     headers: headersObject,
                     statusCode: response.status,
                 },
-                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                error: isSuccess ? undefined : new EmailError("http", `Request failed with status ${response.status}`, { code: response.status.toString() }),
+                error: isSuccess
+                    ? undefined
+                    : new EmailError("http", `Request failed with status ${String(response.status)}`, {
+                        code: response.status.toString(),
+                        permanent: isPermanentStatusCode(response.status),
+                    }),
                 success: isSuccess,
             };
         } catch (error) {

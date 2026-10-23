@@ -1,3 +1,10 @@
+## @visulima/ono [3.0.2](https://github.com/visulima/visulima/compare/@visulima/ono@3.0.1...@visulima/ono@3.0.2) (2026-10-23)
+
+
+### Dependencies
+
+* **launch-editor-middleware:** 2.14.1 → 2.14.2
+
 ## @visulima/ono [3.0.1](https://github.com/visulima/visulima/compare/@visulima/ono@3.0.0...@visulima/ono@3.0.1) (2026-10-16)
 
 ### Bug Fixes
