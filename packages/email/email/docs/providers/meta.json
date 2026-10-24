@@ -33,6 +33,7 @@
         "failover",
         "roundrobin",
         "mailcrab",
+        "file",
         "opentelemetry"
     ]
 }

@@ -1,7 +1,7 @@
 {
     "name": "@visulima/string",
     "version": "3.1.1",
-    "description": "Functions for manipulating strings.",
+    "description": "Type-safe string utilities: case conversion, slugify, truncation, alignment and CJK-aware width.",
     "keywords": [
         "align",
         "align-text",

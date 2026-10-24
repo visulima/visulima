@@ -6,7 +6,7 @@
 
 </a>
 
-<h3 align="center">Minimal terminal spinners</h3>
+<h3 align="center">Minimal animated terminal spinners for Node.js CLI tools.</h3>
 
 <!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 

@@ -6,7 +6,7 @@
 
 </a>
 
-<h3 align="center">Functions for manipulating strings.</h3>
+<h3 align="center">Type-safe string utilities: case conversion, slugify, truncation, alignment and CJK-aware width.</h3>
 
 <!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 

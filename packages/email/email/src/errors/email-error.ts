@@ -12,8 +12,14 @@ class EmailError extends VisulimaError {
 
     public readonly code?: string;
 
+    /**
+     * True when repeating the same request would fail the same way, so a queue worker should
+     * dead-letter the job instead of retrying it.
+     */
+    public readonly permanent: boolean;
+
     // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-    public constructor(component: string, message: string, options?: { cause?: Error | unknown; code?: string; hint?: string | string[] }) {
+    public constructor(component: string, message: string, options?: { cause?: Error | unknown; code?: string; hint?: string | string[]; permanent?: boolean }) {
         super({
             cause: options?.cause,
             hint: options?.hint,
@@ -23,6 +29,7 @@ class EmailError extends VisulimaError {
         });
         this.component = component;
         this.code = options?.code;
+        this.permanent = options?.permanent ?? false;
     }
 }
 

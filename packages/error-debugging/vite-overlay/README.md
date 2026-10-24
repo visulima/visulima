@@ -6,7 +6,7 @@
 
 </a>
 
-<h3 align="center">Improved vite overlay</h3>
+<h3 align="center">Improved Vite error overlay that shows readable, source-mapped errors in the browser for React, Vue and Svelte.</h3>
 
 <!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 

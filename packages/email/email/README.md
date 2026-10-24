@@ -154,6 +154,23 @@ import { checkFeatureSupport } from "@visulima/email";
 const { supported, violations } = checkFeatureSupport(message, provider.features);
 ```
 
+### Idempotency Keys
+
+Pass an `idempotencyKey` to tell the provider that a repeated send is the same message, so it is not delivered twice. The key is set on the message builder or on `EmailOptions`:
+
+```ts
+await mail.send(
+    new MailMessage()
+        .from("orders@example.com")
+        .to("user@example.com")
+        .subject("Order confirmed")
+        .text("Thanks for your order")
+        .idempotencyKey(`order-${orderId}-confirmation`),
+);
+```
+
+The key is sent as an `Idempotency-Key` HTTP header and never appears in the message headers or the MIME body. Only providers that declare `features.idempotency` (currently Resend) use it; other providers ignore the key. Keys must be 1–256 visible ASCII characters. Resend keeps a key for 24 hours and requires a retry to carry the same payload; a retry with a different payload is rejected, and a retry after 24 hours can deliver the email again. The key is therefore protection against accidental double sends within that window, not a permanent guarantee. `sendBatch` does not apply a batch-level key to each recipient, because that would make every recipient look like a repeat of the first.
+
 ### Creating Draft Emails
 
 You can create draft emails in EML (RFC 822) format without sending them. The `draft()` method returns the email as an EML string with an `X-Unsent: 1` header automatically added:
@@ -1122,6 +1139,27 @@ mock.reset();
 - `waitForMessage(predicate, timeout)` - Wait for matching message
 - `reset()` - Reset to initial state
 
+### Extracting Links in Tests
+
+`extractLinks` from `@visulima/email/test` returns the http(s) URLs in a message, so a test can follow a verification or reset link. It returns `href` targets from the HTML, then bare URLs from the visible HTML text and from the plain text, without duplicates. Only `a` and `area` elements contribute `href` targets, so image sources, stylesheet and base links, CSS URLs, and the contents of `script`, `style` and comments are ignored. Entities are decoded in HTML, including the hexadecimal entities that template engines use to escape `=`.
+
+Pass markup as `{ html }`. A bare string is always treated as plain text.
+
+```typescript
+import { createTestEmail, extractLinks } from "@visulima/email/test";
+
+const email = createTestEmail();
+
+await email.mail.send({
+    from: { email: "app@example.com" },
+    html: '<a href="https://app.example.com/verify?token=abc&amp;lang=en">Verify</a>',
+    subject: "Verify",
+    to: { email: "user@example.com" },
+});
+
+const [verifyUrl] = extractLinks(email.sent()[0]!.options);
+```
+
 ### MailCrab Provider (for Development)
 
 MailCrab is a local SMTP server for testing emails during development. This provider is a convenience wrapper around the SMTP provider with MailCrab defaults.
@@ -1148,6 +1186,23 @@ const result = await mail.send(message);
 
 **Note:** Make sure MailCrab is running locally before using this provider. MailCrab can be installed via Docker or as a standalone application.
 
+### File Provider (for Development and Testing)
+
+The file provider writes each message to an `.eml` file in a directory instead of sending it. Use it to inspect the exact MIME output during development or in tests.
+
+```typescript
+import { createMail, MailMessage } from "@visulima/email";
+import { fileProvider } from "@visulima/email/providers/file";
+
+const mail = createMail(fileProvider({ directory: "./tmp/emails" }));
+
+const result = await mail.send(new MailMessage().to("user@example.com").from("sender@example.com").subject("Test Email").html("<h1>Test</h1>"));
+
+// result.data.response.path is the written file
+```
+
+Files are named `<epoch-ms>-<message-id>.eml` and are never overwritten. A Message-ID that contains path separators is sanitised before it becomes part of the filename. Bcc recipients are written into the file, since nothing is delivered.
+
 ## Supported Providers
 
 - **AWS SES** - Amazon Simple Email Service
@@ -1155,6 +1210,7 @@ const result = await mail.send(message);
 - **Failover** - Automatic failover between multiple providers
 - **HTTP** - Generic HTTP API provider
 - **MailCrab** - Local development email testing (SMTP wrapper)
+- **File** - Writes messages to `.eml` files instead of sending (Node.js only)
 - **Mailgun** - Developer-friendly email API service
 - **Mailjet** - Email marketing and transactional email platform
 - **MailerSend** - Modern email API for developers
@@ -1225,6 +1281,7 @@ These providers require Node.js built-in modules and only work in **Node.js**:
 - ⚠️ **AWS SES** - Requires `node:crypto` for AWS Signature V4 signing
 - ⚠️ **SMTP** - Requires `node:net` and `node:tls` for SMTP connections
 - ⚠️ **MailCrab** - Wraps SMTP provider (requires Node.js)
+- ⚠️ **File** - Writes to the local filesystem (requires Node.js)
 - ⚠️ **Nodemailer** - Requires the `nodemailer` package (Node.js only)
 
 ### Template Engines
@@ -1236,6 +1293,21 @@ Template engines are optional peer dependencies and work where their underlying 
 - **React Email** - Works in Node.js and Bun (where `@react-email/render` package is available)
 - **Vue Email** - Works in Node.js and Bun (where `@vue-email/render` package is available)
 - **HTML-to-Text** - Works in Node.js and Bun (where `html-to-text` package is available)
+
+### Locale Template Files (Node.js)
+
+`@visulima/email/template/locale-files` loads templates from a directory, one file per locale. For a template named `welcome`, `welcome.de.html` is used for `de` (and `de-AT`), and `welcome.html` is the fallback, registered under `defaultLocale`:
+
+```typescript
+import { renderHandlebars } from "@visulima/email/template/handlebars";
+import { createLocaleFileRenderer } from "@visulima/email/template/locale-files";
+
+const render = createLocaleFileRenderer("./emails", renderHandlebars, { defaultLocale: "en" });
+
+const html = await render("welcome", "de-AT", { name: "Ada" });
+```
+
+Only file names from the directory listing are read, and a requested locale only selects a key, so a locale from user input never becomes a path. Templates are read on every call; cache the result if they do not change at runtime. Layouts are not part of this loader.
 
 ### Runtime Requirements Summary
 
@@ -1265,6 +1337,7 @@ Template engines are optional peer dependencies and work where their underlying 
 | AWS SES       | ✅      | ❌   | ❌                 |
 | SMTP          | ✅      | ❌   | ❌                 |
 | MailCrab      | ✅      | ❌   | ❌                 |
+| File          | ✅      | ❌   | ❌                 |
 | Nodemailer    | ✅      | ❌   | ❌                 |
 | Failover      | ✅\*    | ✅\* | ✅\*               |
 | Round Robin   | ✅\*    | ✅\* | ✅\*               |
@@ -1386,7 +1459,7 @@ See [Middleware](https://visulima.com/docs/package/email/middleware/introduction
 
 ## Queue & Worker
 
-Durable background sending via the `EmailQueue` interface: an in-memory `MemoryQueue`, an `UnstorageQueue` (`@visulima/email/queue/unstorage`) backed by any [unstorage](https://unstorage.unjs.io/) store (Redis/FS/KV/Postgres), and a `createWorker(...)` with bounded concurrency, retry/backoff and dead-lettering.
+Durable background sending via the `EmailQueue` interface: an in-memory `MemoryQueue`, an `UnstorageQueue` (`@visulima/email/queue/unstorage`) backed by any [unstorage](https://unstorage.unjs.io/) store (Redis/FS/KV/Postgres), and a `createWorker(...)` with bounded concurrency, retry/backoff and dead-lettering. Permanent failures, such as HTTP 4xx responses other than `408`, `409` and `429`, are dead-lettered on their first attempt.
 
 ```typescript
 import { createMail } from "@visulima/email";

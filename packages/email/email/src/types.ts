@@ -13,6 +13,11 @@ export interface FeatureFlags {
     batchSending?: boolean;
     customHeaders?: boolean;
     html?: boolean;
+
+    /**
+     * The provider sends `idempotencyKey` upstream, so a repeated send with the same key is not duplicated.
+     */
+    idempotency?: boolean;
     replyTo?: boolean;
     scheduling?: boolean;
     tagging?: boolean;
@@ -156,6 +161,13 @@ export interface EmailOptions {
     headers?: EmailHeaders;
     html?: string;
     icalEvent?: CalendarEventOptions & { content?: string; href?: string; path?: string };
+
+    /**
+     * Caller-chosen key that lets the provider recognise a repeated send of the same message, so a
+     * retry after an ambiguous failure does not deliver twice. Only providers that declare
+     * `features.idempotency` act on it; it is never written into the message headers or the MIME body.
+     */
+    idempotencyKey?: string;
     priority?: Priority;
     replyTo?: EmailAddress;
 

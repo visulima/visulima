@@ -6,7 +6,7 @@
 
 </a>
 
-<h3 align="center">Mailer-free email address verification and enrichment: syntax, MX/SMTP probing, disposable/free/role detection, catch-all, provider & secure-email-gateway classification, typo suggestions, and a 0–100 quality score.</h3>
+<h3 align="center">Email verification and enrichment: syntax, MX/SMTP probing, disposable and role detection, catch-all, and a 0–100 quality score.</h3>
 
 <!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 

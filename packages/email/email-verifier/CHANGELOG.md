@@ -1,3 +1,56 @@
+## @visulima/email-verifier [1.0.52](https://github.com/visulima/visulima/compare/@visulima/email-verifier@1.0.51...@visulima/email-verifier@1.0.52) (2026-10-24)
+
+
+### Dependencies
+
+* **@visulima/disposable-email-domains:** upgraded to 2.0.8
+
+## @visulima/email-verifier [1.0.51](https://github.com/visulima/visulima/compare/@visulima/email-verifier@1.0.50...@visulima/email-verifier@1.0.51) (2026-10-23)
+
+
+### Dependencies
+
+* **@visulima/disposable-email-domains:** upgraded to 2.0.7
+
+## @visulima/email-verifier [1.0.50](https://github.com/visulima/visulima/compare/@visulima/email-verifier@1.0.49...@visulima/email-verifier@1.0.50) (2026-10-21)
+
+
+### Dependencies
+
+* **@visulima/disposable-email-domains:** upgraded to 2.0.6
+
+## @visulima/email-verifier [1.0.49](https://github.com/visulima/visulima/compare/@visulima/email-verifier@1.0.48...@visulima/email-verifier@1.0.49) (2026-10-20)
+
+
+### Dependencies
+
+* **@visulima/disposable-email-domains:** upgraded to 2.0.5
+
+## @visulima/email-verifier [1.0.48](https://github.com/visulima/visulima/compare/@visulima/email-verifier@1.0.47...@visulima/email-verifier@1.0.48) (2026-10-19)
+
+
+### Dependencies
+
+* **@visulima/disposable-email-domains:** upgraded to 2.0.4
+
+## @visulima/email-verifier [1.0.47](https://github.com/visulima/visulima/compare/@visulima/email-verifier@1.0.46...@visulima/email-verifier@1.0.47) (2026-10-18)
+
+### Miscellaneous Chores
+
+* improve npm search metadata ([#979](https://github.com/visulima/visulima/issues/979)) ([3f4ed10](https://github.com/visulima/visulima/commit/3f4ed1087286a57b5abbccbb481e352e8a9d4f58))
+
+
+### Dependencies
+
+* **@visulima/disposable-email-domains:** upgraded to 2.0.3
+
+## @visulima/email-verifier [1.0.46](https://github.com/visulima/visulima/compare/@visulima/email-verifier@1.0.45...@visulima/email-verifier@1.0.46) (2026-10-17)
+
+
+### Dependencies
+
+* **@visulima/disposable-email-domains:** upgraded to 2.0.2
+
 ## @visulima/email-verifier [1.0.45](https://github.com/visulima/visulima/compare/@visulima/email-verifier@1.0.44...@visulima/email-verifier@1.0.45) (2026-10-16)
 
 

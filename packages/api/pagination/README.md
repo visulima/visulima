@@ -6,7 +6,7 @@
 
 </a>
 
-<h3 align="center">Simple Pagination for Node.</h3>
+<h3 align="center">Simple limit/offset and page-based pagination helper for Node.js APIs.</h3>
 
 <!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 

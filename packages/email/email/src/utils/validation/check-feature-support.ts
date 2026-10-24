@@ -56,6 +56,11 @@ const CAPABILITY_PROBES: CapabilityProbe[] = [
         label: "tags",
     },
     {
+        detect: (options) => (options.idempotencyKey === undefined ? undefined : "idempotencyKey"),
+        feature: "idempotency",
+        label: "an idempotency key",
+    },
+    {
         detect: (options) => firstSetField(options, ["scheduledAt", "sendAt"]),
         feature: "scheduling",
         label: "scheduled delivery",

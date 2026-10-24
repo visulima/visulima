@@ -1,3 +1,14 @@
+## @visulima/dev-toolbar [1.1.19](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.1.18...@visulima/dev-toolbar@1.1.19) (2026-10-23)
+
+### Miscellaneous Chores
+
+* improve npm search metadata ([#979](https://github.com/visulima/visulima/issues/979)) ([3f4ed10](https://github.com/visulima/visulima/commit/3f4ed1087286a57b5abbccbb481e352e8a9d4f58))
+
+
+### Dependencies
+
+* **launch-editor:** 2.14.1 → 2.14.2
+
 ## @visulima/dev-toolbar [1.1.18](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.1.17...@visulima/dev-toolbar@1.1.18) (2026-10-04)
 
 ## @visulima/dev-toolbar [1.1.17](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.1.16...@visulima/dev-toolbar@1.1.17) (2026-10-04)

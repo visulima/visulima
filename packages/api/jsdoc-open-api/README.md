@@ -6,7 +6,7 @@
 
 </a>
 
-<h3 align="center">Generates swagger doc based on JSDoc.</h3>
+<h3 align="center">Generate OpenAPI/Swagger documentation from JSDoc comments, via CLI or webpack plugin.</h3>
 
 <!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 
