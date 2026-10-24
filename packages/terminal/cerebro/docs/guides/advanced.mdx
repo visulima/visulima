@@ -677,7 +677,9 @@ const cli = createCerebro("my-cli");
 `applyHeapTuning()` computes optimal `--max-old-space-size` and `--max-semi-space-size`
 V8 flags based on system memory. Because these flags can only be set at process startup,
 the helper re-spawns the current process with the computed flags when they are missing.
-After re-spawn, the flags are already present and the call becomes a no-op.
+After re-spawn, the child is marked with `CEREBRO_HEAP_TUNED=1`. The child's call clears that marker
+(so it does not leak to processes it spawns) and becomes a no-op, so re-spawning happens at most once.
+Inside a Node single-executable application the helper does nothing.
 
 **How it works:**
 
@@ -693,7 +695,7 @@ After re-spawn, the flags are already present and the call becomes a no-op.
 | &le; 8192       | 64               |
 | &gt; 8192       | log2-scaled      |
 
-- Respects existing flags — if the user sets `NODE_OPTIONS="--max-old-space-size=4096"`, their value is kept
+- Respects existing flags — if the user sets `NODE_OPTIONS="--max-old-space-size=4096"` or passes the flag on the command line, their value is kept
 
 **Custom allocation:**
 

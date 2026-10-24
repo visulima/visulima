@@ -180,6 +180,87 @@ describe(applyHeapTuning, () => {
         expect(exitProcessMock).toHaveBeenCalledWith(1);
     });
 
+    it("returns without spawning when the re-exec guard is already set, and clears the marker", () => {
+        expect.assertions(3);
+
+        const env: Record<string, string | undefined> = { CEREBRO_HEAP_TUNED: "1", FOO: "bar" };
+
+        getEnvMock.mockReturnValue(env);
+        getExecArgvMock.mockReturnValue([]);
+        totalmemMock.mockReturnValue(2 * 1024 * 1024 * 1024);
+
+        applyHeapTuning();
+
+        expect(execFileSyncMock).not.toHaveBeenCalled();
+        expect(exitProcessMock).not.toHaveBeenCalled();
+        expect(env).not.toHaveProperty("CEREBRO_HEAP_TUNED");
+    });
+
+    it("sets the re-exec guard and keeps the original env when re-spawning", () => {
+        expect.assertions(2);
+
+        getEnvMock.mockReturnValue({ FOO: "bar" });
+        getExecArgvMock.mockReturnValue([]);
+        totalmemMock.mockReturnValue(2 * 1024 * 1024 * 1024);
+        execFileSyncMock.mockReturnValue(undefined);
+
+        applyHeapTuning();
+
+        const options = execFileSyncMock.mock.calls[0]?.[2] as { env: Record<string, string | undefined> };
+
+        expect(options.env).toStrictEqual({ CEREBRO_HEAP_TUNED: "1", FOO: "bar" });
+        expect(exitProcessMock).toHaveBeenCalledWith(0);
+    });
+
+    it("returns without spawning when both flags are set via NODE_OPTIONS", () => {
+        expect.assertions(2);
+
+        getEnvMock.mockReturnValue({ NODE_OPTIONS: "--max-old-space-size=1024   --max-semi-space-size=8" });
+        getExecArgvMock.mockReturnValue([]);
+        totalmemMock.mockReturnValue(2 * 1024 * 1024 * 1024);
+
+        applyHeapTuning();
+
+        expect(execFileSyncMock).not.toHaveBeenCalled();
+        expect(exitProcessMock).not.toHaveBeenCalled();
+    });
+
+    it("only adds the missing semi-space flag when old-space is set via NODE_OPTIONS", () => {
+        expect.assertions(2);
+
+        getEnvMock.mockReturnValue({ NODE_OPTIONS: "--max-old-space-size=2048" });
+        getExecArgvMock.mockReturnValue([]);
+        totalmemMock.mockReturnValue(2 * 1024 * 1024 * 1024);
+        execFileSyncMock.mockReturnValue(undefined);
+
+        applyHeapTuning();
+
+        const args = getCallArgs();
+
+        // 2048 MiB tier → 16 MiB semi-space.
+        expect(args[0]).toBe("--max-semi-space-size=16");
+        expect(args.filter((argument) => MAX_OLD_SPACE_PREFIX_RE.test(argument))).toStrictEqual([]);
+    });
+
+    it("returns without spawning inside a single-executable application", () => {
+        expect.assertions(2);
+
+        getExecArgvMock.mockReturnValue([]);
+        totalmemMock.mockReturnValue(2 * 1024 * 1024 * 1024);
+        vi.spyOn(process, "getBuiltinModule").mockImplementation((id) => {
+            if (id === "node:sea") {
+                return { isSea: () => true };
+            }
+
+            return undefined;
+        });
+
+        applyHeapTuning();
+
+        expect(execFileSyncMock).not.toHaveBeenCalled();
+        expect(exitProcessMock).not.toHaveBeenCalled();
+    });
+
     describe("semi-space sizing tiers", () => {
         // > 8 GiB → Math.floor(log2(maxOldSpace)) * 8. Because the implementation
         // computes oldSpace = floor(totalmem * percent), pick RAM such that the
