@@ -1,3 +1,13 @@
+## @visulima/cerebro [4.0.1](https://github.com/visulima/visulima/compare/@visulima/cerebro@4.0.0...@visulima/cerebro@4.0.1) (2026-10-24)
+
+### Bug Fixes
+
+* **cerebro:** stop heap tuning from re-spawning in a loop ([#980](https://github.com/visulima/visulima/issues/980)) ([cce5555](https://github.com/visulima/visulima/commit/cce555505c57abd110a70a5b047f7f46dfd24800))
+
+### Miscellaneous Chores
+
+* move the vis packages out to visulima/vis ([#975](https://github.com/visulima/visulima/issues/975)) ([558c24d](https://github.com/visulima/visulima/commit/558c24d2556e7773472d6adafc4908d68e932b35))
+
 ## @visulima/cerebro [4.0.0](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.1.3...@visulima/cerebro@4.0.0) (2026-10-15)
 
 ### ⚠ BREAKING CHANGES
