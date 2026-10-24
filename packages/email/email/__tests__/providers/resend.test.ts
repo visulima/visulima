@@ -73,6 +73,7 @@ describe(resendProvider, () => {
                 batchSending: true,
                 customHeaders: true,
                 html: true,
+                idempotency: true,
                 replyTo: true,
                 scheduling: true,
                 tagging: true,
