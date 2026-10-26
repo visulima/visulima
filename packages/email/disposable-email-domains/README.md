@@ -54,26 +54,26 @@ pnpm add @visulima/disposable-email-domains
 
 | Repository | Domains | Success | Performance |
 |------------|---------|---------|-------------|
-| disposable/disposable-email-domains | 99,660 | ✅ | 0.47s (1.5 MB) |
-| willwhite/freemail | 88,162 | ✅ | 0.51s (1.3 MB) |
-| FGRibreau/mailchecker | 57,702 | ✅ | 0.39s (864.3 KB) |
+| disposable/disposable-email-domains | 99,720 | ✅ | 0.64s (1.5 MB) |
+| willwhite/freemail | 88,162 | ✅ | 0.59s (1.3 MB) |
+| FGRibreau/mailchecker | 57,702 | ✅ | 0.10s (864.3 KB) |
 | wesbos/burner-email-providers | 27,277 | ✅ | 0.06s (388.0 KB) |
-| groundcat/disposable-email-domain-list | 19,523 | ✅ | 0.08s (300.0 KB) |
-| 7c/fakefilter | 10,695 | ✅ | 0.02s (146.9 KB) |
-| sublime-security/static-files | 10,522 | ✅ | 0.27s (144.0 KB) |
-| disposable-email-domains/disposable-email-domains | 9,927 | ✅ | 0.16s (140.2 KB) |
-| eser/sanitizer-svc | 3,855 | ✅ | 0.19s (48.9 KB) |
+| groundcat/disposable-email-domain-list | 19,523 | ✅ | 0.11s (300.0 KB) |
+| 7c/fakefilter | 10,702 | ✅ | 0.03s (147.0 KB) |
+| sublime-security/static-files | 10,522 | ✅ | 0.11s (144.0 KB) |
+| disposable-email-domains/disposable-email-domains | 9,927 | ✅ | 0.17s (140.2 KB) |
+| eser/sanitizer-svc | 3,855 | ✅ | 0.18s (48.9 KB) |
 | unkn0w/disposable-email-domain-list | 3,616 | ✅ | 0.03s (45.7 KB) |
 | MattKetmo/EmailChecker | 2,515 | ✅ | 0.11s (32.4 KB) |
 | GeroldSetz/emailondeck.com-domains | 1,121 | ✅ | 0.16s (15.4 KB) |
-| castle/disposable-email-domains | 1,000 | ✅ | 0.02s (13.3 KB) |
-| jespernissen/disposable-maildomain-list | 980 | ✅ | 0.11s (12.6 KB) |
-| TheDahoom/disposable-email | 18 | ✅ | 0.21s (234 B) |
+| castle/disposable-email-domains | 1,000 | ✅ | 0.06s (13.2 KB) |
+| jespernissen/disposable-maildomain-list | 980 | ✅ | 0.13s (12.6 KB) |
+| TheDahoom/disposable-email | 18 | ✅ | 0.16s (234 B) |
 
 <!-- END_PLACEHOLDER_CONTRIBUTING -->
 <!-- START_PLACEHOLDER_LAST_UPDATED -->
 
-_Last updated: 2026-10-25_
+_Last updated: 2026-10-26_
 
 <!-- END_PLACEHOLDER_LAST_UPDATED -->
 
