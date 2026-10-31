@@ -1,3 +1,13 @@
+## @visulima/string [3.1.2](https://github.com/visulima/visulima/compare/@visulima/string@3.1.1...@visulima/string@3.1.2) (2026-10-31)
+
+### Bug Fixes
+
+* **string:** ship license notice and port Repeat fixes ([#989](https://github.com/visulima/visulima/issues/989)) ([11faab9](https://github.com/visulima/visulima/commit/11faab9bd61412339f20bb88e37e5ce2032130c6))
+
+### Miscellaneous Chores
+
+* improve npm search metadata ([#979](https://github.com/visulima/visulima/issues/979)) ([3f4ed10](https://github.com/visulima/visulima/commit/3f4ed1087286a57b5abbccbb481e352e8a9d4f58))
+
 ## @visulima/string [3.1.1](https://github.com/visulima/visulima/compare/@visulima/string@3.1.0...@visulima/string@3.1.1) (2026-10-05)
 
 ### Bug Fixes
