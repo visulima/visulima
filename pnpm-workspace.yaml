@@ -101,13 +101,6 @@ auditConfig:
     # patched 4.6.6 floor, and no published package depends on zod 3 at runtime.
     # Re-check when those tools move to zod 4.
     - GHSA-mrhx-c7xc-m3w5
-    # happy-dom 21 advisories. The 20.14.6 floor above clears the same-major
-    # advisory, but these two only have fixes in happy-dom 21. happy-dom is the
-    # vitest test environment, used by dev-only test runs; it is not in any
-    # published package's runtime dependency tree. Re-check when the test
-    # environment moves to happy-dom 21.
-    - GHSA-834v-8h66-3h79
-    - GHSA-c8p4-j97h-3vg8
 
 autoInstallPeers: true
 
@@ -257,7 +250,7 @@ catalogs:
     globals: ^17.9.0
     google-auth-library: 11.1.0
     handlebars: 4.7.10
-    happy-dom: 20.14.6
+    happy-dom: 21.0.4
     hast: 1.0.0
     html-entities: 2.6.0
     html-tags: ^5.1.0
