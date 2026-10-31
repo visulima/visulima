@@ -1166,6 +1166,10 @@ overrides:
   # >=1.0.0 and *, which every dedupe resolves to the newest release. 1.2.14 (2026-10-14) is the
   # newest release older than a week. Drop this pin once 1.2.15 clears the StepSecurity cooldown.
   rolldown: 1.2.14
+  # rollup 4.67.2 (2026-10-30) reached this lockfile through nitropack's open ^4 range, which
+  # every dedupe resolves to the newest release. 4.66.0 (2026-10-28) is the newest release older
+  # than the two-day StepSecurity cooldown. Drop this pin once 4.67.2 clears it.
+  rollup: 4.66.0
   # Same cause for the oxc type package: auto-installed peers request >=0.98.0 and take the newest.
   # 0.154.0 (2026-10-13) is the newest release older than a week.
   '@oxc-project/types': 0.154.0
