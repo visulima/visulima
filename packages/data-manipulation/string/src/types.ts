@@ -22,6 +22,11 @@
 type TupleOf<L extends number, T = unknown, Result extends any[] = []> = Result["length"] extends L ? Result : TupleOf<L, T, [...Result, T]>;
 
 /**
+ * Repeat counts whose literal expansion stays within TypeScript's instantiation depth limit.
+ */
+type SafeRepeatCount = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 29 | 30 | 31 | 32 | 33 | 34 | 35 | 36 | 37 | 38 | 39 | 40 | 41 | 42 | 43 | 44 | 45;
+
+/**
  * Internal type for implementing string slicing with both start and end indices.
  * Handles edge cases and type safety for string literal types.
  * @template T - The input string type
@@ -351,15 +356,20 @@ export type PadStart<T extends string, Times extends number = 0, Pad extends str
  * @returns A string type containing T repeated Times times
  * @example
  * type Repeated = Repeat<'abc', 2> // type Repeated = 'abcabc'
+ * Counts above 45 fall back to `string` to avoid TypeScript's type-instantiation depth limit (TS2589).
  */
 export type Repeat<T extends string, Times extends number = 0>
-    = All<[IsStringLiteral<T>, IsNumberLiteral<Times>]> extends true
-        ? Times extends 0
-            ? ""
-            : Math.IsNegative<Times> extends false
-                ? Join<TupleOf<Times, T>>
-                : never
-        : string;
+    = T extends T
+        ? All<[IsStringLiteral<T>, IsNumberLiteral<Times>]> extends true
+            ? Times extends 0
+                ? ""
+                : Math.IsNegative<Times> extends false
+                    ? Times extends SafeRepeatCount
+                        ? Join<TupleOf<Times, T>>
+                        : string
+                    : never
+            : string
+        : never;
 
 /**
  * Type-level implementation of string.replaceAll() functionality.
