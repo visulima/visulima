@@ -351,12 +351,12 @@ export type PadStart<T extends string, Times extends number = 0, Pad extends str
 /**
  * Type-level implementation of string.repeat() functionality.
  * Creates a new string type by repeating the input string a specified number of times.
+ * Counts above 45 fall back to `string` to avoid TypeScript's type-instantiation depth limit (TS2589).
  * @template T - The string type to repeat
  * @template Times - The number of times to repeat the string
  * @returns A string type containing T repeated Times times
  * @example
  * type Repeated = Repeat<'abc', 2> // type Repeated = 'abcabc'
- * Counts above 45 fall back to `string` to avoid TypeScript's type-instantiation depth limit (TS2589).
  */
 export type Repeat<T extends string, Times extends number = 0>
     = T extends T
