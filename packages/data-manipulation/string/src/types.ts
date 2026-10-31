@@ -22,6 +22,11 @@
 type TupleOf<L extends number, T = unknown, Result extends any[] = []> = Result["length"] extends L ? Result : TupleOf<L, T, [...Result, T]>;
 
 /**
+ * Repeat counts whose literal expansion stays within TypeScript's instantiation depth limit.
+ */
+type SafeRepeatCount = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 29 | 30 | 31 | 32 | 33 | 34 | 35 | 36 | 37 | 38 | 39 | 40 | 41 | 42 | 43 | 44 | 45;
+
+/**
  * Internal type for implementing string slicing with both start and end indices.
  * Handles edge cases and type safety for string literal types.
  * @template T - The input string type
@@ -346,6 +351,7 @@ export type PadStart<T extends string, Times extends number = 0, Pad extends str
 /**
  * Type-level implementation of string.repeat() functionality.
  * Creates a new string type by repeating the input string a specified number of times.
+ * Counts above 45 fall back to `string` to avoid TypeScript's type-instantiation depth limit (TS2589).
  * @template T - The string type to repeat
  * @template Times - The number of times to repeat the string
  * @returns A string type containing T repeated Times times
@@ -353,13 +359,17 @@ export type PadStart<T extends string, Times extends number = 0, Pad extends str
  * type Repeated = Repeat<'abc', 2> // type Repeated = 'abcabc'
  */
 export type Repeat<T extends string, Times extends number = 0>
-    = All<[IsStringLiteral<T>, IsNumberLiteral<Times>]> extends true
-        ? Times extends 0
-            ? ""
-            : Math.IsNegative<Times> extends false
-                ? Join<TupleOf<Times, T>>
-                : never
-        : string;
+    = T extends T
+        ? All<[IsStringLiteral<T>, IsNumberLiteral<Times>]> extends true
+            ? Times extends 0
+                ? ""
+                : Math.IsNegative<Times> extends false
+                    ? Times extends SafeRepeatCount
+                        ? Join<TupleOf<Times, T>>
+                        : string
+                    : never
+            : string
+        : never;
 
 /**
  * Type-level implementation of string.replaceAll() functionality.
