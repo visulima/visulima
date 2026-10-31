@@ -54,26 +54,26 @@ pnpm add @visulima/disposable-email-domains
 
 | Repository | Domains | Success | Performance |
 |------------|---------|---------|-------------|
-| disposable/disposable-email-domains | 99,775 | ✅ | 0.45s (1.5 MB) |
-| willwhite/freemail | 88,162 | ✅ | 0.32s (1.3 MB) |
-| FGRibreau/mailchecker | 57,702 | ✅ | 0.38s (864.3 KB) |
-| wesbos/burner-email-providers | 27,277 | ✅ | 0.29s (388.0 KB) |
-| groundcat/disposable-email-domain-list | 18,419 | ✅ | 0.05s (280.7 KB) |
-| 7c/fakefilter | 10,704 | ✅ | 0.37s (146.9 KB) |
-| sublime-security/static-files | 10,522 | ✅ | 0.18s (144.0 KB) |
-| disposable-email-domains/disposable-email-domains | 9,963 | ✅ | 0.19s (140.8 KB) |
-| eser/sanitizer-svc | 3,855 | ✅ | 0.20s (48.9 KB) |
-| unkn0w/disposable-email-domain-list | 3,616 | ✅ | 0.12s (45.7 KB) |
-| MattKetmo/EmailChecker | 2,515 | ✅ | 0.13s (32.4 KB) |
-| GeroldSetz/emailondeck.com-domains | 1,121 | ✅ | 0.19s (15.4 KB) |
+| disposable/disposable-email-domains | 99,775 | ✅ | 0.43s (1.5 MB) |
+| willwhite/freemail | 88,162 | ✅ | 0.38s (1.3 MB) |
+| FGRibreau/mailchecker | 57,702 | ✅ | 0.26s (864.3 KB) |
+| wesbos/burner-email-providers | 27,277 | ✅ | 0.22s (388.0 KB) |
+| groundcat/disposable-email-domain-list | 18,419 | ✅ | 0.11s (280.7 KB) |
+| 7c/fakefilter | 10,709 | ✅ | 0.11s (147.0 KB) |
+| sublime-security/static-files | 10,522 | ✅ | 0.16s (144.0 KB) |
+| disposable-email-domains/disposable-email-domains | 10,083 | ✅ | 0.10s (142.8 KB) |
+| eser/sanitizer-svc | 3,855 | ✅ | 0.24s (48.9 KB) |
+| unkn0w/disposable-email-domain-list | 3,616 | ✅ | 0.01s (45.7 KB) |
+| MattKetmo/EmailChecker | 2,515 | ✅ | 0.16s (32.4 KB) |
+| GeroldSetz/emailondeck.com-domains | 1,121 | ✅ | 0.18s (15.4 KB) |
 | castle/disposable-email-domains | 1,000 | ✅ | 0.01s (13.3 KB) |
-| jespernissen/disposable-maildomain-list | 978 | ✅ | 0.12s (12.6 KB) |
-| TheDahoom/disposable-email | 18 | ✅ | 0.19s (234 B) |
+| jespernissen/disposable-maildomain-list | 978 | ✅ | 0.15s (12.6 KB) |
+| TheDahoom/disposable-email | 18 | ✅ | 0.23s (234 B) |
 
 <!-- END_PLACEHOLDER_CONTRIBUTING -->
 <!-- START_PLACEHOLDER_LAST_UPDATED -->
 
-_Last updated: 2026-10-30_
+_Last updated: 2026-10-31_
 
 <!-- END_PLACEHOLDER_LAST_UPDATED -->
 
