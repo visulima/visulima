@@ -4035,7 +4035,7 @@ importers:
   packages/email/email-verifier:
     dependencies:
       '@visulima/disposable-email-domains':
-        specifier: 2.0.15
+        specifier: 2.0.16
         version: link:../disposable-email-domains
       '@visulima/email-provider-mx':
         specifier: 1.0.1
