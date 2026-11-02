@@ -54,26 +54,26 @@ pnpm add @visulima/disposable-email-domains
 
 | Repository | Domains | Success | Performance |
 |------------|---------|---------|-------------|
-| disposable/disposable-email-domains | 99,858 | ✅ | 0.39s (1.5 MB) |
-| willwhite/freemail | 88,162 | ✅ | 0.51s (1.3 MB) |
-| FGRibreau/mailchecker | 57,702 | ✅ | 0.41s (864.3 KB) |
-| wesbos/burner-email-providers | 27,277 | ✅ | 0.27s (388.0 KB) |
-| groundcat/disposable-email-domain-list | 18,419 | ✅ | 0.06s (280.7 KB) |
-| 7c/fakefilter | 10,702 | ✅ | 0.03s (146.9 KB) |
-| sublime-security/static-files | 10,522 | ✅ | 0.12s (144.0 KB) |
-| disposable-email-domains/disposable-email-domains | 10,093 | ✅ | 0.19s (142.9 KB) |
-| eser/sanitizer-svc | 3,855 | ✅ | 0.20s (48.9 KB) |
+| disposable/disposable-email-domains | 99,860 | ✅ | 0.53s (1.5 MB) |
+| willwhite/freemail | 88,162 | ✅ | 0.42s (1.3 MB) |
+| FGRibreau/mailchecker | 57,702 | ✅ | 0.11s (864.3 KB) |
+| wesbos/burner-email-providers | 27,277 | ✅ | 0.06s (388.0 KB) |
+| groundcat/disposable-email-domain-list | 18,419 | ✅ | 0.04s (280.7 KB) |
+| 7c/fakefilter | 10,696 | ✅ | 0.03s (146.8 KB) |
+| sublime-security/static-files | 10,522 | ✅ | 0.21s (144.0 KB) |
+| disposable-email-domains/disposable-email-domains | 10,115 | ✅ | 0.14s (143.2 KB) |
+| eser/sanitizer-svc | 3,855 | ✅ | 0.22s (48.9 KB) |
 | unkn0w/disposable-email-domain-list | 3,616 | ✅ | 0.03s (45.7 KB) |
-| MattKetmo/EmailChecker | 2,515 | ✅ | 0.07s (32.4 KB) |
-| GeroldSetz/emailondeck.com-domains | 1,121 | ✅ | 0.19s (15.4 KB) |
-| castle/disposable-email-domains | 1,000 | ✅ | 0.03s (13.4 KB) |
+| MattKetmo/EmailChecker | 2,515 | ✅ | 0.27s (32.4 KB) |
+| GeroldSetz/emailondeck.com-domains | 1,121 | ✅ | 0.14s (15.4 KB) |
+| castle/disposable-email-domains | 1,000 | ✅ | 0.16s (13.1 KB) |
 | jespernissen/disposable-maildomain-list | 978 | ✅ | 0.09s (12.6 KB) |
-| TheDahoom/disposable-email | 18 | ✅ | 0.18s (234 B) |
+| TheDahoom/disposable-email | 18 | ✅ | 0.16s (234 B) |
 
 <!-- END_PLACEHOLDER_CONTRIBUTING -->
 <!-- START_PLACEHOLDER_LAST_UPDATED -->
 
-_Last updated: 2026-11-01_
+_Last updated: 2026-11-02_
 
 <!-- END_PLACEHOLDER_LAST_UPDATED -->
 
