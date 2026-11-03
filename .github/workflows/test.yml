@@ -334,7 +334,8 @@ jobs:
             - name: "Install typescript@${{ matrix.ts_version }}"
               env:
                   TS_VERSION: "${{ matrix.ts_version }}"
-              run: 'pnpm --filter "@visulima/tsconfig" add --save-dev "typescript@${TS_VERSION}"'
+              run: |
+                  pnpm --filter "@visulima/tsconfig" add --save-dev "typescript@${TS_VERSION}"
 
             # Fail loudly if the injected compiler is not what the leg claims to test,
             # rather than silently re-running an already-covered version.
