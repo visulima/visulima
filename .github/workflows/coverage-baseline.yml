@@ -56,7 +56,7 @@ jobs:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              uses: "anolilab/workflows/step/checkout-with-retry@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # main
+              uses: "anolilab/workflows/step/checkout-with-retry@1f3a7f7e561f7690fe19dea5d2ed225def53c908" # v26.0.6
 
             # Same runtime and settings as the test.yml leg that uploads PR coverage
             # (ubuntu-latest, Node 24), so the base and the PR reports are comparable.
