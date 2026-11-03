@@ -332,7 +332,9 @@ jobs:
             # subsequent `vitest` run resolves this exact compiler for both
             # `import 'typescript'` and the `tsc --showConfig` parity shell-outs.
             - name: "Install typescript@${{ matrix.ts_version }}"
-              run: "pnpm --filter \"@visulima/tsconfig\" add --save-dev \"typescript@${{ matrix.ts_version }}\""
+              env:
+                  TS_VERSION: "${{ matrix.ts_version }}"
+              run: 'pnpm --filter "@visulima/tsconfig" add --save-dev "typescript@${TS_VERSION}"'
 
             # Fail loudly if the injected compiler is not what the leg claims to test,
             # rather than silently re-running an already-covered version.
