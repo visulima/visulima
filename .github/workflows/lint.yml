@@ -40,15 +40,15 @@ jobs:
             package_json_lintable: "${{ steps.changes.outputs.package_json_lintable || steps.changes_retry.outputs.package_json_lintable }}"
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920" # v2.20.0
+              uses: "step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43" # v2.22.3
               with:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              uses: "anolilab/workflows/step/checkout-with-retry@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # main
+              uses: "anolilab/workflows/step/checkout-with-retry@1f3a7f7e561f7690fe19dea5d2ed225def53c908" # v26.0.6
 
             - name: "Check for file changes"
-              uses: "dorny/paths-filter@7b450fff21473bca461d4b92ce414b9d0420d706" # v4.0.2
+              uses: "dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d" # v4.0.3
               id: "changes"
               continue-on-error: true
               with:
@@ -62,7 +62,7 @@ jobs:
 
             - name: "Check for file changes (retry)"
               if: "steps.changes.outcome == 'failure'"
-              uses: "dorny/paths-filter@7b450fff21473bca461d4b92ce414b9d0420d706" # v4.0.2
+              uses: "dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d" # v4.0.3
               id: "changes_retry"
               with:
                   token: "${{ github.token }}"
@@ -80,18 +80,18 @@ jobs:
         timeout-minutes: 45
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920" # v2.20.0
+              uses: "step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43" # v2.22.3
               with:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              uses: "anolilab/workflows/step/checkout-with-retry@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # main
+              uses: "anolilab/workflows/step/checkout-with-retry@1f3a7f7e561f7690fe19dea5d2ed225def53c908" # v26.0.6
               with:
                   fetch-depth: 0
 
             - name: "Derive appropriate SHAs for base and head for `nx affected` commands"
               id: "setSHAs"
-              uses: "nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1" # v5.0.1
+              uses: "nrwl/nx-set-shas@e602fada7ad5987b0f7b1905e7a99ea1c661514c" # v5.1.0
 
             - name: "Setup resources and environment"
               id: "setup"
@@ -152,18 +152,18 @@ jobs:
         timeout-minutes: 30
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920" # v2.20.0
+              uses: "step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43" # v2.22.3
               with:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              uses: "anolilab/workflows/step/checkout-with-retry@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # main
+              uses: "anolilab/workflows/step/checkout-with-retry@1f3a7f7e561f7690fe19dea5d2ed225def53c908" # v26.0.6
               with:
                   fetch-depth: 0
 
             - name: "Derive appropriate SHAs for base and head for `nx affected` commands"
               id: "setSHAs"
-              uses: "nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1" # v5.0.1
+              uses: "nrwl/nx-set-shas@e602fada7ad5987b0f7b1905e7a99ea1c661514c" # v5.1.0
 
             - name: "Setup resources and environment"
               id: "setup"
@@ -187,18 +187,18 @@ jobs:
         timeout-minutes: 30
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920" # v2.20.0
+              uses: "step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43" # v2.22.3
               with:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              uses: "anolilab/workflows/step/checkout-with-retry@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # main
+              uses: "anolilab/workflows/step/checkout-with-retry@1f3a7f7e561f7690fe19dea5d2ed225def53c908" # v26.0.6
               with:
                   fetch-depth: 0
 
             - name: "Derive appropriate SHAs for base and head for `nx affected` commands"
               id: "setSHAs"
-              uses: "nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1" # v5.0.1
+              uses: "nrwl/nx-set-shas@e602fada7ad5987b0f7b1905e7a99ea1c661514c" # v5.1.0
 
             - name: "Setup resources and environment"
               id: "setup"
@@ -244,12 +244,12 @@ jobs:
         timeout-minutes: 30
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920" # v2.20.0
+              uses: "step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43" # v2.22.3
               with:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              uses: "anolilab/workflows/step/checkout-with-retry@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # main
+              uses: "anolilab/workflows/step/checkout-with-retry@1f3a7f7e561f7690fe19dea5d2ed225def53c908" # v26.0.6
 
             - name: "Lint YAML files"
               uses: "ibiqlik/action-yamllint@2576378a8e339169678f9939646ee3ee325e845c" # v3.1.1
@@ -265,12 +265,12 @@ jobs:
         timeout-minutes: 30
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920" # v2.20.0
+              uses: "step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43" # v2.22.3
               with:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              uses: "anolilab/workflows/step/checkout-with-retry@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # main
+              uses: "anolilab/workflows/step/checkout-with-retry@1f3a7f7e561f7690fe19dea5d2ed225def53c908" # v26.0.6
 
             - name: "Lint github workflows"
               # Download the jactionlint release tarball directly and verify it
@@ -318,7 +318,7 @@ jobs:
             # If any jobs we depend on fail, we will fail since this is a required check.
             # NOTE: A timeout is considered a failure.
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920" # v2.20.0
+              uses: "step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43" # v2.22.3
               with:
                   egress-policy: "audit"
 

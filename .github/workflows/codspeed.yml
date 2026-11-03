@@ -35,12 +35,12 @@ jobs:
             has-benches: "${{ steps.affected.outputs.has-benches }}"
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920" # v2.20.0
+              uses: "step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43" # v2.22.3
               with:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              uses: "anolilab/workflows/step/checkout-with-retry@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # main
+              uses: "anolilab/workflows/step/checkout-with-retry@1f3a7f7e561f7690fe19dea5d2ed225def53c908" # v26.0.6
               with:
                   fetch-depth: 0
 
@@ -88,7 +88,7 @@ jobs:
 
             - name: "Derive appropriate SHAs for base and head for `nx affected` commands"
               id: "setSHAs"
-              uses: "nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1" # v5.0.1
+              uses: "nrwl/nx-set-shas@e602fada7ad5987b0f7b1905e7a99ea1c661514c" # v5.1.0
 
             - name: "Setup resources and environment"
               uses: "anolilab/workflows/step/node@1f3a7f7e561f7690fe19dea5d2ed225def53c908" # v26.0.6
@@ -126,9 +126,9 @@ jobs:
         name: "Bench: ${{ matrix.project }}"
         needs: "discover"
         if: "${{ needs.discover.outputs.has-benches == 'true' }}"
-        # CodSpeedHQ/action v4 (runner 4.x) fails with "Unsupported system" on
-        # ubuntu-26.04, which ubuntu-latest now resolves to. Runner 5.5+ supports it.
-        runs-on: "ubuntu-24.04"
+        # A fixed image, so a runner image change between the base and head runs
+        # cannot show up in CodSpeed as a benchmark regression.
+        runs-on: "ubuntu-26.04"
         timeout-minutes: 30
         # Scope the CodSpeed OIDC token to an environment so secrets and reviewer
         # rules (configured in repo settings) can apply to benchmark uploads.
@@ -141,12 +141,12 @@ jobs:
             matrix: "${{ fromJSON(needs.discover.outputs.matrix) }}"
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920" # v2.20.0
+              uses: "step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43" # v2.22.3
               with:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              uses: "anolilab/workflows/step/checkout-with-retry@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # main
+              uses: "anolilab/workflows/step/checkout-with-retry@1f3a7f7e561f7690fe19dea5d2ed225def53c908" # v26.0.6
 
             - name: "Setup resources and environment"
               uses: "anolilab/workflows/step/node@1f3a7f7e561f7690fe19dea5d2ed225def53c908" # v26.0.6
@@ -179,7 +179,7 @@ jobs:
             - name: "Run benchmark"
               env:
                   BENCH_PROJECT: "${{ matrix.project }}"
-              uses: "CodSpeedHQ/action@f99becdce5e5d51fd556489ebef684f4ecfd6286" # v4.18.5
+              uses: "CodSpeedHQ/action@61efe07e57e55bedeab750c434504de272a56e8c" # v5.6.1
               with:
                   mode: "simulation"
                   run: "pnpm exec nx run \"$BENCH_PROJECT\":test:bench"
