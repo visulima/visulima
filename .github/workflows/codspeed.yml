@@ -126,7 +126,9 @@ jobs:
         name: "Bench: ${{ matrix.project }}"
         needs: "discover"
         if: "${{ needs.discover.outputs.has-benches == 'true' }}"
-        runs-on: "ubuntu-latest"
+        # A fixed image, so a runner image change between the base and head runs
+        # cannot show up in CodSpeed as a benchmark regression.
+        runs-on: "ubuntu-26.04"
         timeout-minutes: 30
         # Scope the CodSpeed OIDC token to an environment so secrets and reviewer
         # rules (configured in repo settings) can apply to benchmark uploads.
