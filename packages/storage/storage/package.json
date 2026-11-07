@@ -354,7 +354,7 @@
         "eslint-plugin-zod": "4.9.1",
         "etag": "catalog:dev",
         "express": "catalog:backend",
-        "fallow": "3.31.0",
+        "fallow": "3.34.0",
         "firebase-admin": "14.5.0",
         "gaxios": "catalog:dev",
         "google-auth-library": "catalog:dev",
