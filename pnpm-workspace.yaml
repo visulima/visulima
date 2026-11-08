@@ -880,6 +880,8 @@ minimumReleaseAgeExclude:
   - postcss@8.5.18
   - valibot@1.4.2
   - brace-expansion@5.0.8
+  # Renovate security update: minimatch@7.4.9
+  - minimatch@7.4.9
 
 # @visulima/packem imports `@visulima/cerebro/logger/pail` — cerebro's opt-in subpath —
 # but declares no dependency on @visulima/pail. cerebro is right to treat pail as an
@@ -1059,7 +1061,7 @@ overrides:
   minimatch@>=10.0.0 <10.2.3: '>=10.2.3'
   minimatch@>=5.0.0 <5.1.7: '>=5.1.7'
   minimatch@>=5.0.0 <5.1.8: '>=5.1.8'
-  minimatch@>=7.0.0 <7.4.7: '>=7.4.7'
+  minimatch@>=7.0.0 <7.4.7: '>=7.4.9'
   minimatch@>=7.0.0 <7.4.8: '>=7.4.8'
   minimatch@>=9.0.0 <9.0.6: '>=9.0.6'
   minimatch@>=9.0.0 <9.0.7: '>=9.0.7'
