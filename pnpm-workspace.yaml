@@ -880,6 +880,8 @@ minimumReleaseAgeExclude:
   - postcss@8.5.18
   - valibot@1.4.2
   - brace-expansion@5.0.8
+  # Renovate security update: fastify@5.7.4
+  - fastify@5.7.4
 
 # @visulima/packem imports `@visulima/cerebro/logger/pail` — cerebro's opt-in subpath —
 # but declares no dependency on @visulima/pail. cerebro is right to treat pail as an
@@ -927,7 +929,7 @@ overrides:
   nanoid@<3.3.17: '>=3.3.17'
   # GHSA-qx66-fv34-fjm8 (critical): TanStack Router reflected XSS. Patched in 1.169.39.
   '@tanstack/start-server-core@<1.169.39': '>=1.169.39'
-  fastify@<5.7.2: '>=5.7.2'
+  fastify@<5.7.2: '>=5.7.4'
   fastify@<=5.7.2: '>=5.7.3'
   fastify@>=5.3.2 <=5.8.4: '>=5.8.5'
   h3@>=2.0.0-0 <2.0.1-rc.15: '>=2.0.1-rc.15'
