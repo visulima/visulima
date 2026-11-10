@@ -71,6 +71,18 @@ auditConfig:
     # Second extract-zip symlink advisory, same story: it names 2.0.2 as the
     # fix and 2.0.1 is still the latest published version. Same dev-only paths.
     - GHSA-7pqw-9j4j-h8q3
+    # deepmerge mergeObject() prototype poisoning (GHSA-gcqx-w48m-w2h4, low). No patched release
+    # exists (4.3.1 is the latest). Reached only through jest's jest-config, pulled in by
+    # @anolilab/lint-staged-config, which formats repo-authored config and never sees untrusted
+    # objects. Re-check when deepmerge publishes a fix.
+    - GHSA-gcqx-w48m-w2h4
+    # @sveltejs/kit <3.0.0 open redirect (GHSA-27mw-82g8-phjj) and cache-control XSS
+    # (GHSA-pfhg-q3qv-9q6r), both low. The root resolves kit 3.1.1, but one copy of
+    # 2.70.3 is still an optional svelte peer of the older @visulima/pail@4.1.1 variant
+    # that @visulima/cerebro pulls in. Only a prerender/kit server path could reach it,
+    # and no published package ships kit. Re-check when pail/cerebro move past 4.1.1.
+    - GHSA-27mw-82g8-phjj
+    - GHSA-pfhg-q3qv-9q6r
     # braces stack exhaustion on deeply nested brace patterns. The advisory
     # names 3.0.4 as the fix but 3.0.3 is still the latest published version.
     # Reached via micromatch (fast-glob, semantic-release, findup-sync, ...),
@@ -182,7 +194,7 @@ catalogs:
     '@shikijs/langs': ^4.4.3
     '@shikijs/themes': ^4.4.3
     '@sveltejs/adapter-auto': ^7.0.1
-    '@sveltejs/kit': ^2.70.2
+    '@sveltejs/kit': ^3.1.1
     '@total-typescript/ts-reset': ^0.6.1
     '@tsconfig/node22': ^22.0.5
     '@vercel/blob': 2.8.0
@@ -415,7 +427,7 @@ catalogs:
     eslint-plugin-vue: 10.10.0
     eslint-plugin-you-dont-need-lodash-underscore: 6.14.0
     eslint-plugin-zod: 4.9.1
-    fallow: 3.14.0
+    fallow: 3.41.0
     husky: ^9.1.7
     lint-staged: ^17.3.0
     prettier: 3.9.9
@@ -932,6 +944,26 @@ overrides:
   fastify@<5.7.2: '>=5.7.2'
   fastify@<=5.7.2: '>=5.7.4'
   fastify@>=5.3.2 <=5.8.4: '>=5.8.5'
+  # fastify 5.12.2–5.12.5 (GHSA-389g-gv7q-r4x8, low): case-sensitive propertyName header
+  # validation bypass. Patched in 5.12.6; 5.12.8 is the current 5.12 release.
+  fastify@>=5.12.2 <5.12.6: '>=5.12.8'
+  # @sveltejs/kit <3.0.0 (GHSA-pfhg-q3qv-9q6r, GHSA-27mw-82g8-phjj, low): open redirect via
+  # enhanced form submission and XSS via cache-control in prerendered pages. Reached through
+  # the optional svelte peer of @visulima/pail and @visulima/cerebro. Major move to 3.x.
+  '@sveltejs/kit@<3.0.0': '>=3.1.1'
+  # serialize-javascript <7.1.3 (GHSA-m5mm-p8h7-m29v, low): XSS via unescaped `</script`.
+  # Reached only through the nitropack > @rollup/plugin-terser build chain.
+  serialize-javascript@<7.1.3: '>=7.1.4'
+  # @effect/platform <0.97.1 (GHSA-chp3-j5qr-2vfr, moderate): cookie attribute injection.
+  # Reached through uploadthing in apps/web and packages/email.
+  '@effect/platform@<0.97.1': '>=0.97.2'
+  # fallow <3.34.0 (GHSA-h4fr-cmh5-qr62 and GHSA-jfwm-3p3c-6hx5, low): glob and project
+  # entries let an analyzed repo read files outside the project root. Dev-only analysis CLI.
+  fallow@>=2.68.0 <3.34.0: '>=3.41.0'
+  fallow@<3.34.0: '>=3.41.0'
+  # zod 4.x <4.6.6 (GHSA-mrhx-c7xc-m3w5, high): scoped to the 4.x line so zod 3 copies
+  # (storybook tooling) keep their documented ignore rather than being forced across a major.
+  zod@>=4.0.0 <4.6.6: '>=4.6.7'
   h3@>=2.0.0-0 <2.0.1-rc.15: '>=2.0.1-rc.15'
   h3@>=2.0.0-beta.0 <=2.0.0-rc.8: '>=2.0.1-rc.9'
   h3@>=2.0.0-beta.0 <=2.0.1-rc.16: '>=2.0.1-rc.17'
@@ -1187,7 +1219,6 @@ overrides:
   # handled by the catalog bump to 4.1.11 above.
   '@hono/node-server@2': '>=2.1.3 <3'
   '@nuxt/devtools@3': '>=3.3.1 <4'
-  '@sveltejs/kit@2': '>=2.70.2 <3'
   axios@1: '>=1.18.0 <2'
   body-parser@2: '>=2.4.0 <3'
   brace-expansion@5: '>=5.0.12 <6'
@@ -1233,7 +1264,7 @@ overrides:
   '@humanfs/node@0': '>=0.16.8 <1'
   '@tiptap/core@3': '>=3.30.4 <4'
   browserslist@4: '>=4.28.7 <5'
-  fastify@5: '>=5.12.5 <6'
+  fastify@5: '>=5.12.8 <6'
   qs@6: '>=6.16.1 <7'
   follow-redirects@1: '>=1.16.2 <2'
   joi@18: '>=18.3.1 <19'
@@ -1248,7 +1279,7 @@ overrides:
   '@grpc/grpc-js@1': '>=1.14.5 <2'
   devalue@5: '>=5.9.3 <6'
   moment@2: '>=2.31.0 <3'
-  serialize-javascript@7: '>=7.1.2 <8'
+  serialize-javascript@7: '>=7.1.4 <8'
   # basic-ftp directory-listing CPU DoS (GHSA-c475-qrg2-pj4r, high). There is no
   # patched 5.x — the fix landed in 6.2.1 — so the 5-line floor has to cross the
   # major for get-uri's ^5.3.1 edge (puppeteer/box-sdk proxy-agent, dev-only).
