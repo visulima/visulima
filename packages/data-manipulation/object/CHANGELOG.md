@@ -1,3 +1,10 @@
+## @visulima/object [4.0.1](https://github.com/visulima/visulima/compare/@visulima/object@4.0.0...@visulima/object@4.0.1) (2026-11-11)
+
+
+### Dependencies
+
+* **type-fest:** 5.8.0 → 5.10.0
+
 ## @visulima/object [4.0.0](https://github.com/visulima/visulima/compare/@visulima/object@3.1.28...@visulima/object@4.0.0) (2026-10-15)
 
 ### ⚠ BREAKING CHANGES
