@@ -9,6 +9,7 @@ packages:
   - "!packages/api/api-platform/__fixtures__/framework/**"
   - "!packages/api/api-platform/__fixtures__/pages/**"
   - "!packages/error-debugging/error/__fixtures__/captured-errors.ts"
+  - "!packages/filesystem/fs/__bench__/fixtures/**"
   - "!packages/tooling/tsconfig/__fixtures__/read-tsconfig/**"
   - "!packages/tooling/package/__fixtures__/package-json/**"
   - "!packages/tooling/package/__fixtures__/which-package-manager/**"
