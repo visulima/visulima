@@ -3,13 +3,13 @@ import copyOwnProperties from "../utils/copy-own-properties";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ExtendedError = Error & { code?: any; errno?: any; syscall?: any };
+type CopiedError = EvalError | ExtendedError | RangeError | ReferenceError | SyntaxError | TypeError | URIError;
 
 const copyError = <Value extends EvalError | ExtendedError | RangeError | ReferenceError | SyntaxError | TypeError | URIError>(
     object: Value,
     state: State,
 ): Value => {
-    // @ts-expect-error - We don't know the type of the object, can be an error
-    const ErrorClass: new (message: string) => EvalError | ExtendedError | RangeError | ReferenceError | SyntaxError | TypeError | URIError = object.constructor;
+    const ErrorClass = object.constructor as new (message: string) => CopiedError;
     const error = new ErrorClass(object.message);
 
     state.cache.set(object, error);
