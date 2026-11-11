@@ -1,3 +1,13 @@
+## @visulima/string [3.1.3](https://github.com/visulima/visulima/compare/@visulima/string@3.1.2...@visulima/string@3.1.3) (2026-11-11)
+
+### Bug Fixes
+
+* **string:** augment vitest 5 Assertion interface ([fbd5811](https://github.com/visulima/visulima/commit/fbd5811d61ed3a2e933edbd1ceb83a9e6c85aeab))
+
+### Tests
+
+* **bench:** use vitest 5 test-context bench ([424a875](https://github.com/visulima/visulima/commit/424a87567a935ae96d1b7d5c8af9f16e2b854fdc))
+
 ## @visulima/string [3.1.2](https://github.com/visulima/visulima/compare/@visulima/string@3.1.1...@visulima/string@3.1.2) (2026-10-31)
 
 ### Bug Fixes
