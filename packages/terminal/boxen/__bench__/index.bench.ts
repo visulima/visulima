@@ -1,6 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import originalBoxen from "boxen";
-import { bench, describe } from "vitest";
+import { describe, test } from "vitest";
 
 import { boxen as visulimaBoxen } from "../src";
 
@@ -9,50 +9,62 @@ const textWithNewlines = "Hello,\nworld!\nThis is a test.";
 
 describe("Boxen Benchmark", () => {
     describe("Simple Text", () => {
-        bench("@visulima/boxen", () => {
-            visulimaBoxen(simpleText, { borderStyle: "round", margin: 1, padding: 1 });
+        test("@visulima/boxen", async ({ bench }) => {
+            await bench("@visulima/boxen", () => {
+                visulimaBoxen(simpleText, { borderStyle: "round", margin: 1, padding: 1 });
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("original boxen", () => {
-            originalBoxen(simpleText, { borderStyle: "round", margin: 1, padding: 1 });
+        test.skipIf(process.env.CODSPEED_ENV)("original boxen", async ({ bench }) => {
+            await bench("original boxen", () => {
+                originalBoxen(simpleText, { borderStyle: "round", margin: 1, padding: 1 });
+            }).run();
         });
     });
 
     describe("Text with Newlines", () => {
-        bench("@visulima/boxen", () => {
-            visulimaBoxen(textWithNewlines, { borderStyle: "double", margin: 1, padding: 1 });
+        test("@visulima/boxen", async ({ bench }) => {
+            await bench("@visulima/boxen", () => {
+                visulimaBoxen(textWithNewlines, { borderStyle: "double", margin: 1, padding: 1 });
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("original boxen", () => {
-            originalBoxen(textWithNewlines, { borderStyle: "double", margin: 1, padding: 1 });
+        test.skipIf(process.env.CODSPEED_ENV)("original boxen", async ({ bench }) => {
+            await bench("original boxen", () => {
+                originalBoxen(textWithNewlines, { borderStyle: "double", margin: 1, padding: 1 });
+            }).run();
         });
     });
 
     describe("Complex Options", () => {
-        bench("@visulima/boxen", () => {
-            visulimaBoxen(textWithNewlines, {
-                borderStyle: "round",
-                margin: {
-                    bottom: 1,
-                    left: 2,
-                    right: 2,
-                    top: 1,
-                },
-                padding: 2,
-            });
+        test("@visulima/boxen", async ({ bench }) => {
+            await bench("@visulima/boxen", () => {
+                visulimaBoxen(textWithNewlines, {
+                    borderStyle: "round",
+                    margin: {
+                        bottom: 1,
+                        left: 2,
+                        right: 2,
+                        top: 1,
+                    },
+                    padding: 2,
+                });
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("original boxen", () => {
-            originalBoxen(textWithNewlines, {
-                borderStyle: "round",
-                margin: {
-                    bottom: 1,
-                    left: 2,
-                    right: 2,
-                    top: 1,
-                },
-                padding: 2,
-            });
+        test.skipIf(process.env.CODSPEED_ENV)("original boxen", async ({ bench }) => {
+            await bench("original boxen", () => {
+                originalBoxen(textWithNewlines, {
+                    borderStyle: "round",
+                    margin: {
+                        bottom: 1,
+                        left: 2,
+                        right: 2,
+                        top: 1,
+                    },
+                    padding: 2,
+                });
+            }).run();
         });
     });
 });

@@ -1,6 +1,6 @@
 import { splitByCase } from "@visulima/string/case";
 import { splitByCase as sculeSplitByCase } from "scule";
-import { bench, describe } from "vitest";
+import { describe, test } from "vitest";
 
 import {
     AFRIKAANS_STRINGS,
@@ -77,603 +77,755 @@ import {
 import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../../__fixtures__/test-strings";
 
 describe("splitByCase", () => {
-    bench("visulima/string splitByCase (no cache)", () => {
-        for (const stringValue of TEST_STRINGS) {
-            splitByCase(stringValue);
-        }
+    test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+        await bench("visulima/string splitByCase (no cache)", () => {
+            for (const stringValue of TEST_STRINGS) {
+                splitByCase(stringValue);
+            }
+        }).run();
     });
 
-    bench.skipIf(process.env.CODSPEED_ENV)("scule splitByCase", () => {
-        for (const stringValue of TEST_STRINGS) {
-            sculeSplitByCase(stringValue);
-        }
+    test.skipIf(process.env.CODSPEED_ENV)("scule splitByCase", async ({ bench }) => {
+        await bench("scule splitByCase", () => {
+            for (const stringValue of TEST_STRINGS) {
+                sculeSplitByCase(stringValue);
+            }
+        }).run();
     });
 
     describe("Special characters handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of SPECIAL_STRINGS) {
-                splitByCase(stringValue);
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of SPECIAL_STRINGS) {
+                    splitByCase(stringValue);
+                }
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("scule splitByCase", () => {
-            for (const stringValue of SPECIAL_STRINGS) {
-                sculeSplitByCase(stringValue);
-            }
+        test.skipIf(process.env.CODSPEED_ENV)("scule splitByCase", async ({ bench }) => {
+            await bench("scule splitByCase", () => {
+                for (const stringValue of SPECIAL_STRINGS) {
+                    sculeSplitByCase(stringValue);
+                }
+            }).run();
         });
     });
 
     describe("Acronym handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of ACRONYM_STRINGS) {
-                splitByCase(stringValue);
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of ACRONYM_STRINGS) {
+                    splitByCase(stringValue);
+                }
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("scule splitByCase", () => {
-            for (const stringValue of ACRONYM_STRINGS) {
-                sculeSplitByCase(stringValue);
-            }
+        test.skipIf(process.env.CODSPEED_ENV)("scule splitByCase", async ({ bench }) => {
+            await bench("scule splitByCase", () => {
+                for (const stringValue of ACRONYM_STRINGS) {
+                    sculeSplitByCase(stringValue);
+                }
+            }).run();
         });
     });
 
     describe("Japanese script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of JAPANESE_STRINGS) {
-                splitByCase(stringValue, { locale: "ja-JP" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of JAPANESE_STRINGS) {
+                    splitByCase(stringValue, { locale: "ja-JP" });
+                }
+            }).run();
         });
     });
 
     describe("Korean script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of KOREAN_STRINGS) {
-                splitByCase(stringValue, { locale: "ko-KR" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of KOREAN_STRINGS) {
+                    splitByCase(stringValue, { locale: "ko-KR" });
+                }
+            }).run();
         });
     });
 
     describe("Ukrainian script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of UKRAINIAN_STRINGS) {
-                splitByCase(stringValue, { locale: "uk-UA" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of UKRAINIAN_STRINGS) {
+                    splitByCase(stringValue, { locale: "uk-UA" });
+                }
+            }).run();
         });
     });
 
     describe("Greek script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of GREEK_STRINGS) {
-                splitByCase(stringValue, { locale: "el-GR" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of GREEK_STRINGS) {
+                    splitByCase(stringValue, { locale: "el-GR" });
+                }
+            }).run();
         });
     });
 
     describe("German script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of GERMAN_STRINGS) {
-                splitByCase(stringValue, { locale: "de-DE" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of GERMAN_STRINGS) {
+                    splitByCase(stringValue, { locale: "de-DE" });
+                }
+            }).run();
         });
     });
 
     describe("Russian script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of RUSSIAN_STRINGS) {
-                splitByCase(stringValue, { locale: "ru-RU" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of RUSSIAN_STRINGS) {
+                    splitByCase(stringValue, { locale: "ru-RU" });
+                }
+            }).run();
         });
     });
 
     describe("Bulgarian script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of BULGARIAN_STRINGS) {
-                splitByCase(stringValue, { locale: "bg-BG" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of BULGARIAN_STRINGS) {
+                    splitByCase(stringValue, { locale: "bg-BG" });
+                }
+            }).run();
         });
     });
 
     describe("Serbian script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of SERBIAN_STRINGS) {
-                splitByCase(stringValue, { locale: "sr-RS" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of SERBIAN_STRINGS) {
+                    splitByCase(stringValue, { locale: "sr-RS" });
+                }
+            }).run();
         });
     });
 
     describe("Macedonian script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of MACEDONIAN_STRINGS) {
-                splitByCase(stringValue, { locale: "mk-MK" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of MACEDONIAN_STRINGS) {
+                    splitByCase(stringValue, { locale: "mk-MK" });
+                }
+            }).run();
         });
     });
 
     describe("Belarusian script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of BELARUSIAN_STRINGS) {
-                splitByCase(stringValue, { locale: "be-BY" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of BELARUSIAN_STRINGS) {
+                    splitByCase(stringValue, { locale: "be-BY" });
+                }
+            }).run();
         });
     });
 
     describe("Chinese (Simplified) script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of CHINESE_SIMPLIFIED_STRINGS) {
-                splitByCase(stringValue, { locale: "zh-CN" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of CHINESE_SIMPLIFIED_STRINGS) {
+                    splitByCase(stringValue, { locale: "zh-CN" });
+                }
+            }).run();
         });
     });
 
     describe("Chinese (Traditional) script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of CHINESE_TRADITIONAL_STRINGS) {
-                splitByCase(stringValue, { locale: "zh-TW" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of CHINESE_TRADITIONAL_STRINGS) {
+                    splitByCase(stringValue, { locale: "zh-TW" });
+                }
+            }).run();
         });
     });
 
     describe("Chinese (Hong Kong) script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of CHINESE_HONGKONG_STRINGS) {
-                splitByCase(stringValue, { locale: "zh-HK" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of CHINESE_HONGKONG_STRINGS) {
+                    splitByCase(stringValue, { locale: "zh-HK" });
+                }
+            }).run();
         });
     });
 
     describe("Arabic script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of ARABIC_STRINGS) {
-                splitByCase(stringValue, { locale: "ar" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of ARABIC_STRINGS) {
+                    splitByCase(stringValue, { locale: "ar" });
+                }
+            }).run();
         });
     });
 
     describe("Persian script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of PERSIAN_STRINGS) {
-                splitByCase(stringValue, { locale: "fa" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of PERSIAN_STRINGS) {
+                    splitByCase(stringValue, { locale: "fa" });
+                }
+            }).run();
         });
     });
 
     describe("Hebrew script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of HEBREW_STRINGS) {
-                splitByCase(stringValue, { locale: "he" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of HEBREW_STRINGS) {
+                    splitByCase(stringValue, { locale: "he" });
+                }
+            }).run();
         });
     });
 
     describe("Thai script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of THAI_STRINGS) {
-                splitByCase(stringValue, { locale: "th" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of THAI_STRINGS) {
+                    splitByCase(stringValue, { locale: "th" });
+                }
+            }).run();
         });
     });
 
     describe("Hindi script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of HINDI_STRINGS) {
-                splitByCase(stringValue, { locale: "hi" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of HINDI_STRINGS) {
+                    splitByCase(stringValue, { locale: "hi" });
+                }
+            }).run();
         });
     });
 
     describe("Marathi script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of MARATHI_STRINGS) {
-                splitByCase(stringValue, { locale: "mr" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of MARATHI_STRINGS) {
+                    splitByCase(stringValue, { locale: "mr" });
+                }
+            }).run();
         });
     });
 
     describe("Nepali script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of NEPALI_STRINGS) {
-                splitByCase(stringValue, { locale: "ne" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of NEPALI_STRINGS) {
+                    splitByCase(stringValue, { locale: "ne" });
+                }
+            }).run();
         });
     });
 
     describe("Turkish script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of TURKISH_STRINGS) {
-                splitByCase(stringValue, { locale: "tr-TR" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of TURKISH_STRINGS) {
+                    splitByCase(stringValue, { locale: "tr-TR" });
+                }
+            }).run();
         });
     });
 
     describe("Gujarati script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of GUJARATI_STRINGS) {
-                splitByCase(stringValue, { locale: "gu" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of GUJARATI_STRINGS) {
+                    splitByCase(stringValue, { locale: "gu" });
+                }
+            }).run();
         });
     });
 
     describe("Kannada script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of KANNADA_STRINGS) {
-                splitByCase(stringValue, { locale: "kn" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of KANNADA_STRINGS) {
+                    splitByCase(stringValue, { locale: "kn" });
+                }
+            }).run();
         });
     });
 
     describe("Malayalam script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of MALAYALAM_STRINGS) {
-                splitByCase(stringValue, { locale: "ml" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of MALAYALAM_STRINGS) {
+                    splitByCase(stringValue, { locale: "ml" });
+                }
+            }).run();
         });
     });
 
     describe("Sinhala script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of SINHALA_STRINGS) {
-                splitByCase(stringValue, { locale: "si" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of SINHALA_STRINGS) {
+                    splitByCase(stringValue, { locale: "si" });
+                }
+            }).run();
         });
     });
 
     describe("Tamil script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of TAMIL_STRINGS) {
-                splitByCase(stringValue, { locale: "ta" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of TAMIL_STRINGS) {
+                    splitByCase(stringValue, { locale: "ta" });
+                }
+            }).run();
         });
     });
 
     describe("Telugu script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of TELUGU_STRINGS) {
-                splitByCase(stringValue, { locale: "te" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of TELUGU_STRINGS) {
+                    splitByCase(stringValue, { locale: "te" });
+                }
+            }).run();
         });
     });
 
     describe("Afrikaans script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of AFRIKAANS_STRINGS) {
-                splitByCase(stringValue, { locale: "af" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of AFRIKAANS_STRINGS) {
+                    splitByCase(stringValue, { locale: "af" });
+                }
+            }).run();
         });
     });
 
     describe("Albanian script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of ALBANIAN_STRINGS) {
-                splitByCase(stringValue, { locale: "sq" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of ALBANIAN_STRINGS) {
+                    splitByCase(stringValue, { locale: "sq" });
+                }
+            }).run();
         });
     });
 
     describe("Amharic script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of AMHARIC_STRINGS) {
-                splitByCase(stringValue, { locale: "am" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of AMHARIC_STRINGS) {
+                    splitByCase(stringValue, { locale: "am" });
+                }
+            }).run();
         });
     });
 
     describe("Armenian script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of ARMENIAN_STRINGS) {
-                splitByCase(stringValue, { locale: "hy" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of ARMENIAN_STRINGS) {
+                    splitByCase(stringValue, { locale: "hy" });
+                }
+            }).run();
         });
     });
 
     describe("Bengali script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of BENGALI_STRINGS) {
-                splitByCase(stringValue, { locale: "bn" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of BENGALI_STRINGS) {
+                    splitByCase(stringValue, { locale: "bn" });
+                }
+            }).run();
         });
     });
 
     describe("Bosnian script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of BOSNIAN_STRINGS) {
-                splitByCase(stringValue, { locale: "bs" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of BOSNIAN_STRINGS) {
+                    splitByCase(stringValue, { locale: "bs" });
+                }
+            }).run();
         });
     });
 
     describe("Catalan script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of CATALAN_STRINGS) {
-                splitByCase(stringValue, { locale: "ca" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of CATALAN_STRINGS) {
+                    splitByCase(stringValue, { locale: "ca" });
+                }
+            }).run();
         });
     });
 
     describe("Croatian script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of CROATIAN_STRINGS) {
-                splitByCase(stringValue, { locale: "hr" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of CROATIAN_STRINGS) {
+                    splitByCase(stringValue, { locale: "hr" });
+                }
+            }).run();
         });
     });
 
     describe("Czech script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of CZECH_STRINGS) {
-                splitByCase(stringValue, { locale: "cs" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of CZECH_STRINGS) {
+                    splitByCase(stringValue, { locale: "cs" });
+                }
+            }).run();
         });
     });
 
     describe("Danish script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of DANISH_STRINGS) {
-                splitByCase(stringValue, { locale: "da" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of DANISH_STRINGS) {
+                    splitByCase(stringValue, { locale: "da" });
+                }
+            }).run();
         });
     });
 
     describe("Dutch script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of DUTCH_STRINGS) {
-                splitByCase(stringValue, { locale: "nl" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of DUTCH_STRINGS) {
+                    splitByCase(stringValue, { locale: "nl" });
+                }
+            }).run();
         });
     });
 
     describe("Estonian script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of ESTONIAN_STRINGS) {
-                splitByCase(stringValue, { locale: "et" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of ESTONIAN_STRINGS) {
+                    splitByCase(stringValue, { locale: "et" });
+                }
+            }).run();
         });
     });
 
     describe("Finnish script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of FINNISH_STRINGS) {
-                splitByCase(stringValue, { locale: "fi" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of FINNISH_STRINGS) {
+                    splitByCase(stringValue, { locale: "fi" });
+                }
+            }).run();
         });
     });
 
     describe("French script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of FRENCH_STRINGS) {
-                splitByCase(stringValue, { locale: "fr" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of FRENCH_STRINGS) {
+                    splitByCase(stringValue, { locale: "fr" });
+                }
+            }).run();
         });
     });
 
     describe("Filipino script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of FILIPINO_STRINGS) {
-                splitByCase(stringValue, { locale: "fil" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of FILIPINO_STRINGS) {
+                    splitByCase(stringValue, { locale: "fil" });
+                }
+            }).run();
         });
     });
 
     describe("Galician script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of GALICIAN_STRINGS) {
-                splitByCase(stringValue, { locale: "gl" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of GALICIAN_STRINGS) {
+                    splitByCase(stringValue, { locale: "gl" });
+                }
+            }).run();
         });
     });
 
     describe("Georgian script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of GEORGIAN_STRINGS) {
-                splitByCase(stringValue, { locale: "ka" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of GEORGIAN_STRINGS) {
+                    splitByCase(stringValue, { locale: "ka" });
+                }
+            }).run();
         });
     });
 
     describe("Hungarian script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of HUNGARIAN_STRINGS) {
-                splitByCase(stringValue, { locale: "hu" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of HUNGARIAN_STRINGS) {
+                    splitByCase(stringValue, { locale: "hu" });
+                }
+            }).run();
         });
     });
 
     describe("Indonesian script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of INDONESIAN_STRINGS) {
-                splitByCase(stringValue, { locale: "id" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of INDONESIAN_STRINGS) {
+                    splitByCase(stringValue, { locale: "id" });
+                }
+            }).run();
         });
     });
 
     describe("Icelandic script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of ICELANDIC_STRINGS) {
-                splitByCase(stringValue, { locale: "is" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of ICELANDIC_STRINGS) {
+                    splitByCase(stringValue, { locale: "is" });
+                }
+            }).run();
         });
     });
 
     describe("Irish script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of IRISH_STRINGS) {
-                splitByCase(stringValue, { locale: "ga" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of IRISH_STRINGS) {
+                    splitByCase(stringValue, { locale: "ga" });
+                }
+            }).run();
         });
     });
 
     describe("Italian script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of ITALIAN_STRINGS) {
-                splitByCase(stringValue, { locale: "it" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of ITALIAN_STRINGS) {
+                    splitByCase(stringValue, { locale: "it" });
+                }
+            }).run();
         });
     });
 
     describe("Kazakh script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of KAZAKH_STRINGS) {
-                splitByCase(stringValue, { locale: "kk" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of KAZAKH_STRINGS) {
+                    splitByCase(stringValue, { locale: "kk" });
+                }
+            }).run();
         });
     });
 
     describe("Khmer script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of KHMER_STRINGS) {
-                splitByCase(stringValue, { locale: "km" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of KHMER_STRINGS) {
+                    splitByCase(stringValue, { locale: "km" });
+                }
+            }).run();
         });
     });
 
     describe("Kyrgyz script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of KYRGYZ_STRINGS) {
-                splitByCase(stringValue, { locale: "ky" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of KYRGYZ_STRINGS) {
+                    splitByCase(stringValue, { locale: "ky" });
+                }
+            }).run();
         });
     });
 
     describe("Lao script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of LAO_STRINGS) {
-                splitByCase(stringValue, { locale: "lo" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of LAO_STRINGS) {
+                    splitByCase(stringValue, { locale: "lo" });
+                }
+            }).run();
         });
     });
 
     describe("Latvian script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of LATVIAN_STRINGS) {
-                splitByCase(stringValue, { locale: "lv" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of LATVIAN_STRINGS) {
+                    splitByCase(stringValue, { locale: "lv" });
+                }
+            }).run();
         });
     });
 
     describe("Lithuanian script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of LITHUANIAN_STRINGS) {
-                splitByCase(stringValue, { locale: "lt" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of LITHUANIAN_STRINGS) {
+                    splitByCase(stringValue, { locale: "lt" });
+                }
+            }).run();
         });
     });
 
     describe("Malay script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of MALAY_STRINGS) {
-                splitByCase(stringValue, { locale: "ms" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of MALAY_STRINGS) {
+                    splitByCase(stringValue, { locale: "ms" });
+                }
+            }).run();
         });
     });
 
     describe("Maltese script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of MALTESE_STRINGS) {
-                splitByCase(stringValue, { locale: "mt" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of MALTESE_STRINGS) {
+                    splitByCase(stringValue, { locale: "mt" });
+                }
+            }).run();
         });
     });
 
     describe("Mongolian script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of MONGOLIAN_STRINGS) {
-                splitByCase(stringValue, { locale: "mn" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of MONGOLIAN_STRINGS) {
+                    splitByCase(stringValue, { locale: "mn" });
+                }
+            }).run();
         });
     });
 
     describe("Norwegian script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of NORWEGIAN_STRINGS) {
-                splitByCase(stringValue, { locale: "nb" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of NORWEGIAN_STRINGS) {
+                    splitByCase(stringValue, { locale: "nb" });
+                }
+            }).run();
         });
     });
 
     describe("Polish script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of POLISH_STRINGS) {
-                splitByCase(stringValue, { locale: "pl" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of POLISH_STRINGS) {
+                    splitByCase(stringValue, { locale: "pl" });
+                }
+            }).run();
         });
     });
 
     describe("Portuguese script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of PORTUGUESE_STRINGS) {
-                splitByCase(stringValue, { locale: "pt" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of PORTUGUESE_STRINGS) {
+                    splitByCase(stringValue, { locale: "pt" });
+                }
+            }).run();
         });
     });
 
     describe("Punjabi script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of PUNJABI_STRINGS) {
-                splitByCase(stringValue, { locale: "pa" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of PUNJABI_STRINGS) {
+                    splitByCase(stringValue, { locale: "pa" });
+                }
+            }).run();
         });
     });
 
     describe("Romanian script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of ROMANIAN_STRINGS) {
-                splitByCase(stringValue, { locale: "ro" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of ROMANIAN_STRINGS) {
+                    splitByCase(stringValue, { locale: "ro" });
+                }
+            }).run();
         });
     });
 
     describe("Slovak script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of SLOVAK_STRINGS) {
-                splitByCase(stringValue, { locale: "sk" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of SLOVAK_STRINGS) {
+                    splitByCase(stringValue, { locale: "sk" });
+                }
+            }).run();
         });
     });
 
     describe("Slovenian script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of SLOVENIAN_STRINGS) {
-                splitByCase(stringValue, { locale: "sl" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of SLOVENIAN_STRINGS) {
+                    splitByCase(stringValue, { locale: "sl" });
+                }
+            }).run();
         });
     });
 
     describe("Swedish script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of SWEDISH_STRINGS) {
-                splitByCase(stringValue, { locale: "sv" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of SWEDISH_STRINGS) {
+                    splitByCase(stringValue, { locale: "sv" });
+                }
+            }).run();
         });
     });
 
     describe("Urdu script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of URDU_STRINGS) {
-                splitByCase(stringValue, { locale: "ur" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of URDU_STRINGS) {
+                    splitByCase(stringValue, { locale: "ur" });
+                }
+            }).run();
         });
     });
 
     describe("Uzbek script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of UZBEK_STRINGS) {
-                splitByCase(stringValue, { locale: "uz" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of UZBEK_STRINGS) {
+                    splitByCase(stringValue, { locale: "uz" });
+                }
+            }).run();
         });
     });
 
     describe("Vietnamese script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of VIETNAMESE_STRINGS) {
-                splitByCase(stringValue, { locale: "vi" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of VIETNAMESE_STRINGS) {
+                    splitByCase(stringValue, { locale: "vi" });
+                }
+            }).run();
         });
     });
 
     describe("Welsh script handling", () => {
-        bench("visulima/string splitByCase (no cache)", () => {
-            for (const stringValue of WELSH_STRINGS) {
-                splitByCase(stringValue, { locale: "cy" });
-            }
+        test("visulima/string splitByCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string splitByCase (no cache)", () => {
+                for (const stringValue of WELSH_STRINGS) {
+                    splitByCase(stringValue, { locale: "cy" });
+                }
+            }).run();
         });
     });
 });

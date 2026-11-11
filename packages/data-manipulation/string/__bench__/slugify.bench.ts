@@ -2,7 +2,7 @@ import sindresorhusSlugify from "@sindresorhus/slugify";
 import slugPackage from "slug";
 import simovSlugify from "slugify";
 import { slugify as transliterationSlugify } from "transliteration";
-import { bench, describe } from "vitest";
+import { describe, test } from "vitest";
 
 import visulimaSlugify from "../src/slugify";
 
@@ -33,78 +33,102 @@ const transliterationPackageDefaultOptions = {}; // Assuming default behavior is
 
 describe("Slugify Benchmark Comparison by Feature", () => {
     describe("Default Behavior (Transliteration generally ON by default for libs)", () => {
-        bench("@visulima/string (default: transliterate ON)", async () => {
-            for (const item of testStrings) {
-                visulimaSlugify(item, visulimaDefaultOptions);
-            }
+        test("@visulima/string (default: transliterate ON)", async ({ bench }) => {
+            await bench("@visulima/string (default: transliterate ON)", async () => {
+                for (const item of testStrings) {
+                    visulimaSlugify(item, visulimaDefaultOptions);
+                }
+            }).run();
         });
 
-        bench("@visulima/string (transliterate: false)", async () => {
-            for (const item of testStrings) {
-                visulimaSlugify(item, { ...visulimaDefaultOptions, transliterate: false });
-            }
+        test("@visulima/string (transliterate: false)", async ({ bench }) => {
+            await bench("@visulima/string (transliterate: false)", async () => {
+                for (const item of testStrings) {
+                    visulimaSlugify(item, { ...visulimaDefaultOptions, transliterate: false });
+                }
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("@sindresorhus/slugify (default: transliterate ON)", () => {
-            for (const item of testStrings) {
-                sindresorhusSlugify(item, sindresorhusDefaultOptions);
-            }
+        test.skipIf(process.env.CODSPEED_ENV)("@sindresorhus/slugify (default: transliterate ON)", async ({ bench }) => {
+            await bench("@sindresorhus/slugify (default: transliterate ON)", () => {
+                for (const item of testStrings) {
+                    sindresorhusSlugify(item, sindresorhusDefaultOptions);
+                }
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("slugify (simov) (common default: lower=true, transliterate ON)", () => {
-            for (const item of testStrings) {
-                simovSlugify(item, simovDefaultOptionsOurComparison);
-            }
+        test.skipIf(process.env.CODSPEED_ENV)("slugify (simov) (common default: lower=true, transliterate ON)", async ({ bench }) => {
+            await bench("slugify (simov) (common default: lower=true, transliterate ON)", () => {
+                for (const item of testStrings) {
+                    simovSlugify(item, simovDefaultOptionsOurComparison);
+                }
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("slugify (simov) (actual library default: lower=false, transliterate ON)", () => {
-            for (const item of testStrings) {
-                simovSlugify(item, simovActualDefaultOptions);
-            }
+        test.skipIf(process.env.CODSPEED_ENV)("slugify (simov) (actual library default: lower=false, transliterate ON)", async ({ bench }) => {
+            await bench("slugify (simov) (actual library default: lower=false, transliterate ON)", () => {
+                for (const item of testStrings) {
+                    simovSlugify(item, simovActualDefaultOptions);
+                }
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("transliteration slugify (default: transliterate ON)", () => {
-            for (const item of testStrings) {
-                transliterationSlugify(item, transliterationPackageDefaultOptions);
-            }
+        test.skipIf(process.env.CODSPEED_ENV)("transliteration slugify (default: transliterate ON)", async ({ bench }) => {
+            await bench("transliteration slugify (default: transliterate ON)", () => {
+                for (const item of testStrings) {
+                    transliterationSlugify(item, transliterationPackageDefaultOptions);
+                }
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("slug (default: transliterate ON)", () => {
-            for (const item of testStrings) {
-                slugPackage(item);
-            }
+        test.skipIf(process.env.CODSPEED_ENV)("slug (default: transliterate ON)", async ({ bench }) => {
+            await bench("slug (default: transliterate ON)", () => {
+                for (const item of testStrings) {
+                    slugPackage(item);
+                }
+            }).run();
         });
     });
 
     describe("Separator Option: '_'", () => {
-        bench("@visulima/string", async () => {
-            for (const item of testStrings) {
-                visulimaSlugify(item, { ...visulimaDefaultOptions, separator: "_" });
-            }
+        test("@visulima/string", async ({ bench }) => {
+            await bench("@visulima/string", async () => {
+                for (const item of testStrings) {
+                    visulimaSlugify(item, { ...visulimaDefaultOptions, separator: "_" });
+                }
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("@sindresorhus/slugify", () => {
-            for (const item of testStrings) {
-                sindresorhusSlugify(item, { ...sindresorhusDefaultOptions, separator: "_" });
-            }
+        test.skipIf(process.env.CODSPEED_ENV)("@sindresorhus/slugify", async ({ bench }) => {
+            await bench("@sindresorhus/slugify", () => {
+                for (const item of testStrings) {
+                    sindresorhusSlugify(item, { ...sindresorhusDefaultOptions, separator: "_" });
+                }
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("slugify (simov)", () => {
-            for (const item of testStrings) {
-                simovSlugify(item, { ...simovActualDefaultOptions, replacement: "_" });
-            }
+        test.skipIf(process.env.CODSPEED_ENV)("slugify (simov)", async ({ bench }) => {
+            await bench("slugify (simov)", () => {
+                for (const item of testStrings) {
+                    simovSlugify(item, { ...simovActualDefaultOptions, replacement: "_" });
+                }
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("transliteration slugify", () => {
-            for (const item of testStrings) {
-                transliterationSlugify(item, { ...transliterationPackageDefaultOptions, separator: "_" });
-            }
+        test.skipIf(process.env.CODSPEED_ENV)("transliteration slugify", async ({ bench }) => {
+            await bench("transliteration slugify", () => {
+                for (const item of testStrings) {
+                    transliterationSlugify(item, { ...transliterationPackageDefaultOptions, separator: "_" });
+                }
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("slug", () => {
-            for (const item of testStrings) {
-                slugPackage(item, { replacement: "_" });
-            }
+        test.skipIf(process.env.CODSPEED_ENV)("slug", async ({ bench }) => {
+            await bench("slug", () => {
+                for (const item of testStrings) {
+                    slugPackage(item, { replacement: "_" });
+                }
+            }).run();
         });
     });
 
@@ -112,104 +136,136 @@ describe("Slugify Benchmark Comparison by Feature", () => {
     // Sindresorhus: separator must be a non-empty string.
     // Simov: empty replacement effectively joins words if no other logic separates them.
     describe("Separator Option: '' (Empty - where supported)", () => {
-        bench("@visulima/string", async () => {
-            for (const item of testStrings) {
-                visulimaSlugify(item, { ...visulimaDefaultOptions, separator: "" });
-            }
+        test("@visulima/string", async ({ bench }) => {
+            await bench("@visulima/string", async () => {
+                for (const item of testStrings) {
+                    visulimaSlugify(item, { ...visulimaDefaultOptions, separator: "" });
+                }
+            }).run();
         });
         // Simov can achieve this by setting replacement to '' and ensuring no space-based logic interferes
-        bench.skipIf(process.env.CODSPEED_ENV)("slugify (simov) (replacement: '')", () => {
-            for (const item of testStrings) {
-                simovSlugify(item, { ...simovActualDefaultOptions, replacement: "" });
-            }
+        test.skipIf(process.env.CODSPEED_ENV)("slugify (simov) (replacement: '')", async ({ bench }) => {
+            await bench("slugify (simov) (replacement: '')", () => {
+                for (const item of testStrings) {
+                    simovSlugify(item, { ...simovActualDefaultOptions, replacement: "" });
+                }
+            }).run();
         });
-        bench.skipIf(process.env.CODSPEED_ENV)("transliteration slugify", () => {
-            for (const item of testStrings) {
-                transliterationSlugify(item, { ...transliterationPackageDefaultOptions, separator: "" });
-            }
+        test.skipIf(process.env.CODSPEED_ENV)("transliteration slugify", async ({ bench }) => {
+            await bench("transliteration slugify", () => {
+                for (const item of testStrings) {
+                    transliterationSlugify(item, { ...transliterationPackageDefaultOptions, separator: "" });
+                }
+            }).run();
         });
-        bench.skipIf(process.env.CODSPEED_ENV)("slug (replacement: '')", () => {
-            for (const item of testStrings) {
-                slugPackage(item, { replacement: "" });
-            }
+        test.skipIf(process.env.CODSPEED_ENV)("slug (replacement: '')", async ({ bench }) => {
+            await bench("slug (replacement: '')", () => {
+                for (const item of testStrings) {
+                    slugPackage(item, { replacement: "" });
+                }
+            }).run();
         });
     });
 
     describe("Case Option: Output Lowercase (Common Expectation)", () => {
-        bench("@visulima/string (default is lowercase)", async () => {
-            for (const item of testStrings) {
-                visulimaSlugify(item, { ...visulimaDefaultOptions, lowercase: true, uppercase: false });
-            }
+        test("@visulima/string (default is lowercase)", async ({ bench }) => {
+            await bench("@visulima/string (default is lowercase)", async () => {
+                for (const item of testStrings) {
+                    visulimaSlugify(item, { ...visulimaDefaultOptions, lowercase: true, uppercase: false });
+                }
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("@sindresorhus/slugify (default is lowercase)", () => {
-            for (const item of testStrings) {
-                sindresorhusSlugify(item, { ...sindresorhusDefaultOptions, lowercase: true });
-            }
+        test.skipIf(process.env.CODSPEED_ENV)("@sindresorhus/slugify (default is lowercase)", async ({ bench }) => {
+            await bench("@sindresorhus/slugify (default is lowercase)", () => {
+                for (const item of testStrings) {
+                    sindresorhusSlugify(item, { ...sindresorhusDefaultOptions, lowercase: true });
+                }
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("slugify (simov) (lower: true)", () => {
-            for (const item of testStrings) {
-                simovSlugify(item, { ...simovActualDefaultOptions, lower: true });
-            }
+        test.skipIf(process.env.CODSPEED_ENV)("slugify (simov) (lower: true)", async ({ bench }) => {
+            await bench("slugify (simov) (lower: true)", () => {
+                for (const item of testStrings) {
+                    simovSlugify(item, { ...simovActualDefaultOptions, lower: true });
+                }
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("transliteration slugify", () => {
-            for (const item of testStrings) {
-                transliterationSlugify(item, { ...transliterationPackageDefaultOptions, lowercase: true });
-            }
+        test.skipIf(process.env.CODSPEED_ENV)("transliteration slugify", async ({ bench }) => {
+            await bench("transliteration slugify", () => {
+                for (const item of testStrings) {
+                    transliterationSlugify(item, { ...transliterationPackageDefaultOptions, lowercase: true });
+                }
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("slug (lower: true)", () => {
-            for (const item of testStrings) {
-                slugPackage(item, { lower: true });
-            }
+        test.skipIf(process.env.CODSPEED_ENV)("slug (lower: true)", async ({ bench }) => {
+            await bench("slug (lower: true)", () => {
+                for (const item of testStrings) {
+                    slugPackage(item, { lower: true });
+                }
+            }).run();
         });
     });
 
     describe("Case Option: Preserve/Output Uppercase (from UC input)", () => {
-        bench("@visulima/string", async () => {
-            for (const item of uppercaseTestStrings) {
-                visulimaSlugify(item, { ...visulimaDefaultOptions, lowercase: false, uppercase: true });
-            }
+        test("@visulima/string", async ({ bench }) => {
+            await bench("@visulima/string", async () => {
+                for (const item of uppercaseTestStrings) {
+                    visulimaSlugify(item, { ...visulimaDefaultOptions, lowercase: false, uppercase: true });
+                }
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("@sindresorhus/slugify", () => {
-            for (const item of uppercaseTestStrings) {
-                sindresorhusSlugify(item, { ...sindresorhusDefaultOptions, lowercase: false });
-            }
+        test.skipIf(process.env.CODSPEED_ENV)("@sindresorhus/slugify", async ({ bench }) => {
+            await bench("@sindresorhus/slugify", () => {
+                for (const item of uppercaseTestStrings) {
+                    sindresorhusSlugify(item, { ...sindresorhusDefaultOptions, lowercase: false });
+                }
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("slugify (simov)", () => {
-            for (const item of uppercaseTestStrings) {
-                simovSlugify(item, { ...simovActualDefaultOptions, lower: false });
-            }
+        test.skipIf(process.env.CODSPEED_ENV)("slugify (simov)", async ({ bench }) => {
+            await bench("slugify (simov)", () => {
+                for (const item of uppercaseTestStrings) {
+                    simovSlugify(item, { ...simovActualDefaultOptions, lower: false });
+                }
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("transliteration slugify", () => {
-            for (const item of uppercaseTestStrings) {
-                transliterationSlugify(item, { ...transliterationPackageDefaultOptions, lowercase: false });
-            }
+        test.skipIf(process.env.CODSPEED_ENV)("transliteration slugify", async ({ bench }) => {
+            await bench("transliteration slugify", () => {
+                for (const item of uppercaseTestStrings) {
+                    transliterationSlugify(item, { ...transliterationPackageDefaultOptions, lowercase: false });
+                }
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("slug (lower: false)", () => {
-            for (const item of uppercaseTestStrings) {
-                slugPackage(item, { lower: false });
-            }
+        test.skipIf(process.env.CODSPEED_ENV)("slug (lower: false)", async ({ bench }) => {
+            await bench("slug (lower: false)", () => {
+                for (const item of uppercaseTestStrings) {
+                    slugPackage(item, { lower: false });
+                }
+            }).run();
         });
     });
 
     // This block is specific to visulima as others don't have a simple on/off toggle for all transliteration
     describe("Transliteration Control (Visulima Specific Focus)", () => {
-        bench("@visulima/string (transliterate: true - default)", async () => {
-            for (const item of testStrings) {
-                visulimaSlugify(item, { ...visulimaDefaultOptions, transliterate: true });
-            }
+        test("@visulima/string (transliterate: true - default)", async ({ bench }) => {
+            await bench("@visulima/string (transliterate: true - default)", async () => {
+                for (const item of testStrings) {
+                    visulimaSlugify(item, { ...visulimaDefaultOptions, transliterate: true });
+                }
+            }).run();
         });
-        bench("@visulima/string (transliterate: false)", async () => {
-            for (const item of testStrings) {
-                visulimaSlugify(item, { ...visulimaDefaultOptions, transliterate: false });
-            }
+        test("@visulima/string (transliterate: false)", async ({ bench }) => {
+            await bench("@visulima/string (transliterate: false)", async () => {
+                for (const item of testStrings) {
+                    visulimaSlugify(item, { ...visulimaDefaultOptions, transliterate: false });
+                }
+            }).run();
         });
     });
 });

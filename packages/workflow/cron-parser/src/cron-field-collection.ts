@@ -95,13 +95,13 @@ class CronFieldCollection {
 
     /**
      * Resolves a field value, either using the provided CronField instance or creating a new one from raw values.
-     * @param constructor The constructor for creating new field instances
+     * @param FieldClass The constructor for creating new field instances
      * @param baseField The base field to use if no override is provided
      * @param fieldValue The override value, either a CronField instance or raw values
      * @returns The resolved CronField instance
      * @private
      */
-    private static resolveField<T extends CronField, V extends unknown[]>(constructor: new (values: V) => T, baseField: T, fieldValue: T | V | undefined): T {
+    private static resolveField<T extends CronField, V extends unknown[]>(FieldClass: new (values: V) => T, baseField: T, fieldValue: T | V | undefined): T {
         if (!fieldValue) {
             return baseField;
         }
@@ -110,7 +110,7 @@ class CronFieldCollection {
             return fieldValue;
         }
 
-        return new constructor(fieldValue);
+        return new FieldClass(fieldValue);
     }
 
     /**

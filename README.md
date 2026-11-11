@@ -60,13 +60,9 @@ Already using one of these? Swap it out without changing your code:
 | [`chalk`](https://github.com/chalk/chalk)    | [`@visulima/colorize`](packages/terminal/colorize/README.md)                              | Chalk-compatible API, up to **3× faster**, with nested templates. |
 | [`ink`](https://github.com/vadimdemedes/ink) | [`@visulima/tui`](https://github.com/visulima/vis/tree/main/packages/terminal/tui#readme) | Ink-compatible React API, backed by a native Rust diff engine.    |
 
-## Powered by native Rust
+## Rust-backed packages
 
-Performance-critical packages ship with NAPI bindings and a JS fallback. Fast where it matters, portable everywhere. The packages that need a Rust toolchain are developed in [visulima/vis](https://github.com/visulima/vis).
-
-- **[`@visulima/tui`](https://github.com/visulima/vis/tree/main/packages/terminal/tui#readme)** uses a native Rust diff engine for the React-to-terminal renderer.
-- **[`@visulima/secret-scanner`](https://github.com/visulima/vis/tree/main/packages/tooling/secret-scanner#readme)** is a Rust port of gitleaks detection, exposed via NAPI.
-- **[`@visulima/task-runner`](https://github.com/visulima/vis/tree/main/packages/tooling/task-runner#readme)** runs concurrent processes with native Rust performance and process-tree cleanup on every OS.
+Packages that need a Rust toolchain are developed in [visulima/vis](https://github.com/visulima/vis), not in this repository. That includes [`@visulima/tui`](https://github.com/visulima/vis/tree/main/packages/terminal/tui#readme), [`@visulima/secret-scanner`](https://github.com/visulima/vis/tree/main/packages/tooling/secret-scanner#readme) and [`@visulima/task-runner`](https://github.com/visulima/vis/tree/main/packages/tooling/task-runner#readme).
 
 ## Install
 

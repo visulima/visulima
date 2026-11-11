@@ -1,5 +1,5 @@
 import { standardRules } from "@visulima/redact";
-import { bench, describe } from "vitest";
+import { describe, test } from "vitest";
 
 // Collect the raw regex pattern sources from the default rule set. With the ~50
 // default rules, every string leaf in an object/array would previously trigger a
@@ -47,19 +47,23 @@ const runMatches = (rx: RegExp, input: string): number => {
 };
 
 describe("regex compilation on the string-anonymizer hot path", () => {
-    bench("cached compiled RegExp (optimized)", () => {
-        for (const input of stringLeaves) {
-            for (const rx of compiled) {
-                runMatches(rx, input);
+    test("cached compiled RegExp (optimized)", async ({ bench }) => {
+        await bench("cached compiled RegExp (optimized)", () => {
+            for (const input of stringLeaves) {
+                for (const rx of compiled) {
+                    runMatches(rx, input);
+                }
             }
-        }
+        }).run();
     });
 
-    bench("recompile new RegExp per string (previous)", () => {
-        for (const input of stringLeaves) {
-            for (const pattern of patterns) {
-                runMatches(new RegExp(pattern, "giu"), input);
+    test("recompile new RegExp per string (previous)", async ({ bench }) => {
+        await bench("recompile new RegExp per string (previous)", () => {
+            for (const input of stringLeaves) {
+                for (const pattern of patterns) {
+                    runMatches(new RegExp(pattern, "giu"), input);
+                }
             }
-        }
+        }).run();
     });
 });

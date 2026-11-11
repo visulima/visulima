@@ -23,6 +23,5 @@ nx.json
 plop.js
 pnpm-lock.yaml
 pnpm-workspace.yaml
-taze.config.js
 tsconfig.base.json
 tsconfig.json

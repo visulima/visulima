@@ -96,6 +96,7 @@
         "@vitest/ui": "catalog:test",
         "conventional-changelog-conventionalcommits": "catalog:dev",
         "cron-parser": "catalog:test",
+        "croner": "catalog:prod",
         "esbuild": "catalog:build",
         "eslint": "catalog:lint",
         "fallow": "catalog:lint",

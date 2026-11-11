@@ -1,4 +1,4 @@
-import { bench, describe } from "vitest";
+import { describe, test } from "vitest";
 
 import ColorizeImpl from "../src/colorize.server";
 import { gradient, GradientBuilder } from "../src/gradient";
@@ -45,15 +45,19 @@ describe("gradient render (repeated calls, same length)", () => {
     const cached = gradient(stops);
     const uncached = uncachedGradient(stops);
 
-    bench("cached (Map memoization)", () => {
-        for (let index = 0; index < 100; index += 1) {
-            cached(SAMPLE);
-        }
+    test("cached (Map memoization)", async ({ bench }) => {
+        await bench("cached (Map memoization)", () => {
+            for (let index = 0; index < 100; index += 1) {
+                cached(SAMPLE);
+            }
+        }).run();
     });
 
-    bench("uncached (recompute every call)", () => {
-        for (let index = 0; index < 100; index += 1) {
-            uncached(SAMPLE);
-        }
+    test("uncached (recompute every call)", async ({ bench }) => {
+        await bench("uncached (recompute every call)", () => {
+            for (let index = 0; index < 100; index += 1) {
+                uncached(SAMPLE);
+            }
+        }).run();
     });
 });

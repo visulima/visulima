@@ -8,7 +8,7 @@ import { glob as nativeGlob, globSync as nativeGlobSync } from "glob";
 import { globby, globbySync } from "globby";
 import { glob as tinyGlob, globSync as tinyGlobSync } from "tinyglobby";
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { bench, describe } from "vitest";
+import { describe, test } from "vitest";
 
 const fixtures = resolve("fixtures");
 
@@ -67,58 +67,84 @@ const nodeGlobCallback = (pattern: string): Promise<number> =>
 
 for (const [label, pattern] of Object.entries(patterns)) {
     describe(`glob async — ${label} (${pattern})`, () => {
-        bench("@visulima/fs glob", async () => {
-            await visulimaGlob(pattern, { cwd: fixtures });
+        test("@visulima/fs glob", async ({ bench }) => {
+            await bench("@visulima/fs glob", async () => {
+                await visulimaGlob(pattern, { cwd: fixtures });
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("node:fs/promises glob", async () => {
-            await collectAsyncIter(nodeGlobAsync(pattern, { cwd: fixtures }));
+        test.skipIf(process.env.CODSPEED_ENV)("node:fs/promises glob", async ({ bench }) => {
+            await bench("node:fs/promises glob", async () => {
+                await collectAsyncIter(nodeGlobAsync(pattern, { cwd: fixtures }));
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("node:fs glob (callback)", async () => {
-            await nodeGlobCallback(pattern);
+        test.skipIf(process.env.CODSPEED_ENV)("node:fs glob (callback)", async ({ bench }) => {
+            await bench("node:fs glob (callback)", async () => {
+                await nodeGlobCallback(pattern);
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("fast-glob", async () => {
-            await fastGlob(pattern, { cwd: fixtures });
+        test.skipIf(process.env.CODSPEED_ENV)("fast-glob", async ({ bench }) => {
+            await bench("fast-glob", async () => {
+                await fastGlob(pattern, { cwd: fixtures });
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("tinyglobby", async () => {
-            await tinyGlob(pattern, { cwd: fixtures });
+        test.skipIf(process.env.CODSPEED_ENV)("tinyglobby", async ({ bench }) => {
+            await bench("tinyglobby", async () => {
+                await tinyGlob(pattern, { cwd: fixtures });
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("globby", async () => {
-            await globby(pattern, { cwd: fixtures });
+        test.skipIf(process.env.CODSPEED_ENV)("globby", async ({ bench }) => {
+            await bench("globby", async () => {
+                await globby(pattern, { cwd: fixtures });
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("glob (node-glob)", async () => {
-            await nativeGlob(pattern, { cwd: fixtures });
+        test.skipIf(process.env.CODSPEED_ENV)("glob (node-glob)", async ({ bench }) => {
+            await bench("glob (node-glob)", async () => {
+                await nativeGlob(pattern, { cwd: fixtures });
+            }).run();
         });
     });
 
     describe(`glob sync — ${label} (${pattern})`, () => {
-        bench("@visulima/fs globSync", () => {
-            visulimaGlobSync(pattern, { cwd: fixtures });
+        test("@visulima/fs globSync", async ({ bench }) => {
+            await bench("@visulima/fs globSync", () => {
+                visulimaGlobSync(pattern, { cwd: fixtures });
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("node:fs globSync", () => {
-            collectIter(nodeGlobSync(pattern, { cwd: fixtures }) as unknown as Iterable<string>);
+        test.skipIf(process.env.CODSPEED_ENV)("node:fs globSync", async ({ bench }) => {
+            await bench("node:fs globSync", () => {
+                collectIter(nodeGlobSync(pattern, { cwd: fixtures }) as unknown as Iterable<string>);
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("fast-glob.sync", () => {
-            fastGlob.sync(pattern, { cwd: fixtures });
+        test.skipIf(process.env.CODSPEED_ENV)("fast-glob.sync", async ({ bench }) => {
+            await bench("fast-glob.sync", () => {
+                fastGlob.sync(pattern, { cwd: fixtures });
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("tinyglobby.globSync", () => {
-            tinyGlobSync(pattern, { cwd: fixtures });
+        test.skipIf(process.env.CODSPEED_ENV)("tinyglobby.globSync", async ({ bench }) => {
+            await bench("tinyglobby.globSync", () => {
+                tinyGlobSync(pattern, { cwd: fixtures });
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("globby.sync", () => {
-            globbySync(pattern, { cwd: fixtures });
+        test.skipIf(process.env.CODSPEED_ENV)("globby.sync", async ({ bench }) => {
+            await bench("globby.sync", () => {
+                globbySync(pattern, { cwd: fixtures });
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("glob.sync (node-glob)", () => {
-            nativeGlobSync(pattern, { cwd: fixtures });
+        test.skipIf(process.env.CODSPEED_ENV)("glob.sync (node-glob)", async ({ bench }) => {
+            await bench("glob.sync (node-glob)", () => {
+                nativeGlobSync(pattern, { cwd: fixtures });
+            }).run();
         });
     });
 }

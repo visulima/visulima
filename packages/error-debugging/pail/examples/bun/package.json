@@ -8,7 +8,7 @@
         "start": "bun run example.ts"
     },
     "dependencies": {
-        "@visulima/pail": "catalog:prod"
+        "@visulima/pail": "workspace:*"
     },
     "devDependencies": {}
 }

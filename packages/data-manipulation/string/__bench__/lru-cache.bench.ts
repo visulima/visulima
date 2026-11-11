@@ -1,4 +1,4 @@
-import { bench, describe } from "vitest";
+import { describe, test } from "vitest";
 
 import LRUCache from "../src/utils/lru-cache";
 
@@ -64,41 +64,49 @@ const seed = <T extends { set: (k: string, v: number) => void }>(cache: T): T =>
 };
 
 describe("LRUCache - hot-path get/set (Map order vs keyOrder.filter)", () => {
-    bench.skipIf(process.env.CODSPEED_ENV)("current (Map insertion order) - mixed get/set", () => {
-        const cache = seed(new LRUCache<string, number>(CAPACITY));
+    test.skipIf(process.env.CODSPEED_ENV)("current (Map insertion order) - mixed get/set", async ({ bench }) => {
+        await bench("current (Map insertion order) - mixed get/set", () => {
+            const cache = seed(new LRUCache<string, number>(CAPACITY));
 
-        for (let round = 0; round < 5; round += 1) {
-            for (let index = 0; index < CAPACITY; index += 1) {
-                cache.get(keys[index] as string);
-                cache.set(keys[index] as string, index + round);
+            for (let round = 0; round < 5; round += 1) {
+                for (let index = 0; index < CAPACITY; index += 1) {
+                    cache.get(keys[index] as string);
+                    cache.set(keys[index] as string, index + round);
+                }
             }
-        }
+        }).run();
     });
 
-    bench.skipIf(process.env.CODSPEED_ENV)("legacy (keyOrder.filter O(n)) - mixed get/set", () => {
-        const cache = seed(new LegacyLRUCache<string, number>(CAPACITY));
+    test.skipIf(process.env.CODSPEED_ENV)("legacy (keyOrder.filter O(n)) - mixed get/set", async ({ bench }) => {
+        await bench("legacy (keyOrder.filter O(n)) - mixed get/set", () => {
+            const cache = seed(new LegacyLRUCache<string, number>(CAPACITY));
 
-        for (let round = 0; round < 5; round += 1) {
-            for (let index = 0; index < CAPACITY; index += 1) {
-                cache.get(keys[index] as string);
-                cache.set(keys[index] as string, index + round);
+            for (let round = 0; round < 5; round += 1) {
+                for (let index = 0; index < CAPACITY; index += 1) {
+                    cache.get(keys[index] as string);
+                    cache.set(keys[index] as string, index + round);
+                }
             }
-        }
+        }).run();
     });
 
-    bench.skipIf(process.env.CODSPEED_ENV)("current (Map insertion order) - eviction churn", () => {
-        const cache = new LRUCache<string, number>(CAPACITY);
+    test.skipIf(process.env.CODSPEED_ENV)("current (Map insertion order) - eviction churn", async ({ bench }) => {
+        await bench("current (Map insertion order) - eviction churn", () => {
+            const cache = new LRUCache<string, number>(CAPACITY);
 
-        for (let index = 0; index < CAPACITY * 4; index += 1) {
-            cache.set(`churn-${index}`, index);
-        }
+            for (let index = 0; index < CAPACITY * 4; index += 1) {
+                cache.set(`churn-${index}`, index);
+            }
+        }).run();
     });
 
-    bench.skipIf(process.env.CODSPEED_ENV)("legacy (keyOrder.filter O(n)) - eviction churn", () => {
-        const cache = new LegacyLRUCache<string, number>(CAPACITY);
+    test.skipIf(process.env.CODSPEED_ENV)("legacy (keyOrder.filter O(n)) - eviction churn", async ({ bench }) => {
+        await bench("legacy (keyOrder.filter O(n)) - eviction churn", () => {
+            const cache = new LegacyLRUCache<string, number>(CAPACITY);
 
-        for (let index = 0; index < CAPACITY * 4; index += 1) {
-            cache.set(`churn-${index}`, index);
-        }
+            for (let index = 0; index < CAPACITY * 4; index += 1) {
+                cache.set(`churn-${index}`, index);
+            }
+        }).run();
     });
 });

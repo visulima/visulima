@@ -277,15 +277,15 @@
         "eslint": "catalog:lint",
         "fallow": "catalog:lint",
         "handlebars": "catalog:dev",
-        "intl-messageformat": "^11.2.13",
-        "liquidjs": "^10.28.0",
+        "intl-messageformat": "^11.2.15",
+        "liquidjs": "^10.30.1",
         "prettier": "catalog:lint",
         "publint": "catalog:dev",
         "rimraf": "catalog:node",
         "secretlint": "catalog:lint",
         "semantic-release": "catalog:cli",
         "typescript": "catalog:tsc",
-        "unstorage": "^1.17.5",
+        "unstorage": "^1.17.6",
         "vitest": "catalog:test"
     },
     "peerDependencies": {

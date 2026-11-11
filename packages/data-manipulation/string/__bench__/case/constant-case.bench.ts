@@ -1,65 +1,83 @@
 import { constantCase } from "@visulima/string/case";
 import { constantCase as stringTsConstantCase } from "string-ts";
-import { bench, describe } from "vitest";
+import { describe, test } from "vitest";
 
 import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../../__fixtures__/test-strings";
 
 describe("constantCase", () => {
-    bench("visulima/string constantCase (no cache)", () => {
-        for (const stringValue of TEST_STRINGS) {
-            constantCase(stringValue);
-        }
+    test("visulima/string constantCase (no cache)", async ({ bench }) => {
+        await bench("visulima/string constantCase (no cache)", () => {
+            for (const stringValue of TEST_STRINGS) {
+                constantCase(stringValue);
+            }
+        }).run();
     });
 
-    bench("visulima/string constantCase (with cache)", () => {
-        for (const stringValue of TEST_STRINGS) {
-            constantCase(stringValue, { cache: true });
-        }
+    test("visulima/string constantCase (with cache)", async ({ bench }) => {
+        await bench("visulima/string constantCase (with cache)", () => {
+            for (const stringValue of TEST_STRINGS) {
+                constantCase(stringValue, { cache: true });
+            }
+        }).run();
     });
 
-    bench.skipIf(process.env.CODSPEED_ENV)("string-ts constantCase", () => {
-        for (const stringValue of TEST_STRINGS) {
-            stringTsConstantCase(stringValue);
-        }
+    test.skipIf(process.env.CODSPEED_ENV)("string-ts constantCase", async ({ bench }) => {
+        await bench("string-ts constantCase", () => {
+            for (const stringValue of TEST_STRINGS) {
+                stringTsConstantCase(stringValue);
+            }
+        }).run();
     });
 
     describe("Special characters handling", () => {
-        bench("visulima/string constantCase (no cache)", () => {
-            for (const stringValue of SPECIAL_STRINGS) {
-                constantCase(stringValue);
-            }
+        test("visulima/string constantCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string constantCase (no cache)", () => {
+                for (const stringValue of SPECIAL_STRINGS) {
+                    constantCase(stringValue);
+                }
+            }).run();
         });
 
-        bench("visulima/string constantCase (with cache)", () => {
-            for (const stringValue of SPECIAL_STRINGS) {
-                constantCase(stringValue, { cache: true });
-            }
+        test("visulima/string constantCase (with cache)", async ({ bench }) => {
+            await bench("visulima/string constantCase (with cache)", () => {
+                for (const stringValue of SPECIAL_STRINGS) {
+                    constantCase(stringValue, { cache: true });
+                }
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("string-ts constantCase", () => {
-            for (const stringValue of SPECIAL_STRINGS) {
-                stringTsConstantCase(stringValue);
-            }
+        test.skipIf(process.env.CODSPEED_ENV)("string-ts constantCase", async ({ bench }) => {
+            await bench("string-ts constantCase", () => {
+                for (const stringValue of SPECIAL_STRINGS) {
+                    stringTsConstantCase(stringValue);
+                }
+            }).run();
         });
     });
 
     describe("Acronym handling", () => {
-        bench("visulima/string constantCase (no cache)", () => {
-            for (const stringValue of ACRONYM_STRINGS) {
-                constantCase(stringValue);
-            }
+        test("visulima/string constantCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string constantCase (no cache)", () => {
+                for (const stringValue of ACRONYM_STRINGS) {
+                    constantCase(stringValue);
+                }
+            }).run();
         });
 
-        bench("visulima/string constantCase (with cache)", () => {
-            for (const stringValue of ACRONYM_STRINGS) {
-                constantCase(stringValue, { cache: true });
-            }
+        test("visulima/string constantCase (with cache)", async ({ bench }) => {
+            await bench("visulima/string constantCase (with cache)", () => {
+                for (const stringValue of ACRONYM_STRINGS) {
+                    constantCase(stringValue, { cache: true });
+                }
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("string-ts constantCase", () => {
-            for (const stringValue of ACRONYM_STRINGS) {
-                stringTsConstantCase(stringValue);
-            }
+        test.skipIf(process.env.CODSPEED_ENV)("string-ts constantCase", async ({ bench }) => {
+            await bench("string-ts constantCase", () => {
+                for (const stringValue of ACRONYM_STRINGS) {
+                    stringTsConstantCase(stringValue);
+                }
+            }).run();
         });
     });
 });

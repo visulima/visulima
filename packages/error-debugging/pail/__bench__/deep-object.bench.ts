@@ -16,7 +16,7 @@ import { logger as rslogLogger } from "rslog";
 import type { ILogObj } from "tslog";
 import { Logger } from "tslog";
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { bench, describe } from "vitest";
+import { describe, test } from "vitest";
 import { createLogger, transports } from "winston";
 
 import { JsonBrowserConsolaReporter, JsonServerConsolaReporter } from "./utils";
@@ -111,153 +111,183 @@ rslogLogger.override({
 });
 
 describe("deep object", async () => {
-    bench(
-        "pail server",
-        async () => {
-            serverPail.info(deep);
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+    test("pail server", async ({ bench }) => {
+        await bench(
+            "pail server",
+            {
+                iterations: 10_000,
+            },
+            async () => {
+                serverPail.info(deep);
+            },
+        ).run();
+    });
 
-    bench(
-        "pail browser",
-        async () => {
-            browserPail.info(deep);
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+    test("pail browser", async ({ bench }) => {
+        await bench(
+            "pail browser",
+            {
+                iterations: 10_000,
+            },
+            async () => {
+                browserPail.info(deep);
+            },
+        ).run();
+    });
 
-    bench.skipIf(process.env.CODSPEED_ENV)(
-        "consola server",
-        async () => {
-            serverConsola.info(deep);
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+    test.skipIf(process.env.CODSPEED_ENV)("consola server", async ({ bench }) => {
+        await bench(
+            "consola server",
+            {
+                iterations: 10_000,
+            },
+            async () => {
+                serverConsola.info(deep);
+            },
+        ).run();
+    });
 
-    bench.skipIf(process.env.CODSPEED_ENV)(
-        "consola browser",
-        async () => {
-            browserConsola.info(deep);
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+    test.skipIf(process.env.CODSPEED_ENV)("consola browser", async ({ bench }) => {
+        await bench(
+            "consola browser",
+            {
+                iterations: 10_000,
+            },
+            async () => {
+                browserConsola.info(deep);
+            },
+        ).run();
+    });
 
-    bench.skipIf(process.env.CODSPEED_ENV)(
-        "tslog",
-        async () => {
-            tsLog.info(deep);
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+    test.skipIf(process.env.CODSPEED_ENV)("tslog", async ({ bench }) => {
+        await bench(
+            "tslog",
+            {
+                iterations: 10_000,
+            },
+            async () => {
+                tsLog.info(deep);
+            },
+        ).run();
+    });
 
-    bench.skipIf(process.env.CODSPEED_ENV)(
-        "bunyan node stream",
-        async () => {
-            bunyanNodeStream.info(deep);
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+    test.skipIf(process.env.CODSPEED_ENV)("bunyan node stream", async ({ bench }) => {
+        await bench(
+            "bunyan node stream",
+            {
+                iterations: 10_000,
+            },
+            async () => {
+                bunyanNodeStream.info(deep);
+            },
+        ).run();
+    });
 
-    bench.skipIf(process.env.CODSPEED_ENV)(
-        "winston node stream",
-        async () => {
-            winstonNodeStream.info(deep);
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+    test.skipIf(process.env.CODSPEED_ENV)("winston node stream", async ({ bench }) => {
+        await bench(
+            "winston node stream",
+            {
+                iterations: 10_000,
+            },
+            async () => {
+                winstonNodeStream.info(deep);
+            },
+        ).run();
+    });
 
-    bench.skipIf(process.env.CODSPEED_ENV)(
-        "pino destination",
-        async () => {
-            pinoDestination.info(deep);
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+    test.skipIf(process.env.CODSPEED_ENV)("pino destination", async ({ bench }) => {
+        await bench(
+            "pino destination",
+            {
+                iterations: 10_000,
+            },
+            async () => {
+                pinoDestination.info(deep);
+            },
+        ).run();
+    });
 
-    bench.skipIf(process.env.CODSPEED_ENV)(
-        "pino node stream",
-        async () => {
-            pinoNodeStream.info(deep);
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+    test.skipIf(process.env.CODSPEED_ENV)("pino node stream", async ({ bench }) => {
+        await bench(
+            "pino node stream",
+            {
+                iterations: 10_000,
+            },
+            async () => {
+                pinoNodeStream.info(deep);
+            },
+        ).run();
+    });
 
-    bench.skipIf(process.env.CODSPEED_ENV)(
-        "pino min length",
-        async () => {
-            pinoMinLength.info(deep);
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+    test.skipIf(process.env.CODSPEED_ENV)("pino min length", async ({ bench }) => {
+        await bench(
+            "pino min length",
+            {
+                iterations: 10_000,
+            },
+            async () => {
+                pinoMinLength.info(deep);
+            },
+        ).run();
+    });
 
-    bench.skipIf(process.env.CODSPEED_ENV)(
-        "ogma logger",
-        async () => {
-            ogmaLogger.log(deep);
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+    test.skipIf(process.env.CODSPEED_ENV)("ogma logger", async ({ bench }) => {
+        await bench(
+            "ogma logger",
+            {
+                iterations: 10_000,
+            },
+            async () => {
+                ogmaLogger.log(deep);
+            },
+        ).run();
+    });
 
-    bench.skipIf(process.env.CODSPEED_ENV)(
-        "ogma json logger",
-        async () => {
-            ogmaJsonLogger.log(deep);
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+    test.skipIf(process.env.CODSPEED_ENV)("ogma json logger", async ({ bench }) => {
+        await bench(
+            "ogma json logger",
+            {
+                iterations: 10_000,
+            },
+            async () => {
+                ogmaJsonLogger.log(deep);
+            },
+        ).run();
+    });
 
-    bench.skipIf(process.env.CODSPEED_ENV)(
-        "diary",
-        async () => {
-            diaryLogger.info("info message");
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+    test.skipIf(process.env.CODSPEED_ENV)("diary", async ({ bench }) => {
+        await bench(
+            "diary",
+            {
+                iterations: 10_000,
+            },
+            async () => {
+                diaryLogger.info("info message");
+            },
+        ).run();
+    });
 
-    bench.skipIf(process.env.CODSPEED_ENV)(
-        "roarr",
-        async () => {
-            log.info(deep, "message");
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+    test.skipIf(process.env.CODSPEED_ENV)("roarr", async ({ bench }) => {
+        await bench(
+            "roarr",
+            {
+                iterations: 10_000,
+            },
+            async () => {
+                log.info(deep, "message");
+            },
+        ).run();
+    });
 
-    bench.skipIf(process.env.CODSPEED_ENV)(
-        "rslog",
-        async () => {
-            rslogLogger.info(deep);
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+    test.skipIf(process.env.CODSPEED_ENV)("rslog", async ({ bench }) => {
+        await bench(
+            "rslog",
+            {
+                iterations: 10_000,
+            },
+            async () => {
+                rslogLogger.info(deep);
+            },
+        ).run();
+    });
 });

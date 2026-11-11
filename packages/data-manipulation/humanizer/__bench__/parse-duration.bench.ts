@@ -1,4 +1,4 @@
-import { bench, describe } from "vitest";
+import { describe, test } from "vitest";
 
 import { englishUnitMap } from "../src/language/en";
 import parseDuration from "../src/parse-duration";
@@ -36,21 +36,27 @@ const buildRegexCached = (unitMap: Record<string, string>): RegExp => {
 const ITERATIONS = 1000;
 
 describe("parseDuration unit-regex construction (cached WeakMap vs rebuild-every-call)", () => {
-    bench.skipIf(process.env.CODSPEED_ENV)("cached (WeakMap lookup)", () => {
-        for (let index = 0; index < ITERATIONS; index += 1) {
-            buildRegexCached(englishUnitMap);
-        }
+    test.skipIf(process.env.CODSPEED_ENV)("cached (WeakMap lookup)", async ({ bench }) => {
+        await bench("cached (WeakMap lookup)", () => {
+            for (let index = 0; index < ITERATIONS; index += 1) {
+                buildRegexCached(englishUnitMap);
+            }
+        }).run();
     });
 
-    bench.skipIf(process.env.CODSPEED_ENV)("uncached (sort + escape + new RegExp each call)", () => {
-        for (let index = 0; index < ITERATIONS; index += 1) {
-            buildRegexUncached(englishUnitMap);
-        }
+    test.skipIf(process.env.CODSPEED_ENV)("uncached (sort + escape + new RegExp each call)", async ({ bench }) => {
+        await bench("uncached (sort + escape + new RegExp each call)", () => {
+            for (let index = 0; index < ITERATIONS; index += 1) {
+                buildRegexUncached(englishUnitMap);
+            }
+        }).run();
     });
 });
 
 describe("parseDuration end-to-end (default English language)", () => {
-    bench("parseDuration('1h 20min 30s')", () => {
-        parseDuration("1h 20min 30s");
+    test("parseDuration('1h 20min 30s')", async ({ bench }) => {
+        await bench("parseDuration('1h 20min 30s')", () => {
+            parseDuration("1h 20min 30s");
+        }).run();
     });
 });

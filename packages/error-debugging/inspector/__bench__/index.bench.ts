@@ -4,7 +4,7 @@ import { inspect } from "@visulima/inspector";
 import { inspect as loupeInspect } from "loupe";
 import objectInspect from "object-inspect";
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { bench, describe } from "vitest";
+import { describe, test } from "vitest";
 
 const mapObjectReferenceA = {};
 const mapObjectReferenceB = {};
@@ -44,19 +44,27 @@ const casses = [
 ];
 
 describe.each(casses)("inspect %s", (_, caseValue) => {
-    bench("@visulima/inspector", () => {
-        inspect(caseValue);
+    test("@visulima/inspector", async ({ bench }) => {
+        await bench("@visulima/inspector", () => {
+            inspect(caseValue);
+        }).run();
     });
 
-    bench.skipIf(process.env.CODSPEED_ENV)("loupe", () => {
-        loupeInspect(caseValue);
+    test.skipIf(process.env.CODSPEED_ENV)("loupe", async ({ bench }) => {
+        await bench("loupe", () => {
+            loupeInspect(caseValue);
+        }).run();
     });
 
-    bench.skipIf(process.env.CODSPEED_ENV)("objectInspect", () => {
-        objectInspect(caseValue);
+    test.skipIf(process.env.CODSPEED_ENV)("objectInspect", async ({ bench }) => {
+        await bench("objectInspect", () => {
+            objectInspect(caseValue);
+        }).run();
     });
 
-    bench.skipIf(process.env.CODSPEED_ENV)("node util.inspect", () => {
-        nodeInspect(caseValue);
+    test.skipIf(process.env.CODSPEED_ENV)("node util.inspect", async ({ bench }) => {
+        await bench("node util.inspect", () => {
+            nodeInspect(caseValue);
+        }).run();
     });
 });

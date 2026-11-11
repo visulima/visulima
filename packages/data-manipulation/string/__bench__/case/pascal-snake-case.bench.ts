@@ -1,34 +1,42 @@
 import { pascalSnakeCase } from "@visulima/string/case";
-import { bench, describe } from "vitest";
+import { describe, test } from "vitest";
 
 import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../../__fixtures__/test-strings";
 
 describe("pascalSnakeCase", () => {
-    bench("visulima/string pascalSnakeCase (no cache)", () => {
-        for (const stringValue of TEST_STRINGS) {
-            pascalSnakeCase(stringValue);
-        }
+    test("visulima/string pascalSnakeCase (no cache)", async ({ bench }) => {
+        await bench("visulima/string pascalSnakeCase (no cache)", () => {
+            for (const stringValue of TEST_STRINGS) {
+                pascalSnakeCase(stringValue);
+            }
+        }).run();
     });
 
-    bench("visulima/string pascalSnakeCase (with cache)", () => {
-        for (const stringValue of TEST_STRINGS) {
-            pascalSnakeCase(stringValue, { cache: true });
-        }
+    test("visulima/string pascalSnakeCase (with cache)", async ({ bench }) => {
+        await bench("visulima/string pascalSnakeCase (with cache)", () => {
+            for (const stringValue of TEST_STRINGS) {
+                pascalSnakeCase(stringValue, { cache: true });
+            }
+        }).run();
     });
 
     describe("Special characters handling", () => {
-        bench("visulima/string pascalSnakeCase (no cache)", () => {
-            for (const stringValue of SPECIAL_STRINGS) {
-                pascalSnakeCase(stringValue);
-            }
+        test("visulima/string pascalSnakeCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string pascalSnakeCase (no cache)", () => {
+                for (const stringValue of SPECIAL_STRINGS) {
+                    pascalSnakeCase(stringValue);
+                }
+            }).run();
         });
     });
 
     describe("Acronym handling", () => {
-        bench("visulima/string pascalSnakeCase (no cache)", () => {
-            for (const stringValue of ACRONYM_STRINGS) {
-                pascalSnakeCase(stringValue);
-            }
+        test("visulima/string pascalSnakeCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string pascalSnakeCase (no cache)", () => {
+                for (const stringValue of ACRONYM_STRINGS) {
+                    pascalSnakeCase(stringValue);
+                }
+            }).run();
         });
     });
 });

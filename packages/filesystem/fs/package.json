@@ -200,7 +200,7 @@
         "is-glob": "^4.0.3",
         "json5": "catalog:dev",
         "jsonc-parser": "catalog:dev",
-        "picomatch": "^4.0.5",
+        "picomatch": "^4.0.7",
         "prettier": "catalog:lint",
         "publint": "catalog:dev",
         "redos-detector": "catalog:dev",

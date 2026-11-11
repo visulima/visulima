@@ -1,5 +1,5 @@
 /* eslint-disable import/no-relative-packages,import/no-extraneous-dependencies */
-import { bench, describe } from "vitest";
+import { describe, test } from "vitest";
 
 // eslint-disable-next-line import/no-relative-parent-imports
 import { isValidTimezone } from "../src/timezones";
@@ -28,15 +28,19 @@ const isValidTimezoneLegacy = (timezone: string): boolean => allLegacy().include
 const samples = ["Europe/London", "America/New_York", "Asia/Tokyo", "Not/AZone", "Pacific/Auckland"];
 
 describe("isValidTimezone", () => {
-    bench("optimized (precomputed Set.has)", () => {
-        for (const tz of samples) {
-            isValidTimezone(tz);
-        }
+    test("optimized (precomputed Set.has)", async ({ bench }) => {
+        await bench("optimized (precomputed Set.has)", () => {
+            for (const tz of samples) {
+                isValidTimezone(tz);
+            }
+        }).run();
     });
 
-    bench("legacy (rebuild + sort + includes)", () => {
-        for (const tz of samples) {
-            isValidTimezoneLegacy(tz);
-        }
+    test("legacy (rebuild + sort + includes)", async ({ bench }) => {
+        await bench("legacy (rebuild + sort + includes)", () => {
+            for (const tz of samples) {
+                isValidTimezoneLegacy(tz);
+            }
+        }).run();
     });
 });

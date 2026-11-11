@@ -90,11 +90,12 @@ jobs:
         timeout-minutes: 130
         strategy:
             matrix:
-                # PRs: ubuntu node-24 (the coverage leg), node-26, macOS, Windows.
+                # PRs: ubuntu node-22 (the engines floor), ubuntu node-24 (the coverage leg),
+                # node-26, macOS, Windows.
                 # Pushes to main: drop ubuntu node-24 - coverage-baseline.yml runs the
                 # bun leg. It only adds a binary to PATH (the suite still runs
                 # on Node via vitest), so it runs post-merge instead of on every PR.
-                include: "${{ fromJSON(format('[{0}{1}]', '{\"os\":\"ubuntu-latest\",\"node_version\":\"26\"},{\"os\":\"macos-15\",\"node_version\":\"24\"},{\"os\":\"windows-latest\",\"node_version\":\"24\"}', github.event_name == 'push' && ',{\"os\":\"ubuntu-latest\",\"node_version\":\"24\",\"bun_version\":\"latest\"}' || ',{\"os\":\"ubuntu-latest\",\"node_version\":\"24\"}')) }}"
+                include: "${{ fromJSON(format('[{0}{1}]', '{\"os\":\"ubuntu-latest\",\"node_version\":\"22\"},{\"os\":\"ubuntu-latest\",\"node_version\":\"26\"},{\"os\":\"macos-15\",\"node_version\":\"24\"},{\"os\":\"windows-latest\",\"node_version\":\"24\"}', github.event_name == 'push' && ',{\"os\":\"ubuntu-latest\",\"node_version\":\"24\",\"bun_version\":\"latest\"}' || ',{\"os\":\"ubuntu-latest\",\"node_version\":\"24\"}')) }}"
             fail-fast: false
         runs-on: "${{ matrix.os }}"
         env:

@@ -1,4 +1,4 @@
-import { bench, describe } from "vitest";
+import { describe, test } from "vitest";
 
 import { ANSI_ESCAPE_LINK, ESCAPES } from "../src/constants";
 import { checkEscapeSequence } from "../src/utils/ansi-parser";
@@ -60,16 +60,22 @@ const scanWithStartsWith = (string: string): number => {
 };
 
 describe("word-wrap escape scan (startsWith vs full-string spread)", () => {
-    bench.skipIf(process.env.CODSPEED_ENV)("current (startsWith, no spread)", () => {
-        scanWithStartsWith(escapeHeavy);
+    test.skipIf(process.env.CODSPEED_ENV)("current (startsWith, no spread)", async ({ bench }) => {
+        await bench("current (startsWith, no spread)", () => {
+            scanWithStartsWith(escapeHeavy);
+        }).run();
     });
 
-    bench.skipIf(process.env.CODSPEED_ENV)("legacy (checkEscapeSequence with [...string] per escape)", () => {
-        scanWithSpread(escapeHeavy);
+    test.skipIf(process.env.CODSPEED_ENV)("legacy (checkEscapeSequence with [...string] per escape)", async ({ bench }) => {
+        await bench("legacy (checkEscapeSequence with [...string] per escape)", () => {
+            scanWithSpread(escapeHeavy);
+        }).run();
     });
 
     // End-to-end: the optimization lives inside wrapWithBreakAtWidth (STRICT_WIDTH).
-    bench.skipIf(process.env.CODSPEED_ENV)("wordWrap STRICT_WIDTH on escape-heavy text", () => {
-        wordWrap(escapeHeavy, { width: 40, wrapMode: WrapMode.STRICT_WIDTH });
+    test.skipIf(process.env.CODSPEED_ENV)("wordWrap STRICT_WIDTH on escape-heavy text", async ({ bench }) => {
+        await bench("wordWrap STRICT_WIDTH on escape-heavy text", () => {
+            wordWrap(escapeHeavy, { width: 40, wrapMode: WrapMode.STRICT_WIDTH });
+        }).run();
     });
 });

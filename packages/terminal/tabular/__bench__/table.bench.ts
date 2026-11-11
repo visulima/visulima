@@ -1,7 +1,7 @@
 import Table from "cli-table";
 import Table3 from "cli-table3";
 import { table } from "table";
-import { bench, describe } from "vitest";
+import { describe, test } from "vitest";
 
 import { createTable } from "../src";
 
@@ -31,148 +31,164 @@ const generateBasicTable = (rows: number, cols: number, Table: any, options = {}
 };
 
 describe("Table Rendering 1763 rows (5 columns)", () => {
-    bench("@visulima/tabular", () => {
-        const table = createTable({
-            style: {
-                paddingLeft: 1,
-                paddingRight: 1,
-            },
-        });
+    test("@visulima/tabular", async ({ bench }) => {
+        await bench("@visulima/tabular", () => {
+            const table = createTable({
+                style: {
+                    paddingLeft: 1,
+                    paddingRight: 1,
+                },
+            });
 
-        // Generate headers
-        table.setHeaders([
-            { content: "ID", hAlign: "left" },
-            { content: "Name", hAlign: "left" },
-            { content: "Email", hAlign: "left" },
-            { content: "Status", hAlign: "center" },
-            { content: "Created At", hAlign: "right" },
-        ]);
-
-        // Generate 1763 rows of mock data
-        for (let index = 1; index <= 1763; index++) {
-            table.addRow([
-                index.toString(),
-                `User ${index}`,
-                `user${index}@example.com`,
-                index % 2 === 0 ? "Active" : "Inactive",
-                new Date(2024, 0, 1, 0, index).toISOString(),
+            // Generate headers
+            table.setHeaders([
+                { content: "ID", hAlign: "left" },
+                { content: "Name", hAlign: "left" },
+                { content: "Email", hAlign: "left" },
+                { content: "Status", hAlign: "center" },
+                { content: "Created At", hAlign: "right" },
             ]);
-        }
 
-        // Render the table
-        table.toString();
+            // Generate 1763 rows of mock data
+            for (let index = 1; index <= 1763; index++) {
+                table.addRow([
+                    index.toString(),
+                    `User ${index}`,
+                    `user${index}@example.com`,
+                    index % 2 === 0 ? "Active" : "Inactive",
+                    new Date(2024, 0, 1, 0, index).toISOString(),
+                ]);
+            }
+
+            // Render the table
+            table.toString();
+        }).run();
     });
 
-    bench.skipIf(process.env.CODSPEED_ENV)("cli-table3", () => {
-        const table = new Table3({
-            head: ["ID", "Name", "Email", "Status", "Created At"],
-            style: {
-                border: [],
-                head: [],
-            },
-        });
+    test.skipIf(process.env.CODSPEED_ENV)("cli-table3", async ({ bench }) => {
+        await bench("cli-table3", () => {
+            const table = new Table3({
+                head: ["ID", "Name", "Email", "Status", "Created At"],
+                style: {
+                    border: [],
+                    head: [],
+                },
+            });
 
-        // Generate 1763 rows of mock data
-        for (let index = 1; index <= 1763; index++) {
-            table.push([
-                index.toString(),
-                `User ${index}`,
-                `user${index}@example.com`,
-                index % 2 === 0 ? "Active" : "Inactive",
-                new Date(2024, 0, 1, 0, index).toISOString(),
-            ]);
-        }
+            // Generate 1763 rows of mock data
+            for (let index = 1; index <= 1763; index++) {
+                table.push([
+                    index.toString(),
+                    `User ${index}`,
+                    `user${index}@example.com`,
+                    index % 2 === 0 ? "Active" : "Inactive",
+                    new Date(2024, 0, 1, 0, index).toISOString(),
+                ]);
+            }
 
-        // Render the table
-        table.toString();
+            // Render the table
+            table.toString();
+        }).run();
     });
 
-    bench.skipIf(process.env.CODSPEED_ENV)("table", () => {
-        const data = [["ID", "Name", "Email", "Status", "Created At"]];
+    test.skipIf(process.env.CODSPEED_ENV)("table", async ({ bench }) => {
+        await bench("table", () => {
+            const data = [["ID", "Name", "Email", "Status", "Created At"]];
 
-        // Generate 1763 rows of mock data
-        for (let index = 1; index <= 1763; index++) {
-            data.push([
-                index.toString(),
-                `User ${index}`,
-                `user${index}@example.com`,
-                index % 2 === 0 ? "Active" : "Inactive",
-                new Date(2024, 0, 1, 0, index).toISOString(),
-            ]);
-        }
+            // Generate 1763 rows of mock data
+            for (let index = 1; index <= 1763; index++) {
+                data.push([
+                    index.toString(),
+                    `User ${index}`,
+                    `user${index}@example.com`,
+                    index % 2 === 0 ? "Active" : "Inactive",
+                    new Date(2024, 0, 1, 0, index).toISOString(),
+                ]);
+            }
 
-        // Render the table
-        table(data);
+            // Render the table
+            table(data);
+        }).run();
     });
 
-    bench.skipIf(process.env.CODSPEED_ENV)("cli-table", () => {
-        const table = new Table({
-            head: ["ID", "Name", "Email", "Status", "Created At"],
-            style: {
-                border: [], // cli-table applies default styling to border if not specified
-                head: [], // cli-table applies default styling to head if not specified
-                "padding-left": 1,
-                "padding-right": 1,
-            },
-        });
+    test.skipIf(process.env.CODSPEED_ENV)("cli-table", async ({ bench }) => {
+        await bench("cli-table", () => {
+            const table = new Table({
+                head: ["ID", "Name", "Email", "Status", "Created At"],
+                style: {
+                    border: [], // cli-table applies default styling to border if not specified
+                    head: [], // cli-table applies default styling to head if not specified
+                    "padding-left": 1,
+                    "padding-right": 1,
+                },
+            });
 
-        // Generate 1763 rows of mock data
-        for (let index = 1; index <= 1763; index++) {
-            table.push([
-                index.toString(),
-                `User ${index}`,
-                `user${index}@example.com`,
-                index % 2 === 0 ? "Active" : "Inactive",
-                new Date(2024, 0, 1, 0, index).toISOString(),
-            ]);
-        }
+            // Generate 1763 rows of mock data
+            for (let index = 1; index <= 1763; index++) {
+                table.push([
+                    index.toString(),
+                    `User ${index}`,
+                    `user${index}@example.com`,
+                    index % 2 === 0 ? "Active" : "Inactive",
+                    new Date(2024, 0, 1, 0, index).toISOString(),
+                ]);
+            }
 
-        // Render the table
-        table.toString();
+            // Render the table
+            table.toString();
+        }).run();
     });
 });
 
 describe("Table Rendering basic table (100x10)", () => {
-    bench("@visulima/tabular", () => {
-        const table = createTable();
+    test("@visulima/tabular", async ({ bench }) => {
+        await bench("@visulima/tabular", () => {
+            const table = createTable();
 
-        // Generate 100x10 table
-        for (let y = 0; y < 100; y++) {
-            const row = [];
+            // Generate 100x10 table
+            for (let y = 0; y < 100; y++) {
+                const row = [];
 
-            for (let x = 0; x < 10; x++) {
-                row.push(`${y}-${x} (1x1)`);
+                for (let x = 0; x < 10; x++) {
+                    row.push(`${y}-${x} (1x1)`);
+                }
+
+                table.addRow(row);
             }
 
-            table.addRow(row);
-        }
-
-        table.toString();
+            table.toString();
+        }).run();
     });
 
-    bench.skipIf(process.env.CODSPEED_ENV)("cli-table3", () => {
-        generateBasicTable(100, 10, Table3).toString();
+    test.skipIf(process.env.CODSPEED_ENV)("cli-table3", async ({ bench }) => {
+        await bench("cli-table3", () => {
+            generateBasicTable(100, 10, Table3).toString();
+        }).run();
     });
 
-    bench.skipIf(process.env.CODSPEED_ENV)("table", () => {
-        const data = [];
+    test.skipIf(process.env.CODSPEED_ENV)("table", async ({ bench }) => {
+        await bench("table", () => {
+            const data = [];
 
-        // Generate 100x10 table
-        for (let y = 0; y < 100; y++) {
-            const row = [];
+            // Generate 100x10 table
+            for (let y = 0; y < 100; y++) {
+                const row = [];
 
-            for (let x = 0; x < 10; x++) {
-                row.push(`${y}-${x} (1x1)`);
+                for (let x = 0; x < 10; x++) {
+                    row.push(`${y}-${x} (1x1)`);
+                }
+
+                data.push(row);
             }
 
-            data.push(row);
-        }
-
-        table(data);
+            table(data);
+        }).run();
     });
 
-    bench.skipIf(process.env.CODSPEED_ENV)("cli-table", () => {
-        generateBasicTable(100, 10, Table).toString();
+    test.skipIf(process.env.CODSPEED_ENV)("cli-table", async ({ bench }) => {
+        await bench("cli-table", () => {
+            generateBasicTable(100, 10, Table).toString();
+        }).run();
     });
 });
 
@@ -191,155 +207,175 @@ describe("Table Rendering with word wrap", () => {
         ],
     ];
 
-    bench("@visulima/tabular", () => {
-        const table = createTable();
+    test("@visulima/tabular", async ({ bench }) => {
+        await bench("@visulima/tabular", () => {
+            const table = createTable();
 
-        table.setHeaders(wrapHeaders);
-        table.addRows(...wrapRows);
-        table.toString();
+            table.setHeaders(wrapHeaders);
+            table.addRows(...wrapRows);
+            table.toString();
+        }).run();
     });
 
-    bench.skipIf(process.env.CODSPEED_ENV)("cli-table3", () => {
-        const table = new Table3({
-            colWidths: [40, 30, 40],
-            head: wrapHeaders,
-            style: {
-                border: [],
-                head: [],
-            },
-            wordWrap: true,
-        });
+    test.skipIf(process.env.CODSPEED_ENV)("cli-table3", async ({ bench }) => {
+        await bench("cli-table3", () => {
+            const table = new Table3({
+                colWidths: [40, 30, 40],
+                head: wrapHeaders,
+                style: {
+                    border: [],
+                    head: [],
+                },
+                wordWrap: true,
+            });
 
-        table.push(...wrapRows.map((row) => row.map((cell) => cell.content)));
-        table.toString();
+            table.push(...wrapRows.map((row) => row.map((cell) => cell.content)));
+            table.toString();
+        }).run();
     });
 
-    bench.skipIf(process.env.CODSPEED_ENV)("table", () => {
-        const data = [wrapHeaders];
+    test.skipIf(process.env.CODSPEED_ENV)("table", async ({ bench }) => {
+        await bench("table", () => {
+            const data = [wrapHeaders];
 
-        // eslint-disable-next-line unicorn/no-immediate-mutation
-        data.push(...wrapRows.map((row) => row.map((cell) => cell.content)));
+            // eslint-disable-next-line unicorn/no-immediate-mutation
+            data.push(...wrapRows.map((row) => row.map((cell) => cell.content)));
 
-        table(data, {
-            columns: [
-                { width: 40, wrapWord: true },
-                { width: 30, wrapWord: true },
-                { width: 40, wrapWord: true },
-            ],
-        });
+            table(data, {
+                columns: [
+                    { width: 40, wrapWord: true },
+                    { width: 30, wrapWord: true },
+                    { width: 40, wrapWord: true },
+                ],
+            });
+        }).run();
     });
 });
 
 describe("Table Rendering with spanning cells", () => {
-    bench("@visulima/tabular", () => {
-        const table = createTable();
+    test("@visulima/tabular", async ({ bench }) => {
+        await bench("@visulima/tabular", () => {
+            const table = createTable();
 
-        // Add header with colspan
-        table.setHeaders([{ colSpan: 3, content: "Span All" }]);
+            // Add header with colspan
+            table.setHeaders([{ colSpan: 3, content: "Span All" }]);
 
-        // Add rows with various spans
-        table.addRows(
-            [{ colSpan: 2, content: "Span Two" }, "C"],
-            ["A", { colSpan: 2, content: "Span Two" }],
-            ["A", "B", "C"],
-            [{ colSpan: 3, content: "Span All" }],
-        );
+            // Add rows with various spans
+            table.addRows(
+                [{ colSpan: 2, content: "Span Two" }, "C"],
+                ["A", { colSpan: 2, content: "Span Two" }],
+                ["A", "B", "C"],
+                [{ colSpan: 3, content: "Span All" }],
+            );
 
-        table.toString();
+            table.toString();
+        }).run();
     });
 
-    bench.skipIf(process.env.CODSPEED_ENV)("cli-table3", () => {
-        const table = new Table3({
-            style: {
-                border: [],
-                head: [],
-            },
-        });
+    test.skipIf(process.env.CODSPEED_ENV)("cli-table3", async ({ bench }) => {
+        await bench("cli-table3", () => {
+            const table = new Table3({
+                style: {
+                    border: [],
+                    head: [],
+                },
+            });
 
-        // cli-table3 uses a different approach for spans
-        table.push(
-            [{ colSpan: 3, content: "Span All" }],
-            [{ colSpan: 2, content: "Span Two" }, "C"],
-            ["A", { colSpan: 2, content: "Span Two" }],
-            ["A", "B", "C"],
-            [{ colSpan: 3, content: "Span All" }],
-        );
+            // cli-table3 uses a different approach for spans
+            table.push(
+                [{ colSpan: 3, content: "Span All" }],
+                [{ colSpan: 2, content: "Span Two" }, "C"],
+                ["A", { colSpan: 2, content: "Span Two" }],
+                ["A", "B", "C"],
+                [{ colSpan: 3, content: "Span All" }],
+            );
 
-        table.toString();
+            table.toString();
+        }).run();
     });
 
-    bench.skipIf(process.env.CODSPEED_ENV)("table", () => {
-        // Note: table package doesn't support column spans directly
-        // We'll simulate it by using spaces to achieve similar visual effect
-        const data = [
-            ["Span All", "", ""],
-            ["Span Two", "", "C"],
-            ["A", "Span Two", ""],
-            ["A", "B", "C"],
-            ["Span All", "", ""],
-        ];
+    test.skipIf(process.env.CODSPEED_ENV)("table", async ({ bench }) => {
+        await bench("table", () => {
+            // Note: table package doesn't support column spans directly
+            // We'll simulate it by using spaces to achieve similar visual effect
+            const data = [
+                ["Span All", "", ""],
+                ["Span Two", "", "C"],
+                ["A", "Span Two", ""],
+                ["A", "B", "C"],
+                ["Span All", "", ""],
+            ];
 
-        table(data, {
-            spanningCells: [
-                { col: 0, colSpan: 3, row: 0 },
-                { col: 0, colSpan: 2, row: 1 },
-                { col: 1, colSpan: 2, row: 2 },
-                { col: 0, colSpan: 3, row: 4 },
-            ],
-        });
+            table(data, {
+                spanningCells: [
+                    { col: 0, colSpan: 3, row: 0 },
+                    { col: 0, colSpan: 2, row: 1 },
+                    { col: 1, colSpan: 2, row: 2 },
+                    { col: 0, colSpan: 3, row: 4 },
+                ],
+            });
+        }).run();
     });
 });
 
 describe("Table Rendering with truncation", () => {
     const longText = "This is a very long text that should be truncated at some point to fit within the cell";
 
-    bench("@visulima/tabular", () => {
-        const table = createTable();
+    test("@visulima/tabular", async ({ bench }) => {
+        await bench("@visulima/tabular", () => {
+            const table = createTable();
 
-        table.setHeaders([{ content: longText, maxWidth: 20 }, { content: "Normal" }]);
-        table.addRow([{ content: longText, maxWidth: 20 }, "Short"]);
-        table.toString();
+            table.setHeaders([{ content: longText, maxWidth: 20 }, { content: "Normal" }]);
+            table.addRow([{ content: longText, maxWidth: 20 }, "Short"]);
+            table.toString();
+        }).run();
     });
 
-    bench.skipIf(process.env.CODSPEED_ENV)("cli-table3", () => {
-        const table = new Table3({
-            colWidths: [20, 10],
-            head: [longText, "Normal"],
-            style: {
-                border: [],
-                head: [],
-            },
-            truncate: "…",
-        });
+    test.skipIf(process.env.CODSPEED_ENV)("cli-table3", async ({ bench }) => {
+        await bench("cli-table3", () => {
+            const table = new Table3({
+                colWidths: [20, 10],
+                head: [longText, "Normal"],
+                style: {
+                    border: [],
+                    head: [],
+                },
+                truncate: "…",
+            });
 
-        table.push([longText, "Short"]);
-        table.toString();
+            table.push([longText, "Short"]);
+            table.toString();
+        }).run();
     });
 
-    bench.skipIf(process.env.CODSPEED_ENV)("table", () => {
-        const data = [
-            [longText, "Normal"],
-            [longText, "Short"],
-        ];
+    test.skipIf(process.env.CODSPEED_ENV)("table", async ({ bench }) => {
+        await bench("table", () => {
+            const data = [
+                [longText, "Normal"],
+                [longText, "Short"],
+            ];
 
-        table(data, {
-            columns: [{ truncate: 20, width: 20 }, { width: 10 }],
-        });
+            table(data, {
+                columns: [{ truncate: 20, width: 20 }, { width: 10 }],
+            });
+        }).run();
     });
 
-    bench.skipIf(process.env.CODSPEED_ENV)("cli-table", () => {
-        const table = new Table({
-            colWidths: [20, 10],
-            head: [longText, "Normal"],
-            style: {
-                border: [],
-                head: [],
-            },
-            // cli-table does not have a direct equivalent for `truncate: '...'` like cli-table3
-            // It truncates by default if colWidths are set and text overflows.
-        });
+    test.skipIf(process.env.CODSPEED_ENV)("cli-table", async ({ bench }) => {
+        await bench("cli-table", () => {
+            const table = new Table({
+                colWidths: [20, 10],
+                head: [longText, "Normal"],
+                style: {
+                    border: [],
+                    head: [],
+                },
+                // cli-table does not have a direct equivalent for `truncate: '...'` like cli-table3
+                // It truncates by default if colWidths are set and text overflows.
+            });
 
-        table.push([longText, "Short"]);
-        table.toString();
+            table.push([longText, "Short"]);
+            table.toString();
+        }).run();
     });
 });

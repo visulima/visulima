@@ -2,7 +2,7 @@ import { dirname, isAbsolute, resolve, sep } from "node:path";
 
 import { up } from "empathic/walk";
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { bench, describe } from "vitest";
+import { describe, test } from "vitest";
 
 import visulimaWalk from "../src/find/walk";
 import visulimaWalkSync from "../src/find/walk-sync";
@@ -88,67 +88,83 @@ const split4 = (input: string): string[] => {
 };
 
 describe("walk.up and split variants", () => {
-    bench.skipIf(process.env.CODSPEED_ENV)("empathic/walk.up (no options)", () => {
-        let total = 0;
+    test.skipIf(process.env.CODSPEED_ENV)("empathic/walk.up (no options)", async ({ bench }) => {
+        await bench("empathic/walk.up (no options)", () => {
+            let total = 0;
 
-        for (const _ of alt1(start)) {
-            total += 1;
-        }
+            for (const _ of alt1(start)) {
+                total += 1;
+            }
+        }).run();
     });
 
-    bench.skipIf(process.env.CODSPEED_ENV)("empathic/walk.up", () => {
-        let total = 0;
+    test.skipIf(process.env.CODSPEED_ENV)("empathic/walk.up", async ({ bench }) => {
+        await bench("empathic/walk.up", () => {
+            let total = 0;
 
-        for (const _ of up(start)) {
-            total += 1;
-        }
+            for (const _ of up(start)) {
+                total += 1;
+            }
+        }).run();
     });
 
-    bench("@visulima/fs walk", async () => {
-        let total = 0;
+    test("@visulima/fs walk", async ({ bench }) => {
+        await bench("@visulima/fs walk", async () => {
+            let total = 0;
 
-        for await (const _ of visulimaWalk(dirname(start), {})) {
-            total += 1;
-        }
+            for await (const _ of visulimaWalk(dirname(start), {})) {
+                total += 1;
+            }
+        }).run();
     });
 
-    bench("@visulima/fs walk-sync", () => {
-        let total = 0;
+    test("@visulima/fs walk-sync", async ({ bench }) => {
+        await bench("@visulima/fs walk-sync", () => {
+            let total = 0;
 
-        for (const _ of visulimaWalkSync(dirname(start), {})) {
-            total += 1;
-        }
+            for (const _ of visulimaWalkSync(dirname(start), {})) {
+                total += 1;
+            }
+        }).run();
     });
 
-    bench.skipIf(process.env.CODSPEED_ENV)("split1", () => {
-        let total = 0;
+    test.skipIf(process.env.CODSPEED_ENV)("split1", async ({ bench }) => {
+        await bench("split1", () => {
+            let total = 0;
 
-        for (const _ of split1(start)) {
-            total += 1;
-        }
+            for (const _ of split1(start)) {
+                total += 1;
+            }
+        }).run();
     });
 
-    bench.skipIf(process.env.CODSPEED_ENV)("split2", () => {
-        let total = 0;
+    test.skipIf(process.env.CODSPEED_ENV)("split2", async ({ bench }) => {
+        await bench("split2", () => {
+            let total = 0;
 
-        for (const _ of split2(start)) {
-            total += 1;
-        }
+            for (const _ of split2(start)) {
+                total += 1;
+            }
+        }).run();
     });
 
-    bench.skipIf(process.env.CODSPEED_ENV)("split3", () => {
-        let total = 0;
+    test.skipIf(process.env.CODSPEED_ENV)("split3", async ({ bench }) => {
+        await bench("split3", () => {
+            let total = 0;
 
-        for (const _ of split3(start)) {
-            total += 1;
-        }
+            for (const _ of split3(start)) {
+                total += 1;
+            }
+        }).run();
     });
 
-    bench.skipIf(process.env.CODSPEED_ENV)("split4", () => {
-        let total = 0;
+    test.skipIf(process.env.CODSPEED_ENV)("split4", async ({ bench }) => {
+        await bench("split4", () => {
+            let total = 0;
 
-        for (const _ of split4(start)) {
-            total += 1;
-        }
+            for (const _ of split4(start)) {
+                total += 1;
+            }
+        }).run();
     });
 });
