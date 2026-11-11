@@ -208,9 +208,7 @@ package itself remains edge-deployable.
         "handlebars": "catalog:peer",
         "liquidjs": "^10",
     },
-    "peerDependenciesMeta": {
-        /* ALL marked optional: true */
-    },
+    "peerDependenciesMeta": {/* ALL marked optional: true */},
 }
 ```
 
@@ -254,7 +252,7 @@ middleware + event bus + queue (memory + unstorage/bullmq) from email.
 (pluggable store, opt-in/out, critical override). React feed hooks deferred to a follow-up.
 
 **Phase 7 — Docs, website, release (1 day).** README + per-provider docs; add `category:communication`
-to project.json so `apps/web` auto-discovers it; optional `packages-metadata.json` entry;
+to project.json (website discovery was removed with `apps/web`);
 `.releaserc.json`; verify `attw`/`publint`.
 
 **Parallel workstream — email providers.** Add **SparkPost, Netcore, Outlook365** to `@visulima/email`

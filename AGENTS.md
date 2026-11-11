@@ -4,7 +4,7 @@ This file provides guidance to AI coding agents when working with code in this r
 
 ## Repository Overview
 
-Visulima is a pnpm monorepo with 50+ TypeScript packages organized under `packages/<category>/<name>/`. Categories: `api`, `data-manipulation`, `email`, `error-debugging`, `filesystem`, `storage`, `terminal`, `tooling`. Apps live in `apps/` (web, storybook). Shared code in `shared/` (`utils`, `xxh3`).
+Visulima is a pnpm monorepo with 50+ TypeScript packages organized under `packages/<category>/<name>/`. Categories: `api`, `data-manipulation`, `email`, `error-debugging`, `filesystem`, `storage`, `terminal`, `tooling`. Apps live in `apps/` (storybook). Shared code in `shared/` (`utils`, `xxh3`).
 
 **Package manager**: pnpm v11.28.2 (enforced). **Monorepo orchestration**: Nx. **Node**: ^22.14.0 || >=24.10.0.
 
@@ -101,18 +101,6 @@ Each package has tags for categorization:
 
 - `type:package` — marks it as a publishable package
 - `category:<slug>` — web category (e.g., `category:cli-terminal`, `category:data`, `category:api-web`, `category:error-handling`, `category:file-system`, `category:dev-tools`, `category:internationalization`, `category:communication`)
-
-### Website Package Discovery
-
-The packages page at `apps/web/` is auto-generated:
-
-- `project.json` tags provide category
-- `package.json` provides name, description
-- `apps/web/src/data/packages-metadata.json` stores curated displayName and features
-- `apps/web/scripts/generate-packages.js` combines all sources into `packages.ts`
-- Runs automatically during `build` and `dev`
-
-To add a new package to the website: add `category:<slug>` tag to its `project.json`, optionally add metadata to `packages-metadata.json`.
 
 ### Dependency Catalog
 
