@@ -1,6 +1,6 @@
 import MessageFormatterProcessor from "@visulima/pail/processor/message-formatter";
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { bench, describe } from "vitest";
+import { describe, test } from "vitest";
 
 /**
  * Benchmarks the cached-formatter optimization in MessageFormatterProcessor.
@@ -40,14 +40,18 @@ describe("MessageFormatterProcessor cached formatter vs rebuild-per-call", () =>
 
     sharedProcessor.setStringify(stringify as typeof JSON.stringify);
 
-    bench("optimized: cached formatter (reused processor instance)", () => {
-        sharedProcessor.process(makeMeta());
+    test("optimized: cached formatter (reused processor instance)", async ({ bench }) => {
+        await bench("optimized: cached formatter (reused processor instance)", () => {
+            sharedProcessor.process(makeMeta());
+        }).run();
     });
 
-    bench("previous: rebuild formatter on every call (fresh processor)", () => {
-        const processor = new MessageFormatterProcessor({ formatters });
+    test("previous: rebuild formatter on every call (fresh processor)", async ({ bench }) => {
+        await bench("previous: rebuild formatter on every call (fresh processor)", () => {
+            const processor = new MessageFormatterProcessor({ formatters });
 
-        processor.setStringify(stringify as typeof JSON.stringify);
-        processor.process(makeMeta());
+            processor.setStringify(stringify as typeof JSON.stringify);
+            processor.process(makeMeta());
+        }).run();
     });
 });

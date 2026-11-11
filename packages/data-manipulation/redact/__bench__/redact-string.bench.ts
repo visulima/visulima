@@ -1,23 +1,27 @@
 import { redact, standardRules, stringAnonymize } from "@visulima/redact";
-import { bench, describe } from "vitest";
+import { describe, test } from "vitest";
 
 const simpleInput = "John Doe will be 30 on 2024-06-10.";
 
 describe("redact short string", () => {
-    bench("@visulima/redact", () => {
-        const output = redact(simpleInput, standardRules);
+    test("@visulima/redact", async ({ bench }) => {
+        await bench("@visulima/redact", () => {
+            const output = redact(simpleInput, standardRules);
 
-        if (output === simpleInput) {
-            throw new Error("Something did go wrong");
-        }
+            if (output === simpleInput) {
+                throw new Error("Something did go wrong");
+            }
+        }).run();
     });
 
-    bench("@visulima/stringAnonymize", () => {
-        const output = stringAnonymize(simpleInput, standardRules);
+    test("@visulima/stringAnonymize", async ({ bench }) => {
+        await bench("@visulima/stringAnonymize", () => {
+            const output = stringAnonymize(simpleInput, standardRules);
 
-        if (output === simpleInput) {
-            throw new Error("Something did go wrong");
-        }
+            if (output === simpleInput) {
+                throw new Error("Something did go wrong");
+            }
+        }).run();
     });
 });
 
@@ -28,19 +32,23 @@ In my free time, I enjoy hiking, painting, and playing the guitar. I'm also an a
 Please remember that all the information provided, including the credit card number, email address, and phone number, is entirely fictional and randomly generated. It does not represent any real individuals or their personal experiences.`;
 
 describe("redact text string", () => {
-    bench("@visulima/redact", () => {
-        const output = redact(textInput, standardRules);
+    test("@visulima/redact", async ({ bench }) => {
+        await bench("@visulima/redact", () => {
+            const output = redact(textInput, standardRules);
 
-        if (output === textInput) {
-            throw new Error("Something did go wrong");
-        }
+            if (output === textInput) {
+                throw new Error("Something did go wrong");
+            }
+        }).run();
     });
 
-    bench("@visulima/stringAnonymize", () => {
-        const output = stringAnonymize(textInput, standardRules);
+    test("@visulima/stringAnonymize", async ({ bench }) => {
+        await bench("@visulima/stringAnonymize", () => {
+            const output = stringAnonymize(textInput, standardRules);
 
-        if (output === textInput) {
-            throw new Error("Something did go wrong");
-        }
+            if (output === textInput) {
+                throw new Error("Something did go wrong");
+            }
+        }).run();
     });
 });

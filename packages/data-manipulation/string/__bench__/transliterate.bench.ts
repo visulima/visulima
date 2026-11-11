@@ -1,6 +1,6 @@
 import sindresorhusTransliterate from "@sindresorhus/transliterate";
 import { transliterate as externalTransliterate } from "transliteration";
-import { bench, describe } from "vitest";
+import { describe, test } from "vitest";
 
 import visulimaTransliterate from "../src/transliterate";
 
@@ -27,21 +27,27 @@ const externalTranslitOptions = {}; // Options for the 'transliteration' package
 const sindresorhusTranslitOptions = {}; // Options for '@sindresorhus/transliterate'
 
 describe("Transliterate Function Benchmark", () => {
-    bench("@visulima/string transliterate", async () => {
-        for (const item of testStrings) {
-            visulimaTransliterate(item, visulimaTranslitOptions);
-        }
+    test("@visulima/string transliterate", async ({ bench }) => {
+        await bench("@visulima/string transliterate", async () => {
+            for (const item of testStrings) {
+                visulimaTransliterate(item, visulimaTranslitOptions);
+            }
+        }).run();
     });
 
-    bench.skipIf(process.env.CODSPEED_ENV)("'transliteration' package transliterate", () => {
-        for (const item of testStrings) {
-            externalTransliterate(item, externalTranslitOptions);
-        }
+    test.skipIf(process.env.CODSPEED_ENV)("'transliteration' package transliterate", async ({ bench }) => {
+        await bench("'transliteration' package transliterate", () => {
+            for (const item of testStrings) {
+                externalTransliterate(item, externalTranslitOptions);
+            }
+        }).run();
     });
 
-    bench.skipIf(process.env.CODSPEED_ENV)("@sindresorhus/transliterate", () => {
-        for (const item of testStrings) {
-            sindresorhusTransliterate(item, sindresorhusTranslitOptions);
-        }
+    test.skipIf(process.env.CODSPEED_ENV)("@sindresorhus/transliterate", async ({ bench }) => {
+        await bench("@sindresorhus/transliterate", () => {
+            for (const item of testStrings) {
+                sindresorhusTransliterate(item, sindresorhusTranslitOptions);
+            }
+        }).run();
     });
 });

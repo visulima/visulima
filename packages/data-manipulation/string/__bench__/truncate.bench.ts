@@ -1,6 +1,6 @@
 import ansiTruncate from "ansi-truncate";
 import cliTruncate from "cli-truncate";
-import { bench, describe } from "vitest";
+import { describe, test } from "vitest";
 
 import { truncate } from "../src/truncate";
 
@@ -11,100 +11,142 @@ describe("truncate", () => {
     const mixedString = "\u001B[31m你好\u001B[39m world 👨‍👩‍👧‍👦 안녕하세요";
 
     describe("simple string", () => {
-        bench("@visulima/string truncate", () => {
-            truncate(simpleString, 20);
+        test("@visulima/string truncate", async ({ bench }) => {
+            await bench("@visulima/string truncate", () => {
+                truncate(simpleString, 20);
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("cli-truncate", () => {
-            cliTruncate(simpleString, 20);
+        test.skipIf(process.env.CODSPEED_ENV)("cli-truncate", async ({ bench }) => {
+            await bench("cli-truncate", () => {
+                cliTruncate(simpleString, 20);
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("ansi-truncate", () => {
-            ansiTruncate(simpleString, 20);
+        test.skipIf(process.env.CODSPEED_ENV)("ansi-truncate", async ({ bench }) => {
+            await bench("ansi-truncate", () => {
+                ansiTruncate(simpleString, 20);
+            }).run();
         });
     });
 
     describe("ANSI string", () => {
-        bench("@visulima/string truncate", () => {
-            truncate(ansiString, 20);
+        test("@visulima/string truncate", async ({ bench }) => {
+            await bench("@visulima/string truncate", () => {
+                truncate(ansiString, 20);
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("cli-truncate", () => {
-            cliTruncate(ansiString, 20);
+        test.skipIf(process.env.CODSPEED_ENV)("cli-truncate", async ({ bench }) => {
+            await bench("cli-truncate", () => {
+                cliTruncate(ansiString, 20);
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("ansi-truncate", () => {
-            ansiTruncate(ansiString, 20);
+        test.skipIf(process.env.CODSPEED_ENV)("ansi-truncate", async ({ bench }) => {
+            await bench("ansi-truncate", () => {
+                ansiTruncate(ansiString, 20);
+            }).run();
         });
     });
 
     describe("Unicode string", () => {
-        bench("@visulima/string truncate", () => {
-            truncate(unicodeString, 20, { width: { emojiWidth: 2, fullWidth: 2 } });
+        test("@visulima/string truncate", async ({ bench }) => {
+            await bench("@visulima/string truncate", () => {
+                truncate(unicodeString, 20, { width: { emojiWidth: 2, fullWidth: 2 } });
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("cli-truncate", () => {
-            cliTruncate(unicodeString, 20);
+        test.skipIf(process.env.CODSPEED_ENV)("cli-truncate", async ({ bench }) => {
+            await bench("cli-truncate", () => {
+                cliTruncate(unicodeString, 20);
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("ansi-truncate", () => {
-            ansiTruncate(unicodeString, 20);
+        test.skipIf(process.env.CODSPEED_ENV)("ansi-truncate", async ({ bench }) => {
+            await bench("ansi-truncate", () => {
+                ansiTruncate(unicodeString, 20);
+            }).run();
         });
     });
 
     describe("mixed content", () => {
-        bench("@visulima/string truncate", () => {
-            truncate(mixedString, 20, { width: { emojiWidth: 2, fullWidth: 2 } });
+        test("@visulima/string truncate", async ({ bench }) => {
+            await bench("@visulima/string truncate", () => {
+                truncate(mixedString, 20, { width: { emojiWidth: 2, fullWidth: 2 } });
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("cli-truncate", () => {
-            cliTruncate(mixedString, 20);
+        test.skipIf(process.env.CODSPEED_ENV)("cli-truncate", async ({ bench }) => {
+            await bench("cli-truncate", () => {
+                cliTruncate(mixedString, 20);
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("ansi-truncate", () => {
-            ansiTruncate(mixedString, 20);
+        test.skipIf(process.env.CODSPEED_ENV)("ansi-truncate", async ({ bench }) => {
+            await bench("ansi-truncate", () => {
+                ansiTruncate(mixedString, 20);
+            }).run();
         });
     });
 
     describe("position truncation", () => {
-        bench("@visulima/string truncate - start", () => {
-            truncate(simpleString, 20, { position: "start" });
+        test("@visulima/string truncate - start", async ({ bench }) => {
+            await bench("@visulima/string truncate - start", () => {
+                truncate(simpleString, 20, { position: "start" });
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("cli-truncate - start", () => {
-            cliTruncate(simpleString, 20, { position: "start" });
+        test.skipIf(process.env.CODSPEED_ENV)("cli-truncate - start", async ({ bench }) => {
+            await bench("cli-truncate - start", () => {
+                cliTruncate(simpleString, 20, { position: "start" });
+            }).run();
         });
 
-        bench("@visulima/string truncate - middle", () => {
-            truncate(simpleString, 20, { position: "middle" });
+        test("@visulima/string truncate - middle", async ({ bench }) => {
+            await bench("@visulima/string truncate - middle", () => {
+                truncate(simpleString, 20, { position: "middle" });
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("cli-truncate - middle", () => {
-            cliTruncate(simpleString, 20, { position: "middle" });
+        test.skipIf(process.env.CODSPEED_ENV)("cli-truncate - middle", async ({ bench }) => {
+            await bench("cli-truncate - middle", () => {
+                cliTruncate(simpleString, 20, { position: "middle" });
+            }).run();
         });
     });
 
     describe("space-aware truncation", () => {
-        bench("@visulima/string truncate", () => {
-            truncate(simpleString, 20, { preferTruncationOnSpace: true });
+        test("@visulima/string truncate", async ({ bench }) => {
+            await bench("@visulima/string truncate", () => {
+                truncate(simpleString, 20, { preferTruncationOnSpace: true });
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("cli-truncate", () => {
-            cliTruncate(simpleString, 20, { space: true });
+        test.skipIf(process.env.CODSPEED_ENV)("cli-truncate", async ({ bench }) => {
+            await bench("cli-truncate", () => {
+                cliTruncate(simpleString, 20, { space: true });
+            }).run();
         });
     });
 
     describe("custom ellipsis", () => {
-        bench("@visulima/string truncate", () => {
-            truncate(simpleString, 20, { ellipsis: "..." });
+        test("@visulima/string truncate", async ({ bench }) => {
+            await bench("@visulima/string truncate", () => {
+                truncate(simpleString, 20, { ellipsis: "..." });
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("cli-truncate", () => {
-            cliTruncate(simpleString, 20, { truncationCharacter: "..." });
+        test.skipIf(process.env.CODSPEED_ENV)("cli-truncate", async ({ bench }) => {
+            await bench("cli-truncate", () => {
+                cliTruncate(simpleString, 20, { truncationCharacter: "..." });
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("ansi-truncate", () => {
-            ansiTruncate(simpleString, 20, { ellipsis: "..." });
+        test.skipIf(process.env.CODSPEED_ENV)("ansi-truncate", async ({ bench }) => {
+            await bench("ansi-truncate", () => {
+                ansiTruncate(simpleString, 20, { ellipsis: "..." });
+            }).run();
         });
     });
 });

@@ -1,34 +1,42 @@
 import { sentenceCase } from "@visulima/string/case";
-import { bench, describe } from "vitest";
+import { describe, test } from "vitest";
 
 import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../../__fixtures__/test-strings";
 
 describe("sentenceCase", () => {
-    bench("visulima/string sentenceCase (no cache)", () => {
-        for (const stringValue of TEST_STRINGS) {
-            sentenceCase(stringValue);
-        }
+    test("visulima/string sentenceCase (no cache)", async ({ bench }) => {
+        await bench("visulima/string sentenceCase (no cache)", () => {
+            for (const stringValue of TEST_STRINGS) {
+                sentenceCase(stringValue);
+            }
+        }).run();
     });
 
-    bench("visulima/string sentenceCase (with cache)", () => {
-        for (const stringValue of TEST_STRINGS) {
-            sentenceCase(stringValue, { cache: true });
-        }
+    test("visulima/string sentenceCase (with cache)", async ({ bench }) => {
+        await bench("visulima/string sentenceCase (with cache)", () => {
+            for (const stringValue of TEST_STRINGS) {
+                sentenceCase(stringValue, { cache: true });
+            }
+        }).run();
     });
 
     describe("Special characters handling", () => {
-        bench("visulima/string sentenceCase (no cache)", () => {
-            for (const stringValue of SPECIAL_STRINGS) {
-                sentenceCase(stringValue);
-            }
+        test("visulima/string sentenceCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string sentenceCase (no cache)", () => {
+                for (const stringValue of SPECIAL_STRINGS) {
+                    sentenceCase(stringValue);
+                }
+            }).run();
         });
     });
 
     describe("Acronym handling", () => {
-        bench("visulima/string sentenceCase (no cache)", () => {
-            for (const stringValue of ACRONYM_STRINGS) {
-                sentenceCase(stringValue);
-            }
+        test("visulima/string sentenceCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string sentenceCase (no cache)", () => {
+                for (const stringValue of ACRONYM_STRINGS) {
+                    sentenceCase(stringValue);
+                }
+            }).run();
         });
     });
 });

@@ -1,5 +1,5 @@
 import { green, red } from "@visulima/colorize";
-import { bench, describe } from "vitest";
+import { describe, test } from "vitest";
 import wrapAnsi from "wrap-ansi";
 
 import { wordWrap, WrapMode } from "../src/word-wrap";
@@ -41,12 +41,16 @@ describe("Word Wrap Benchmarks", () => {
         describe("Default settings (preserve words)", () => {
             for (const [name, text] of Object.entries(fixtures)) {
                 for (const width of widths) {
-                    bench.skipIf(process.env.CODSPEED_ENV)(`wordWrap - ${name} at width ${width}`, () => {
-                        wordWrap(text, { width }); // Default is PRESERVE_WORDS
+                    test.skipIf(process.env.CODSPEED_ENV)(`wordWrap - ${name} at width ${width}`, async ({ bench }) => {
+                        await bench(`wordWrap - ${name} at width ${width}`, () => {
+                            wordWrap(text, { width }); // Default is PRESERVE_WORDS
+                        }).run();
                     });
 
-                    bench.skipIf(process.env.CODSPEED_ENV)(`wrap-ansi - ${name} at width ${width}`, () => {
-                        wrapAnsi(text, width, { hard: false }); // false = preserve words
+                    test.skipIf(process.env.CODSPEED_ENV)(`wrap-ansi - ${name} at width ${width}`, async ({ bench }) => {
+                        await bench(`wrap-ansi - ${name} at width ${width}`, () => {
+                            wrapAnsi(text, width, { hard: false }); // false = preserve words
+                        }).run();
                     });
                 }
             }
@@ -56,12 +60,16 @@ describe("Word Wrap Benchmarks", () => {
         describe("Hard breaks (STRICT_WIDTH vs hard: true)", () => {
             for (const [name, text] of Object.entries(fixtures)) {
                 for (const width of widths) {
-                    bench.skipIf(process.env.CODSPEED_ENV)(`wordWrap - ${name} at width ${width}`, () => {
-                        wordWrap(text, { width, wrapMode: WrapMode.STRICT_WIDTH });
+                    test.skipIf(process.env.CODSPEED_ENV)(`wordWrap - ${name} at width ${width}`, async ({ bench }) => {
+                        await bench(`wordWrap - ${name} at width ${width}`, () => {
+                            wordWrap(text, { width, wrapMode: WrapMode.STRICT_WIDTH });
+                        }).run();
                     });
 
-                    bench.skipIf(process.env.CODSPEED_ENV)(`wrap-ansi - ${name} at width ${width}`, () => {
-                        wrapAnsi(text, width, { hard: true });
+                    test.skipIf(process.env.CODSPEED_ENV)(`wrap-ansi - ${name} at width ${width}`, async ({ bench }) => {
+                        await bench(`wrap-ansi - ${name} at width ${width}`, () => {
+                            wrapAnsi(text, width, { hard: true });
+                        }).run();
                     });
                 }
             }
@@ -69,31 +77,43 @@ describe("Word Wrap Benchmarks", () => {
 
         // ANSI color handling comparison
         describe("ANSI color handling", () => {
-            bench.skipIf(process.env.CODSPEED_ENV)("wordWrap - complex ANSI text", () => {
-                wordWrap(complexText, { width: 40 });
+            test.skipIf(process.env.CODSPEED_ENV)("wordWrap - complex ANSI text", async ({ bench }) => {
+                await bench("wordWrap - complex ANSI text", () => {
+                    wordWrap(complexText, { width: 40 });
+                }).run();
             });
 
-            bench.skipIf(process.env.CODSPEED_ENV)("wrap-ansi - complex ANSI text", () => {
-                wrapAnsi(complexText, 40, { hard: false });
+            test.skipIf(process.env.CODSPEED_ENV)("wrap-ansi - complex ANSI text", async ({ bench }) => {
+                await bench("wrap-ansi - complex ANSI text", () => {
+                    wrapAnsi(complexText, 40, { hard: false });
+                }).run();
             });
         });
 
         // Trimming comparison
         describe("Space handling", () => {
-            bench.skipIf(process.env.CODSPEED_ENV)("wordWrap - with trim=true (default)", () => {
-                wordWrap(fixtures.spaces, { width: 40 });
+            test.skipIf(process.env.CODSPEED_ENV)("wordWrap - with trim=true (default)", async ({ bench }) => {
+                await bench("wordWrap - with trim=true (default)", () => {
+                    wordWrap(fixtures.spaces, { width: 40 });
+                }).run();
             });
 
-            bench.skipIf(process.env.CODSPEED_ENV)("wordWrap - with trim=false", () => {
-                wordWrap(fixtures.spaces, { trim: false, width: 40 });
+            test.skipIf(process.env.CODSPEED_ENV)("wordWrap - with trim=false", async ({ bench }) => {
+                await bench("wordWrap - with trim=false", () => {
+                    wordWrap(fixtures.spaces, { trim: false, width: 40 });
+                }).run();
             });
 
-            bench.skipIf(process.env.CODSPEED_ENV)("wrap-ansi - with trim=true", () => {
-                wrapAnsi(fixtures.spaces, 40, { hard: false, trim: true });
+            test.skipIf(process.env.CODSPEED_ENV)("wrap-ansi - with trim=true", async ({ bench }) => {
+                await bench("wrap-ansi - with trim=true", () => {
+                    wrapAnsi(fixtures.spaces, 40, { hard: false, trim: true });
+                }).run();
             });
 
-            bench.skipIf(process.env.CODSPEED_ENV)("wrap-ansi - with trim=false", () => {
-                wrapAnsi(fixtures.spaces, 40, { hard: false, trim: false });
+            test.skipIf(process.env.CODSPEED_ENV)("wrap-ansi - with trim=false", async ({ bench }) => {
+                await bench("wrap-ansi - with trim=false", () => {
+                    wrapAnsi(fixtures.spaces, 40, { hard: false, trim: false });
+                }).run();
             });
         });
     });
@@ -103,8 +123,10 @@ describe("Word Wrap Benchmarks", () => {
         describe("PRESERVE_WORDS mode (default)", () => {
             for (const [name, text] of Object.entries(fixtures)) {
                 for (const width of widths) {
-                    bench.skipIf(process.env.CODSPEED_ENV)(`${name} text at width ${width}`, () => {
-                        wordWrap(text, { width });
+                    test.skipIf(process.env.CODSPEED_ENV)(`${name} text at width ${width}`, async ({ bench }) => {
+                        await bench(`${name} text at width ${width}`, () => {
+                            wordWrap(text, { width });
+                        }).run();
                     });
                 }
             }
@@ -113,8 +135,10 @@ describe("Word Wrap Benchmarks", () => {
         describe("BREAK_AT_CHARACTERS mode", () => {
             for (const [name, text] of Object.entries(fixtures)) {
                 for (const width of widths) {
-                    bench.skipIf(process.env.CODSPEED_ENV)(`${name} text at width ${width}`, () => {
-                        wordWrap(text, { width, wrapMode: WrapMode.BREAK_AT_CHARACTERS });
+                    test.skipIf(process.env.CODSPEED_ENV)(`${name} text at width ${width}`, async ({ bench }) => {
+                        await bench(`${name} text at width ${width}`, () => {
+                            wordWrap(text, { width, wrapMode: WrapMode.BREAK_AT_CHARACTERS });
+                        }).run();
                     });
                 }
             }
@@ -123,8 +147,10 @@ describe("Word Wrap Benchmarks", () => {
         describe("STRICT_WIDTH mode", () => {
             for (const [name, text] of Object.entries(fixtures)) {
                 for (const width of widths) {
-                    bench.skipIf(process.env.CODSPEED_ENV)(`${name} text at width ${width}`, () => {
-                        wordWrap(text, { width, wrapMode: WrapMode.STRICT_WIDTH });
+                    test.skipIf(process.env.CODSPEED_ENV)(`${name} text at width ${width}`, async ({ bench }) => {
+                        await bench(`${name} text at width ${width}`, () => {
+                            wordWrap(text, { width, wrapMode: WrapMode.STRICT_WIDTH });
+                        }).run();
                     });
                 }
             }
@@ -133,28 +159,40 @@ describe("Word Wrap Benchmarks", () => {
 
     // Benchmark specific edge cases
     describe("Edge Cases", () => {
-        bench.skipIf(process.env.CODSPEED_ENV)("Empty string", () => {
-            wordWrap("", { width: 10 });
+        test.skipIf(process.env.CODSPEED_ENV)("Empty string", async ({ bench }) => {
+            await bench("Empty string", () => {
+                wordWrap("", { width: 10 });
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("String exactly at width", () => {
-            wordWrap("1234567890", { width: 10 });
+        test.skipIf(process.env.CODSPEED_ENV)("String exactly at width", async ({ bench }) => {
+            await bench("String exactly at width", () => {
+                wordWrap("1234567890", { width: 10 });
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("Single character", () => {
-            wordWrap("a", { width: 10 });
+        test.skipIf(process.env.CODSPEED_ENV)("Single character", async ({ bench }) => {
+            await bench("Single character", () => {
+                wordWrap("a", { width: 10 });
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("Very long word", () => {
-            wordWrap("supercalifragilisticexpialidocious", { width: 10 });
+        test.skipIf(process.env.CODSPEED_ENV)("Very long word", async ({ bench }) => {
+            await bench("Very long word", () => {
+                wordWrap("supercalifragilisticexpialidocious", { width: 10 });
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("Very narrow width", () => {
-            wordWrap(longText, { width: 5 });
+        test.skipIf(process.env.CODSPEED_ENV)("Very narrow width", async ({ bench }) => {
+            await bench("Very narrow width", () => {
+                wordWrap(longText, { width: 5 });
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("Very wide width", () => {
-            wordWrap(longText, { width: 200 });
+        test.skipIf(process.env.CODSPEED_ENV)("Very wide width", async ({ bench }) => {
+            await bench("Very wide width", () => {
+                wordWrap(longText, { width: 200 });
+            }).run();
         });
     });
 });

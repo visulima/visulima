@@ -1,6 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import terminalSize from "terminal-size";
-import { bench, describe } from "vitest";
+import { describe, test } from "vitest";
 
 import { boxen as visulimaBoxen } from "../src";
 
@@ -20,15 +20,19 @@ import { boxen as visulimaBoxen } from "../src";
 const text = "Hello,\nworld!\nThis is a test of fullscreen rendering.";
 
 describe("Fullscreen rendering (single vs double terminalSize call)", () => {
-    bench("optimized: single terminalSize() call", () => {
-        visulimaBoxen(text, { borderStyle: "round", fullscreen: true, padding: 1 });
+    test("optimized: single terminalSize() call", async ({ bench }) => {
+        await bench("optimized: single terminalSize() call", () => {
+            visulimaBoxen(text, { borderStyle: "round", fullscreen: true, padding: 1 });
+        }).run();
     });
 
-    bench("previous: extra terminalSize() call per render", () => {
-        // Emulates the pre-fix behaviour: sanitizeOptions() re-invoked
-        // terminalSize() a second time when fullscreen was set.
-        terminalSize();
+    test("previous: extra terminalSize() call per render", async ({ bench }) => {
+        await bench("previous: extra terminalSize() call per render", () => {
+            // Emulates the pre-fix behaviour: sanitizeOptions() re-invoked
+            // terminalSize() a second time when fullscreen was set.
+            terminalSize();
 
-        visulimaBoxen(text, { borderStyle: "round", fullscreen: true, padding: 1 });
+            visulimaBoxen(text, { borderStyle: "round", fullscreen: true, padding: 1 });
+        }).run();
     });
 });

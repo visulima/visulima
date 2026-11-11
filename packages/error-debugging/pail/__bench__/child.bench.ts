@@ -9,7 +9,7 @@ import bunyan from "bunyan";
 import pino from "pino";
 import { ROARR, Roarr as log } from "roarr";
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { bench, describe } from "vitest";
+import { describe, test } from "vitest";
 import { createLogger, transports } from "winston";
 
 const wsDevelopmentNull = createWriteStream(devNull);
@@ -54,303 +54,351 @@ ROARR.write = () => {
 };
 
 describe("child creation", async () => {
-    bench(
-        "pail server",
-        async () => {
-            const child = serverPail.child();
+    test("pail server", async ({ bench }) => {
+        await bench(
+            "pail server",
+            async () => {
+                const child = serverPail.child();
 
-            child.info("hello world");
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+                child.info("hello world");
+            },
+            {
+                iterations: 10_000,
+            },
+        ).run();
+    });
 
-    bench(
-        "pail browser",
-        async () => {
-            const child = browserPail.child();
+    test("pail browser", async ({ bench }) => {
+        await bench(
+            "pail browser",
+            async () => {
+                const child = browserPail.child();
 
-            child.info("hello world");
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+                child.info("hello world");
+            },
+            {
+                iterations: 10_000,
+            },
+        ).run();
+    });
 
-    bench.skipIf(process.env.CODSPEED_ENV)(
-        "bunyan node stream",
-        async () => {
-            const child = bunyanNodeStream.child({ component: "test" });
+    test.skipIf(process.env.CODSPEED_ENV)("bunyan node stream", async ({ bench }) => {
+        await bench(
+            "bunyan node stream",
+            async () => {
+                const child = bunyanNodeStream.child({ component: "test" });
 
-            child.info("hello world");
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+                child.info("hello world");
+            },
+            {
+                iterations: 10_000,
+            },
+        ).run();
+    });
 
-    bench.skipIf(process.env.CODSPEED_ENV)(
-        "winston node stream",
-        async () => {
-            const child = winstonNodeStream.child({ component: "test" });
+    test.skipIf(process.env.CODSPEED_ENV)("winston node stream", async ({ bench }) => {
+        await bench(
+            "winston node stream",
+            async () => {
+                const child = winstonNodeStream.child({ component: "test" });
 
-            child.info("hello world");
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+                child.info("hello world");
+            },
+            {
+                iterations: 10_000,
+            },
+        ).run();
+    });
 
-    bench.skipIf(process.env.CODSPEED_ENV)(
-        "pino destination",
-        async () => {
-            const child = pinoDestination.child({ component: "test" });
+    test.skipIf(process.env.CODSPEED_ENV)("pino destination", async ({ bench }) => {
+        await bench(
+            "pino destination",
+            async () => {
+                const child = pinoDestination.child({ component: "test" });
 
-            child.info("hello world");
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+                child.info("hello world");
+            },
+            {
+                iterations: 10_000,
+            },
+        ).run();
+    });
 
-    bench.skipIf(process.env.CODSPEED_ENV)(
-        "pino node stream",
-        async () => {
-            const child = pinoNodeStream.child({ component: "test" });
+    test.skipIf(process.env.CODSPEED_ENV)("pino node stream", async ({ bench }) => {
+        await bench(
+            "pino node stream",
+            async () => {
+                const child = pinoNodeStream.child({ component: "test" });
 
-            child.info("hello world");
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+                child.info("hello world");
+            },
+            {
+                iterations: 10_000,
+            },
+        ).run();
+    });
 
-    bench.skipIf(process.env.CODSPEED_ENV)(
-        "pino min length",
-        async () => {
-            const child = pinoMinLength.child({ component: "test" });
+    test.skipIf(process.env.CODSPEED_ENV)("pino min length", async ({ bench }) => {
+        await bench(
+            "pino min length",
+            async () => {
+                const child = pinoMinLength.child({ component: "test" });
 
-            child.info("hello world");
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+                child.info("hello world");
+            },
+            {
+                iterations: 10_000,
+            },
+        ).run();
+    });
 
-    bench.skipIf(process.env.CODSPEED_ENV)(
-        "roarr",
-        async () => {
-            const child = log.child({ component: "test" });
+    test.skipIf(process.env.CODSPEED_ENV)("roarr", async ({ bench }) => {
+        await bench(
+            "roarr",
+            async () => {
+                const child = log.child({ component: "test" });
 
-            child.info("hello world");
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+                child.info("hello world");
+            },
+            {
+                iterations: 10_000,
+            },
+        ).run();
+    });
 });
 
 describe("child child creation", async () => {
-    bench(
-        "pail server",
-        async () => {
-            const child = serverPail.child({ scope: ["api"] });
-            const grandChild = child.child({ scope: ["users"] });
+    test("pail server", async ({ bench }) => {
+        await bench(
+            "pail server",
+            async () => {
+                const child = serverPail.child({ scope: ["api"] });
+                const grandChild = child.child({ scope: ["users"] });
 
-            grandChild.info("hello world");
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+                grandChild.info("hello world");
+            },
+            {
+                iterations: 10_000,
+            },
+        ).run();
+    });
 
-    bench(
-        "pail browser",
-        async () => {
-            const child = browserPail.child({ scope: ["api"] });
-            const grandChild = child.child({ scope: ["users"] });
+    test("pail browser", async ({ bench }) => {
+        await bench(
+            "pail browser",
+            async () => {
+                const child = browserPail.child({ scope: ["api"] });
+                const grandChild = child.child({ scope: ["users"] });
 
-            grandChild.info("hello world");
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+                grandChild.info("hello world");
+            },
+            {
+                iterations: 10_000,
+            },
+        ).run();
+    });
 
-    bench.skipIf(process.env.CODSPEED_ENV)(
-        "bunyan node stream",
-        async () => {
-            const child = bunyanNodeStream.child({ component: "api" });
-            const grandChild = child.child({ module: "users" });
+    test.skipIf(process.env.CODSPEED_ENV)("bunyan node stream", async ({ bench }) => {
+        await bench(
+            "bunyan node stream",
+            async () => {
+                const child = bunyanNodeStream.child({ component: "api" });
+                const grandChild = child.child({ module: "users" });
 
-            grandChild.info("hello world");
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+                grandChild.info("hello world");
+            },
+            {
+                iterations: 10_000,
+            },
+        ).run();
+    });
 
-    bench.skipIf(process.env.CODSPEED_ENV)(
-        "winston node stream",
-        async () => {
-            const child = winstonNodeStream.child({ component: "api" });
-            const grandChild = child.child({ module: "users" });
+    test.skipIf(process.env.CODSPEED_ENV)("winston node stream", async ({ bench }) => {
+        await bench(
+            "winston node stream",
+            async () => {
+                const child = winstonNodeStream.child({ component: "api" });
+                const grandChild = child.child({ module: "users" });
 
-            grandChild.info("hello world");
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+                grandChild.info("hello world");
+            },
+            {
+                iterations: 10_000,
+            },
+        ).run();
+    });
 
-    bench.skipIf(process.env.CODSPEED_ENV)(
-        "pino destination",
-        async () => {
-            const child = pinoDestination.child({ component: "api" });
-            const grandChild = child.child({ module: "users" });
+    test.skipIf(process.env.CODSPEED_ENV)("pino destination", async ({ bench }) => {
+        await bench(
+            "pino destination",
+            async () => {
+                const child = pinoDestination.child({ component: "api" });
+                const grandChild = child.child({ module: "users" });
 
-            grandChild.info("hello world");
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+                grandChild.info("hello world");
+            },
+            {
+                iterations: 10_000,
+            },
+        ).run();
+    });
 
-    bench.skipIf(process.env.CODSPEED_ENV)(
-        "pino node stream",
-        async () => {
-            const child = pinoNodeStream.child({ component: "api" });
-            const grandChild = child.child({ module: "users" });
+    test.skipIf(process.env.CODSPEED_ENV)("pino node stream", async ({ bench }) => {
+        await bench(
+            "pino node stream",
+            async () => {
+                const child = pinoNodeStream.child({ component: "api" });
+                const grandChild = child.child({ module: "users" });
 
-            grandChild.info("hello world");
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+                grandChild.info("hello world");
+            },
+            {
+                iterations: 10_000,
+            },
+        ).run();
+    });
 
-    bench.skipIf(process.env.CODSPEED_ENV)(
-        "pino min length",
-        async () => {
-            const child = pinoMinLength.child({ component: "api" });
-            const grandChild = child.child({ module: "users" });
+    test.skipIf(process.env.CODSPEED_ENV)("pino min length", async ({ bench }) => {
+        await bench(
+            "pino min length",
+            async () => {
+                const child = pinoMinLength.child({ component: "api" });
+                const grandChild = child.child({ module: "users" });
 
-            grandChild.info("hello world");
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+                grandChild.info("hello world");
+            },
+            {
+                iterations: 10_000,
+            },
+        ).run();
+    });
 
-    bench.skipIf(process.env.CODSPEED_ENV)(
-        "roarr",
-        async () => {
-            const child = log.child({ component: "api" });
-            const grandChild = child.child({ module: "users" });
+    test.skipIf(process.env.CODSPEED_ENV)("roarr", async ({ bench }) => {
+        await bench(
+            "roarr",
+            async () => {
+                const child = log.child({ component: "api" });
+                const grandChild = child.child({ module: "users" });
 
-            grandChild.info("hello world");
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+                grandChild.info("hello world");
+            },
+            {
+                iterations: 10_000,
+            },
+        ).run();
+    });
 });
 
 describe("child with overrides", async () => {
-    bench(
-        "pail server",
-        async () => {
-            const child = serverPail.child({ logLevel: "debug" });
+    test("pail server", async ({ bench }) => {
+        await bench(
+            "pail server",
+            async () => {
+                const child = serverPail.child({ logLevel: "debug" });
 
-            child.debug("debug message");
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+                child.debug("debug message");
+            },
+            {
+                iterations: 10_000,
+            },
+        ).run();
+    });
 
-    bench(
-        "pail browser",
-        async () => {
-            const child = browserPail.child({ logLevel: "debug" });
+    test("pail browser", async ({ bench }) => {
+        await bench(
+            "pail browser",
+            async () => {
+                const child = browserPail.child({ logLevel: "debug" });
 
-            child.debug("debug message");
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+                child.debug("debug message");
+            },
+            {
+                iterations: 10_000,
+            },
+        ).run();
+    });
 
-    bench.skipIf(process.env.CODSPEED_ENV)(
-        "bunyan node stream",
-        async () => {
-            const child = bunyanNodeStream.child({ component: "test" });
+    test.skipIf(process.env.CODSPEED_ENV)("bunyan node stream", async ({ bench }) => {
+        await bench(
+            "bunyan node stream",
+            async () => {
+                const child = bunyanNodeStream.child({ component: "test" });
 
-            child.debug("debug message");
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+                child.debug("debug message");
+            },
+            {
+                iterations: 10_000,
+            },
+        ).run();
+    });
 
-    bench.skipIf(process.env.CODSPEED_ENV)(
-        "winston node stream",
-        async () => {
-            const child = winstonNodeStream.child({ component: "test" });
+    test.skipIf(process.env.CODSPEED_ENV)("winston node stream", async ({ bench }) => {
+        await bench(
+            "winston node stream",
+            async () => {
+                const child = winstonNodeStream.child({ component: "test" });
 
-            child.debug("debug message");
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+                child.debug("debug message");
+            },
+            {
+                iterations: 10_000,
+            },
+        ).run();
+    });
 
-    bench.skipIf(process.env.CODSPEED_ENV)(
-        "pino destination",
-        async () => {
-            const child = pinoDestination.child({ component: "test" });
+    test.skipIf(process.env.CODSPEED_ENV)("pino destination", async ({ bench }) => {
+        await bench(
+            "pino destination",
+            async () => {
+                const child = pinoDestination.child({ component: "test" });
 
-            child.debug("debug message");
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+                child.debug("debug message");
+            },
+            {
+                iterations: 10_000,
+            },
+        ).run();
+    });
 
-    bench.skipIf(process.env.CODSPEED_ENV)(
-        "pino node stream",
-        async () => {
-            const child = pinoNodeStream.child({ component: "test" });
+    test.skipIf(process.env.CODSPEED_ENV)("pino node stream", async ({ bench }) => {
+        await bench(
+            "pino node stream",
+            async () => {
+                const child = pinoNodeStream.child({ component: "test" });
 
-            child.debug("debug message");
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+                child.debug("debug message");
+            },
+            {
+                iterations: 10_000,
+            },
+        ).run();
+    });
 
-    bench.skipIf(process.env.CODSPEED_ENV)(
-        "pino min length",
-        async () => {
-            const child = pinoMinLength.child({ component: "test" });
+    test.skipIf(process.env.CODSPEED_ENV)("pino min length", async ({ bench }) => {
+        await bench(
+            "pino min length",
+            async () => {
+                const child = pinoMinLength.child({ component: "test" });
 
-            child.debug("debug message");
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+                child.debug("debug message");
+            },
+            {
+                iterations: 10_000,
+            },
+        ).run();
+    });
 
-    bench.skipIf(process.env.CODSPEED_ENV)(
-        "roarr",
-        async () => {
-            const child = log.child({ component: "test" });
+    test.skipIf(process.env.CODSPEED_ENV)("roarr", async ({ bench }) => {
+        await bench(
+            "roarr",
+            async () => {
+                const child = log.child({ component: "test" });
 
-            child.debug("debug message");
-        },
-        {
-            iterations: 10_000,
-        },
-    );
+                child.debug("debug message");
+            },
+            {
+                iterations: 10_000,
+            },
+        ).run();
+    });
 });

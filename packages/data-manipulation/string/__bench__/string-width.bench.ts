@@ -1,6 +1,6 @@
 /* eslint-disable e18e/ban-dependencies */
 import stringWidth from "string-width";
-import { bench, describe } from "vitest";
+import { describe, test } from "vitest";
 
 import { getStringWidth } from "../src";
 
@@ -15,105 +15,145 @@ describe("string width", () => {
     const longString = simpleString.repeat(1000); // ~44,000 characters
 
     describe("simple ASCII string (getStringWidth)", () => {
-        bench("@visulima/string getStringWidth", () => {
-            getStringWidth(simpleString);
+        test("@visulima/string getStringWidth", async ({ bench }) => {
+            await bench("@visulima/string getStringWidth", () => {
+                getStringWidth(simpleString);
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("string-width", () => {
-            stringWidth(simpleString);
+        test.skipIf(process.env.CODSPEED_ENV)("string-width", async ({ bench }) => {
+            await bench("string-width", () => {
+                stringWidth(simpleString);
+            }).run();
         });
     });
 
     describe("ANSI string (getStringWidth)", () => {
-        bench("@visulima/string getStringWidth", () => {
-            getStringWidth(ansiString);
+        test("@visulima/string getStringWidth", async ({ bench }) => {
+            await bench("@visulima/string getStringWidth", () => {
+                getStringWidth(ansiString);
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("string-width", () => {
-            stringWidth(ansiString);
+        test.skipIf(process.env.CODSPEED_ENV)("string-width", async ({ bench }) => {
+            await bench("string-width", () => {
+                stringWidth(ansiString);
+            }).run();
         });
 
-        bench("@visulima/string getStringWidth (count ANSI)", () => {
-            getStringWidth(ansiString, { countAnsiEscapeCodes: true });
+        test("@visulima/string getStringWidth (count ANSI)", async ({ bench }) => {
+            await bench("@visulima/string getStringWidth (count ANSI)", () => {
+                getStringWidth(ansiString, { countAnsiEscapeCodes: true });
+            }).run();
         });
     });
 
     describe("Unicode string (getStringWidth)", () => {
-        bench("@visulima/string getStringWidth", () => {
-            getStringWidth(unicodeString);
+        test("@visulima/string getStringWidth", async ({ bench }) => {
+            await bench("@visulima/string getStringWidth", () => {
+                getStringWidth(unicodeString);
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("string-width", () => {
-            stringWidth(unicodeString);
+        test.skipIf(process.env.CODSPEED_ENV)("string-width", async ({ bench }) => {
+            await bench("string-width", () => {
+                stringWidth(unicodeString);
+            }).run();
         });
     });
 
     describe("mixed content (getStringWidth)", () => {
-        bench("@visulima/string getStringWidth", () => {
-            getStringWidth(mixedString);
+        test("@visulima/string getStringWidth", async ({ bench }) => {
+            await bench("@visulima/string getStringWidth", () => {
+                getStringWidth(mixedString);
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("string-width", () => {
-            stringWidth(mixedString);
+        test.skipIf(process.env.CODSPEED_ENV)("string-width", async ({ bench }) => {
+            await bench("string-width", () => {
+                stringWidth(mixedString);
+            }).run();
         });
     });
 
     describe("ambiguous-width characters (getStringWidth)", () => {
-        bench("@visulima/string getStringWidth (default)", () => {
-            getStringWidth(ambiguousString);
+        test("@visulima/string getStringWidth (default)", async ({ bench }) => {
+            await bench("@visulima/string getStringWidth (default)", () => {
+                getStringWidth(ambiguousString);
+            }).run();
         });
 
-        bench("@visulima/string getStringWidth (narrow)", () => {
-            getStringWidth(ambiguousString, { ambiguousIsNarrow: true });
+        test("@visulima/string getStringWidth (narrow)", async ({ bench }) => {
+            await bench("@visulima/string getStringWidth (narrow)", () => {
+                getStringWidth(ambiguousString, { ambiguousIsNarrow: true });
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("string-width", () => {
-            stringWidth(ambiguousString);
+        test.skipIf(process.env.CODSPEED_ENV)("string-width", async ({ bench }) => {
+            await bench("string-width", () => {
+                stringWidth(ambiguousString);
+            }).run();
         });
     });
 
     describe("control characters (getStringWidth)", () => {
-        bench("@visulima/string getStringWidth", () => {
-            getStringWidth(controlString);
+        test("@visulima/string getStringWidth", async ({ bench }) => {
+            await bench("@visulima/string getStringWidth", () => {
+                getStringWidth(controlString);
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("string-width", () => {
-            stringWidth(controlString);
+        test.skipIf(process.env.CODSPEED_ENV)("string-width", async ({ bench }) => {
+            await bench("string-width", () => {
+                stringWidth(controlString);
+            }).run();
         });
     });
 
     describe("custom width options (getStringWidth)", () => {
-        bench("@visulima/string getStringWidth (custom widths)", () => {
-            getStringWidth(mixedString, {
-                emojiWidth: 2,
-                fullWidth: 2,
-                regularWidth: 1,
-                tabWidth: 4,
-            });
+        test("@visulima/string getStringWidth (custom widths)", async ({ bench }) => {
+            await bench("@visulima/string getStringWidth (custom widths)", () => {
+                getStringWidth(mixedString, {
+                    emojiWidth: 2,
+                    fullWidth: 2,
+                    regularWidth: 1,
+                    tabWidth: 4,
+                });
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("string-width", () => {
-            stringWidth(mixedString);
+        test.skipIf(process.env.CODSPEED_ENV)("string-width", async ({ bench }) => {
+            await bench("string-width", () => {
+                stringWidth(mixedString);
+            }).run();
         });
     });
 
     describe("half-width katakana (getStringWidth)", () => {
-        bench("@visulima/string getStringWidth", () => {
-            getStringWidth(katakanaString);
+        test("@visulima/string getStringWidth", async ({ bench }) => {
+            await bench("@visulima/string getStringWidth", () => {
+                getStringWidth(katakanaString);
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("string-width", () => {
-            stringWidth(katakanaString);
+        test.skipIf(process.env.CODSPEED_ENV)("string-width", async ({ bench }) => {
+            await bench("string-width", () => {
+                stringWidth(katakanaString);
+            }).run();
         });
     });
 
     describe("long string (getStringWidth)", () => {
-        bench("@visulima/string getStringWidth", () => {
-            getStringWidth(longString);
+        test("@visulima/string getStringWidth", async ({ bench }) => {
+            await bench("@visulima/string getStringWidth", () => {
+                getStringWidth(longString);
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("string-width", () => {
-            stringWidth(longString);
+        test.skipIf(process.env.CODSPEED_ENV)("string-width", async ({ bench }) => {
+            await bench("string-width", () => {
+                stringWidth(longString);
+            }).run();
         });
     });
 });

@@ -3,117 +3,129 @@ import { cac } from "cac";
 import { cli as cleye } from "cleye";
 import { Command } from "commander";
 import meow from "meow";
-import { bench, describe } from "vitest";
+import { describe, test } from "vitest";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
 import { errorArgs, suppressOutput } from "./shared";
 
 describe("9. Error Handling Performance", () => {
-    bench("Cerebro - Handle unknown command", async () => {
-        try {
-            const cli = new Cerebro("test-cli", { argv: errorArgs });
+    test("Cerebro - Handle unknown command", async ({ bench }) => {
+        await bench("Cerebro - Handle unknown command", async () => {
+            try {
+                const cli = new Cerebro("test-cli", { argv: errorArgs });
 
-            cli.addCommand({
-                description: "Known command",
-                execute: () => {
-                    // Empty execute function
-                },
-                name: "build",
-            });
+                cli.addCommand({
+                    description: "Known command",
+                    execute: () => {
+                        // Empty execute function
+                    },
+                    name: "build",
+                });
 
-            await cli.run({ shouldExitProcess: false });
-        } catch {
-            // Expected - unknown command should throw
-        }
+                await cli.run({ shouldExitProcess: false });
+            } catch {
+                // Expected - unknown command should throw
+            }
+        }).run();
     });
 
-    bench.skipIf(process.env.CODSPEED_ENV)("Commander - Handle unknown command", () => {
-        try {
-            suppressOutput(() => {
-                const program = new Command();
+    test.skipIf(process.env.CODSPEED_ENV)("Commander - Handle unknown command", async ({ bench }) => {
+        await bench("Commander - Handle unknown command", () => {
+            try {
+                suppressOutput(() => {
+                    const program = new Command();
 
-                program
-                    .name("test-cli")
-                    .command("build")
-                    .action(() => {
+                    program
+                        .name("test-cli")
+                        .command("build")
+                        .action(() => {
+                            // Empty action
+                        });
+
+                    program.parse(errorArgs);
+                });
+            } catch {
+                // Expected - unknown command should throw
+            }
+        }).run();
+    });
+
+    test.skipIf(process.env.CODSPEED_ENV)("Yargs - Handle unknown command", async ({ bench }) => {
+        await bench("Yargs - Handle unknown command", async () => {
+            try {
+                await suppressOutput(async () => {
+                    const parser = yargs(hideBin(["node", "script.js"]))
+                        .scriptName("test-cli")
+                        .command("build", "Build command")
+                        .strict();
+
+                    await parser.parseAsync(errorArgs.slice(2));
+                });
+            } catch {
+                // Expected - unknown command/invalid flags should throw
+            }
+        }).run();
+    });
+
+    test.skipIf(process.env.CODSPEED_ENV)("Meow - Handle invalid input", async ({ bench }) => {
+        await bench("Meow - Handle invalid input", () => {
+            try {
+                suppressOutput(() => {
+                    meow("Test CLI", {
+                        argv: errorArgs.slice(2),
+                        flags: {
+                            validFlag: {
+                                type: "boolean",
+                            },
+                        },
+                        importMeta: import.meta,
+                    });
+                });
+            } catch {
+                // Expected - invalid input should throw
+            }
+        }).run();
+    });
+
+    test.skipIf(process.env.CODSPEED_ENV)("CAC - Handle unknown command", async ({ bench }) => {
+        await bench("CAC - Handle unknown command", () => {
+            try {
+                suppressOutput(() => {
+                    const cli = cac("test-cli");
+
+                    cli.command("build", "Known command").action(() => {
                         // Empty action
                     });
 
-                program.parse(errorArgs);
-            });
-        } catch {
-            // Expected - unknown command should throw
-        }
-    });
-
-    bench.skipIf(process.env.CODSPEED_ENV)("Yargs - Handle unknown command", async () => {
-        try {
-            await suppressOutput(async () => {
-                const parser = yargs(hideBin(["node", "script.js"]))
-                    .scriptName("test-cli")
-                    .command("build", "Build command")
-                    .strict();
-
-                await parser.parseAsync(errorArgs.slice(2));
-            });
-        } catch {
-            // Expected - unknown command/invalid flags should throw
-        }
-    });
-
-    bench.skipIf(process.env.CODSPEED_ENV)("Meow - Handle invalid input", () => {
-        try {
-            suppressOutput(() => {
-                meow("Test CLI", {
-                    argv: errorArgs.slice(2),
-                    flags: {
-                        validFlag: {
-                            type: "boolean",
-                        },
-                    },
-                    importMeta: import.meta,
+                    cli.parse(errorArgs, { run: false });
                 });
-            });
-        } catch {
-            // Expected - invalid input should throw
-        }
+            } catch {
+                // Expected - unknown command should throw
+            }
+        }).run();
     });
 
-    bench.skipIf(process.env.CODSPEED_ENV)("CAC - Handle unknown command", () => {
-        try {
-            suppressOutput(() => {
-                const cli = cac("test-cli");
-
-                cli.command("build", "Known command").action(() => {
-                    // Empty action
-                });
-
-                cli.parse(errorArgs, { run: false });
-            });
-        } catch {
-            // Expected - unknown command should throw
-        }
-    });
-
-    bench.skipIf(process.env.CODSPEED_ENV)("Cleye - Handle invalid flags", () => {
-        try {
-            suppressOutput(() => {
-                cleye(
-                    {
-                        flags: {
-                            validFlag: Boolean,
+    test.skipIf(process.env.CODSPEED_ENV)("Cleye - Handle invalid flags", async ({ bench }) => {
+        await bench("Cleye - Handle invalid flags", () => {
+            try {
+                suppressOutput(() => {
+                    cleye(
+                        {
+                            flags: {
+                                validFlag: Boolean,
+                            },
+                            name: "test-cli",
                         },
-                        name: "test-cli",
-                    },
-                    () => {
-                        // Empty callback
-                    },
-                    errorArgs.slice(2),
-                );
-            });
-        } catch {
-            // Expected - invalid flags should throw
-        }
+                        () => {
+                            // Empty callback
+                        },
+                        errorArgs.slice(2),
+                    );
+                });
+            } catch {
+                // Expected - invalid flags should throw
+            }
+        }).run();
     });
 });

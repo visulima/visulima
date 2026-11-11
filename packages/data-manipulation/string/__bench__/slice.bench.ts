@@ -3,7 +3,7 @@ import { stripVTControlCharacters } from "node:util";
 import arcanisSliceAnsi from "@arcanis/slice-ansi";
 import colorize, { black, blue, cyan, green, red, yellow } from "@visulima/colorize";
 import sliceAnsi from "slice-ansi";
-import { bench, describe } from "vitest";
+import { describe, test } from "vitest";
 
 import { SPECIAL_STRINGS, TEST_STRINGS } from "../__fixtures__/test-strings";
 import { slice } from "../src/slice";
@@ -51,88 +51,112 @@ const beginOnlyTestCases = [
 
 describe("slice", () => {
     describe("Basic slicing", () => {
-        bench("visulima/string slice", () => {
-            for (const testCase of sliceTestCases) {
-                slice(testCase.str, testCase.begin, testCase.end);
-            }
+        test("visulima/string slice", async ({ bench }) => {
+            await bench("visulima/string slice", () => {
+                for (const testCase of sliceTestCases) {
+                    slice(testCase.str, testCase.begin, testCase.end);
+                }
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("slice-ansi", () => {
-            for (const testCase of sliceTestCases) {
-                sliceAnsi(testCase.str, testCase.begin, testCase.end);
-            }
+        test.skipIf(process.env.CODSPEED_ENV)("slice-ansi", async ({ bench }) => {
+            await bench("slice-ansi", () => {
+                for (const testCase of sliceTestCases) {
+                    sliceAnsi(testCase.str, testCase.begin, testCase.end);
+                }
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("@arcanis/slice-ansi", () => {
-            for (const testCase of sliceTestCases) {
-                arcanisSliceAnsi(testCase.str, testCase.begin, testCase.end);
-            }
+        test.skipIf(process.env.CODSPEED_ENV)("@arcanis/slice-ansi", async ({ bench }) => {
+            await bench("@arcanis/slice-ansi", () => {
+                for (const testCase of sliceTestCases) {
+                    arcanisSliceAnsi(testCase.str, testCase.begin, testCase.end);
+                }
+            }).run();
         });
     });
 
     describe("Begin-only slicing (end is undefined)", () => {
-        bench("visulima/string slice", () => {
-            for (const testCase of beginOnlyTestCases) {
-                slice(testCase.str, testCase.begin);
-            }
+        test("visulima/string slice", async ({ bench }) => {
+            await bench("visulima/string slice", () => {
+                for (const testCase of beginOnlyTestCases) {
+                    slice(testCase.str, testCase.begin);
+                }
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("slice-ansi", () => {
-            for (const testCase of beginOnlyTestCases) {
-                sliceAnsi(testCase.str, testCase.begin);
-            }
+        test.skipIf(process.env.CODSPEED_ENV)("slice-ansi", async ({ bench }) => {
+            await bench("slice-ansi", () => {
+                for (const testCase of beginOnlyTestCases) {
+                    sliceAnsi(testCase.str, testCase.begin);
+                }
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("@arcanis/slice-ansi", () => {
-            for (const testCase of beginOnlyTestCases) {
-                arcanisSliceAnsi(testCase.str, testCase.begin);
-            }
+        test.skipIf(process.env.CODSPEED_ENV)("@arcanis/slice-ansi", async ({ bench }) => {
+            await bench("@arcanis/slice-ansi", () => {
+                for (const testCase of beginOnlyTestCases) {
+                    arcanisSliceAnsi(testCase.str, testCase.begin);
+                }
+            }).run();
         });
     });
 
     describe("Standard test strings", () => {
-        bench("visulima/string slice", () => {
-            for (const input of TEST_STRINGS) {
-                slice(input, 0, Math.floor(input.length / 2));
-                slice(input, Math.floor(input.length / 3), Math.floor((input.length * 2) / 3));
-            }
+        test("visulima/string slice", async ({ bench }) => {
+            await bench("visulima/string slice", () => {
+                for (const input of TEST_STRINGS) {
+                    slice(input, 0, Math.floor(input.length / 2));
+                    slice(input, Math.floor(input.length / 3), Math.floor((input.length * 2) / 3));
+                }
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("slice-ansi", () => {
-            for (const input of TEST_STRINGS) {
-                sliceAnsi(input, 0, Math.floor(input.length / 2));
-                sliceAnsi(input, Math.floor(input.length / 3), Math.floor((input.length * 2) / 3));
-            }
+        test.skipIf(process.env.CODSPEED_ENV)("slice-ansi", async ({ bench }) => {
+            await bench("slice-ansi", () => {
+                for (const input of TEST_STRINGS) {
+                    sliceAnsi(input, 0, Math.floor(input.length / 2));
+                    sliceAnsi(input, Math.floor(input.length / 3), Math.floor((input.length * 2) / 3));
+                }
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("@arcanis/slice-ansi", () => {
-            for (const input of TEST_STRINGS) {
-                arcanisSliceAnsi(input, 0, Math.floor(input.length / 2));
-                arcanisSliceAnsi(input, Math.floor(input.length / 3), Math.floor((input.length * 2) / 3));
-            }
+        test.skipIf(process.env.CODSPEED_ENV)("@arcanis/slice-ansi", async ({ bench }) => {
+            await bench("@arcanis/slice-ansi", () => {
+                for (const input of TEST_STRINGS) {
+                    arcanisSliceAnsi(input, 0, Math.floor(input.length / 2));
+                    arcanisSliceAnsi(input, Math.floor(input.length / 3), Math.floor((input.length * 2) / 3));
+                }
+            }).run();
         });
     });
 
     describe("Special strings with ANSI and emoji", () => {
-        bench("visulima/string slice", () => {
-            for (const input of SPECIAL_STRINGS) {
-                slice(input, 0, Math.floor(input.length / 2));
-                slice(input, Math.floor(input.length / 3), Math.floor((input.length * 2) / 3));
-            }
+        test("visulima/string slice", async ({ bench }) => {
+            await bench("visulima/string slice", () => {
+                for (const input of SPECIAL_STRINGS) {
+                    slice(input, 0, Math.floor(input.length / 2));
+                    slice(input, Math.floor(input.length / 3), Math.floor((input.length * 2) / 3));
+                }
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("slice-ansi", () => {
-            for (const input of SPECIAL_STRINGS) {
-                sliceAnsi(input, 0, Math.floor(input.length / 2));
-                sliceAnsi(input, Math.floor(input.length / 3), Math.floor((input.length * 2) / 3));
-            }
+        test.skipIf(process.env.CODSPEED_ENV)("slice-ansi", async ({ bench }) => {
+            await bench("slice-ansi", () => {
+                for (const input of SPECIAL_STRINGS) {
+                    sliceAnsi(input, 0, Math.floor(input.length / 2));
+                    sliceAnsi(input, Math.floor(input.length / 3), Math.floor((input.length * 2) / 3));
+                }
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("@arcanis/slice-ansi", () => {
-            for (const input of SPECIAL_STRINGS) {
-                arcanisSliceAnsi(input, 0, Math.floor(input.length / 2));
-                arcanisSliceAnsi(input, Math.floor(input.length / 3), Math.floor((input.length * 2) / 3));
-            }
+        test.skipIf(process.env.CODSPEED_ENV)("@arcanis/slice-ansi", async ({ bench }) => {
+            await bench("@arcanis/slice-ansi", () => {
+                for (const input of SPECIAL_STRINGS) {
+                    arcanisSliceAnsi(input, 0, Math.floor(input.length / 2));
+                    arcanisSliceAnsi(input, Math.floor(input.length / 3), Math.floor((input.length * 2) / 3));
+                }
+            }).run();
         });
     });
 
@@ -149,51 +173,63 @@ describe("slice", () => {
             { begin: 0, end: 50, str: mixedString },
         ];
 
-        bench("visulima/string slice", () => {
-            for (const testCase of edgeCases) {
-                slice(testCase.str, testCase.begin, testCase.end);
-            }
+        test("visulima/string slice", async ({ bench }) => {
+            await bench("visulima/string slice", () => {
+                for (const testCase of edgeCases) {
+                    slice(testCase.str, testCase.begin, testCase.end);
+                }
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("slice-ansi", () => {
-            for (const testCase of edgeCases) {
-                sliceAnsi(testCase.str, testCase.begin, testCase.end);
-            }
+        test.skipIf(process.env.CODSPEED_ENV)("slice-ansi", async ({ bench }) => {
+            await bench("slice-ansi", () => {
+                for (const testCase of edgeCases) {
+                    sliceAnsi(testCase.str, testCase.begin, testCase.end);
+                }
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("@arcanis/slice-ansi", () => {
-            for (const testCase of edgeCases) {
-                arcanisSliceAnsi(testCase.str, testCase.begin, testCase.end);
-            }
+        test.skipIf(process.env.CODSPEED_ENV)("@arcanis/slice-ansi", async ({ bench }) => {
+            await bench("@arcanis/slice-ansi", () => {
+                for (const testCase of edgeCases) {
+                    arcanisSliceAnsi(testCase.str, testCase.begin, testCase.end);
+                }
+            }).run();
         });
     });
 
     describe("Correctness verification", () => {
-        bench("visulima/string slice output correctness", () => {
-            for (const testCase of sliceTestCases) {
-                const result = slice(testCase.str, testCase.begin, testCase.end);
+        test("visulima/string slice output correctness", async ({ bench }) => {
+            await bench("visulima/string slice output correctness", () => {
+                for (const testCase of sliceTestCases) {
+                    const result = slice(testCase.str, testCase.begin, testCase.end);
 
-                // Verify that the visible content matches what we'd expect
-                stripVTControlCharacters(result);
-            }
+                    // Verify that the visible content matches what we'd expect
+                    stripVTControlCharacters(result);
+                }
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("slice-ansi output correctness", () => {
-            for (const testCase of sliceTestCases) {
-                const result = sliceAnsi(testCase.str, testCase.begin, testCase.end);
+        test.skipIf(process.env.CODSPEED_ENV)("slice-ansi output correctness", async ({ bench }) => {
+            await bench("slice-ansi output correctness", () => {
+                for (const testCase of sliceTestCases) {
+                    const result = sliceAnsi(testCase.str, testCase.begin, testCase.end);
 
-                // Verify that the visible content matches what we'd expect
-                stripVTControlCharacters(result);
-            }
+                    // Verify that the visible content matches what we'd expect
+                    stripVTControlCharacters(result);
+                }
+            }).run();
         });
 
-        bench.skipIf(process.env.CODSPEED_ENV)("@arcanis/slice-ansi output correctness", () => {
-            for (const testCase of sliceTestCases) {
-                const result = arcanisSliceAnsi(testCase.str, testCase.begin, testCase.end);
+        test.skipIf(process.env.CODSPEED_ENV)("@arcanis/slice-ansi output correctness", async ({ bench }) => {
+            await bench("@arcanis/slice-ansi output correctness", () => {
+                for (const testCase of sliceTestCases) {
+                    const result = arcanisSliceAnsi(testCase.str, testCase.begin, testCase.end);
 
-                // Verify that the visible content matches what we'd expect
-                stripVTControlCharacters(result);
-            }
+                    // Verify that the visible content matches what we'd expect
+                    stripVTControlCharacters(result);
+                }
+            }).run();
         });
     });
 });

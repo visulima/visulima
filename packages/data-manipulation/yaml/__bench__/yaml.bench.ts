@@ -3,7 +3,7 @@ import { createRequire } from "node:module";
 
 import jsYaml from "js-yaml";
 import * as visulima from "@visulima/yaml";
-import { bench, describe } from "vitest";
+import { describe, test } from "vitest";
 import * as yaml from "yaml";
 
 // `yamljs` (a widely-used, older pure-JS YAML 1.1 parser) is an optional third
@@ -93,101 +93,141 @@ const LARGE = buildLarge();
 const parsedConfig = visulima.parse(CONFIG);
 
 describe("parse › small document", () => {
-    bench("@visulima/yaml", () => {
-        visulima.parse(SMALL);
+    test("@visulima/yaml", async ({ bench }) => {
+        await bench("@visulima/yaml", () => {
+            visulima.parse(SMALL);
+        }).run();
     });
 
-    bench("yaml", () => {
-        yaml.parse(SMALL);
+    test("yaml", async ({ bench }) => {
+        await bench("yaml", () => {
+            yaml.parse(SMALL);
+        }).run();
     });
 
-    bench("js-yaml", () => {
-        jsYaml.load(SMALL);
+    test("js-yaml", async ({ bench }) => {
+        await bench("js-yaml", () => {
+            jsYaml.load(SMALL);
+        }).run();
     });
 
     if (yamlJs) {
-        bench("yamljs", () => {
-            yamlJs!.parse(SMALL);
+        test("yamljs", async ({ bench }) => {
+            await bench("yamljs", () => {
+                yamlJs!.parse(SMALL);
+            }).run();
         });
     }
 });
 
 describe("parse › medium config", () => {
-    bench("@visulima/yaml", () => {
-        visulima.parse(CONFIG);
+    test("@visulima/yaml", async ({ bench }) => {
+        await bench("@visulima/yaml", () => {
+            visulima.parse(CONFIG);
+        }).run();
     });
 
-    bench("yaml", () => {
-        yaml.parse(CONFIG);
+    test("yaml", async ({ bench }) => {
+        await bench("yaml", () => {
+            yaml.parse(CONFIG);
+        }).run();
     });
 
-    bench("js-yaml", () => {
-        jsYaml.load(CONFIG);
+    test("js-yaml", async ({ bench }) => {
+        await bench("js-yaml", () => {
+            jsYaml.load(CONFIG);
+        }).run();
     });
 
     if (yamlJs) {
-        bench("yamljs", () => {
-            yamlJs!.parse(CONFIG);
+        test("yamljs", async ({ bench }) => {
+            await bench("yamljs", () => {
+                yamlJs!.parse(CONFIG);
+            }).run();
         });
     }
 });
 
 describe("parse › anchors + merge keys", () => {
-    bench("@visulima/yaml", () => {
-        visulima.parse(ANCHORS);
+    test("@visulima/yaml", async ({ bench }) => {
+        await bench("@visulima/yaml", () => {
+            visulima.parse(ANCHORS);
+        }).run();
     });
 
-    bench("yaml", () => {
-        yaml.parse(ANCHORS);
+    test("yaml", async ({ bench }) => {
+        await bench("yaml", () => {
+            yaml.parse(ANCHORS);
+        }).run();
     });
 
-    bench("js-yaml", () => {
-        jsYaml.load(ANCHORS);
+    test("js-yaml", async ({ bench }) => {
+        await bench("js-yaml", () => {
+            jsYaml.load(ANCHORS);
+        }).run();
     });
 
     if (yamlJs) {
-        bench("yamljs", () => {
-            yamlJs!.parse(ANCHORS);
+        test("yamljs", async ({ bench }) => {
+            await bench("yamljs", () => {
+                yamlJs!.parse(ANCHORS);
+            }).run();
         });
     }
 });
 
 describe("parse › large document (200 records)", () => {
-    bench("@visulima/yaml", () => {
-        visulima.parse(LARGE);
+    test("@visulima/yaml", async ({ bench }) => {
+        await bench("@visulima/yaml", () => {
+            visulima.parse(LARGE);
+        }).run();
     });
 
-    bench("yaml", () => {
-        yaml.parse(LARGE);
+    test("yaml", async ({ bench }) => {
+        await bench("yaml", () => {
+            yaml.parse(LARGE);
+        }).run();
     });
 
-    bench("js-yaml", () => {
-        jsYaml.load(LARGE);
+    test("js-yaml", async ({ bench }) => {
+        await bench("js-yaml", () => {
+            jsYaml.load(LARGE);
+        }).run();
     });
 
     if (yamlJs) {
-        bench("yamljs", () => {
-            yamlJs!.parse(LARGE);
+        test("yamljs", async ({ bench }) => {
+            await bench("yamljs", () => {
+                yamlJs!.parse(LARGE);
+            }).run();
         });
     }
 });
 
 describe("stringify › medium config", () => {
-    bench("@visulima/yaml", () => {
-        visulima.stringify(parsedConfig);
+    test("@visulima/yaml", async ({ bench }) => {
+        await bench("@visulima/yaml", () => {
+            visulima.stringify(parsedConfig);
+        }).run();
     });
 
-    bench("yaml", () => {
-        yaml.stringify(parsedConfig);
+    test("yaml", async ({ bench }) => {
+        await bench("yaml", () => {
+            yaml.stringify(parsedConfig);
+        }).run();
     });
 
-    bench("js-yaml", () => {
-        jsYaml.dump(parsedConfig);
+    test("js-yaml", async ({ bench }) => {
+        await bench("js-yaml", () => {
+            jsYaml.dump(parsedConfig);
+        }).run();
     });
 
     if (yamlJs) {
-        bench("yamljs", () => {
-            yamlJs!.stringify(parsedConfig);
+        test("yamljs", async ({ bench }) => {
+            await bench("yamljs", () => {
+                yamlJs!.stringify(parsedConfig);
+            }).run();
         });
     }
 });

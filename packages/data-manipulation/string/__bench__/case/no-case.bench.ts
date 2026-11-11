@@ -1,34 +1,42 @@
 import { noCase } from "@visulima/string/case";
-import { bench, describe } from "vitest";
+import { describe, test } from "vitest";
 
 import { ACRONYM_STRINGS, SPECIAL_STRINGS, TEST_STRINGS } from "../../__fixtures__/test-strings";
 
 describe("noCase", () => {
-    bench("visulima/string noCase (no cache)", () => {
-        for (const stringValue of TEST_STRINGS) {
-            noCase(stringValue);
-        }
+    test("visulima/string noCase (no cache)", async ({ bench }) => {
+        await bench("visulima/string noCase (no cache)", () => {
+            for (const stringValue of TEST_STRINGS) {
+                noCase(stringValue);
+            }
+        }).run();
     });
 
-    bench("visulima/string noCase (with cache)", () => {
-        for (const stringValue of TEST_STRINGS) {
-            noCase(stringValue, { cache: true });
-        }
+    test("visulima/string noCase (with cache)", async ({ bench }) => {
+        await bench("visulima/string noCase (with cache)", () => {
+            for (const stringValue of TEST_STRINGS) {
+                noCase(stringValue, { cache: true });
+            }
+        }).run();
     });
 
     describe("Special characters handling", () => {
-        bench("visulima/string noCase (no cache)", () => {
-            for (const stringValue of SPECIAL_STRINGS) {
-                noCase(stringValue);
-            }
+        test("visulima/string noCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string noCase (no cache)", () => {
+                for (const stringValue of SPECIAL_STRINGS) {
+                    noCase(stringValue);
+                }
+            }).run();
         });
     });
 
     describe("Acronym handling", () => {
-        bench("visulima/string noCase (no cache)", () => {
-            for (const stringValue of ACRONYM_STRINGS) {
-                noCase(stringValue);
-            }
+        test("visulima/string noCase (no cache)", async ({ bench }) => {
+            await bench("visulima/string noCase (no cache)", () => {
+                for (const stringValue of ACRONYM_STRINGS) {
+                    noCase(stringValue);
+                }
+            }).run();
         });
     });
 });

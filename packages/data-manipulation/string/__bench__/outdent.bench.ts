@@ -1,4 +1,4 @@
-import { bench, describe } from "vitest";
+import { describe, test } from "vitest";
 
 import { outdent } from "../src/outdent";
 
@@ -61,50 +61,66 @@ const firstValueIsOutdent = outdent`
 
 describe("Outdent Benchmarks", () => {
     // Basic string handling benchmarks
-    bench("Short string", () => {
-        outdent(shortTemplate);
+    test("Short string", async ({ bench }) => {
+        await bench("Short string", () => {
+            outdent(shortTemplate);
+        }).run();
     });
 
-    bench("Medium string", () => {
-        outdent(mediumTemplate);
+    test("Medium string", async ({ bench }) => {
+        await bench("Medium string", () => {
+            outdent(mediumTemplate);
+        }).run();
     });
 
-    bench("Long string", () => {
-        outdent(longTemplate);
+    test("Long string", async ({ bench }) => {
+        await bench("Long string", () => {
+            outdent(longTemplate);
+        }).run();
     });
 
     // Interpolation benchmarks
-    bench("With interpolation", () => {
-        interpolatedTemplate("some values", 42);
+    test("With interpolation", async ({ bench }) => {
+        await bench("With interpolation", () => {
+            interpolatedTemplate("some values", 42);
+        }).run();
     });
 
-    bench("With nested outdent", () => {
-        nestedTemplate;
+    test("With nested outdent", async ({ bench }) => {
+        await bench("With nested outdent", () => {
+            nestedTemplate;
+        }).run();
     });
 
-    bench("First value is outdent", () => {
-        firstValueIsOutdent;
+    test("First value is outdent", async ({ bench }) => {
+        await bench("First value is outdent", () => {
+            firstValueIsOutdent;
+        }).run();
     });
 
     // API variations
-    bench("String method", () => {
-        outdent.string(`
+    test("String method", async ({ bench }) => {
+        await bench("String method", () => {
+            outdent.string(`
             Testing the string method
             which is an alternative API
             for outdenting.
         `);
+        }).run();
     });
 
-    bench("Custom options", () => {
-        outdent({
-            newline: "\r\n",
-            trimLeadingNewline: false,
-            trimTrailingNewline: false,
-        })`
+    test("Custom options", async ({ bench }) => {
+        await bench("Custom options", () => {
+            outdent({
+                newline: "\r\n",
+                trimLeadingNewline: false,
+                trimTrailingNewline: false,
+            })`
             Custom options
             with newline normalization
             and no trimming.
         `;
+        }).run();
     });
 
     // Caching benchmarks
@@ -117,41 +133,51 @@ describe("Outdent Benchmarks", () => {
         `;
 
         // Default caching (enabled)
-        bench("Default caching", () => {
-            outdent(repeatedTemplate);
+        test("Default caching", async ({ bench }) => {
+            await bench("Default caching", () => {
+                outdent(repeatedTemplate);
+            }).run();
         });
 
         // Explicit caching enabled
-        bench("Explicit cache enabled", () => {
-            outdent({
-                cache: true,
-            })(repeatedTemplate);
+        test("Explicit cache enabled", async ({ bench }) => {
+            await bench("Explicit cache enabled", () => {
+                outdent({
+                    cache: true,
+                })(repeatedTemplate);
+            }).run();
         });
 
         // Cache disabled
-        bench("Cache disabled", () => {
-            outdent({
-                cache: false,
-            })(repeatedTemplate);
+        test("Cache disabled", async ({ bench }) => {
+            await bench("Cache disabled", () => {
+                outdent({
+                    cache: false,
+                })(repeatedTemplate);
+            }).run();
         });
 
         // Custom cache store
         const customCache = new WeakMap<TemplateStringsArray, string[]>();
 
-        bench("Custom cache store", () => {
-            outdent({
-                cache: true,
-                cacheStore: customCache,
-            })(repeatedTemplate);
+        test("Custom cache store", async ({ bench }) => {
+            await bench("Custom cache store", () => {
+                outdent({
+                    cache: true,
+                    cacheStore: customCache,
+                })(repeatedTemplate);
+            }).run();
         });
     });
 
     // Repeated use benchmark
-    bench(
-        "Repeated use of same template",
-        () => outdent`
+    test("Repeated use of same template", async ({ bench }) => {
+        await bench(
+            "Repeated use of same template",
+            () => outdent`
             This template will be used
             multiple times to test cache efficiency.
         `,
-    );
+        ).run();
+    });
 });

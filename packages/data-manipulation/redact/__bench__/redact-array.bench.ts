@@ -1,5 +1,5 @@
 import { redact } from "@visulima/redact";
-import { bench, describe } from "vitest";
+import { describe, test } from "vitest";
 
 const input = [
     1,
@@ -16,11 +16,13 @@ const input = [
 ];
 
 describe("redact array", () => {
-    bench("@visulima/redact", () => {
-        const output = redact(input, ["1"]);
+    test("@visulima/redact", async ({ bench }) => {
+        await bench("@visulima/redact", () => {
+            const output = redact(input, ["1"]);
 
-        if (output[1] === "password") {
-            throw new Error("Expected key 1 to be '<PASSWORD>'");
-        }
+            if (output[1] === "password") {
+                throw new Error("Expected key 1 to be '<PASSWORD>'");
+            }
+        }).run();
     });
 });
