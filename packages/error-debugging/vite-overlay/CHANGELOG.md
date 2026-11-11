@@ -1,3 +1,17 @@
+## @visulima/vite-overlay [2.0.42](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.41...@visulima/vite-overlay@2.0.42) (2026-11-11)
+
+### Miscellaneous Chores
+
+* improve npm search metadata ([#979](https://github.com/visulima/visulima/issues/979)) ([3f4ed10](https://github.com/visulima/visulima/commit/3f4ed1087286a57b5abbccbb481e352e8a9d4f58))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.1.1
+* **@shikijs/cli:** 4.4.3 → 4.6.0
+* **@shikijs/langs:** ^4.4.3 → ^4.6.0
+* **shiki:** ^4.4.3 → ^4.6.0
+
 ## @visulima/vite-overlay [2.0.41](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.40...@visulima/vite-overlay@2.0.41) (2026-10-04)
 
 ## @visulima/vite-overlay [2.0.40](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.39...@visulima/vite-overlay@2.0.40) (2026-10-04)

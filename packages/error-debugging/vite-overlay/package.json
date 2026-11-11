@@ -1,6 +1,6 @@
 {
     "name": "@visulima/vite-overlay",
-    "version": "2.0.41",
+    "version": "2.0.42",
     "description": "Improved Vite error overlay that shows readable, source-mapped errors in the browser for React, Vue and Svelte.",
     "keywords": [
         "error-handling",
@@ -80,7 +80,7 @@
     "dependencies": {
         "@shikijs/cli": "catalog:prod",
         "@shikijs/langs": "catalog:prod",
-        "@visulima/error": "6.1.0",
+        "@visulima/error": "6.1.1",
         "csstype": "catalog:prod",
         "fastest-levenshtein": "catalog:prod",
         "shiki": "catalog:syntax"
@@ -104,7 +104,7 @@
         "@types/hast": "catalog:types",
         "@types/node": "catalog:types",
         "@visulima/packem": "catalog:dev",
-        "@visulima/path": "4.0.0",
+        "@visulima/path": "5.0.0",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
         "conventional-changelog-conventionalcommits": "catalog:dev",
