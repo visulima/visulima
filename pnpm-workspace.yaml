@@ -1222,6 +1222,9 @@ overrides:
   joi@18: '>=18.3.1 <19'
   joi@<18.3.1: '>=18.3.1'
   node-forge@1: '>=1.4.3 <2'
+  # glob 13.0.7 is a new transitive copy from the catalog refresh. Its advisory (GHSA-3g3m-2fjr-6pw4) is fixed only in 14,
+  # and dependency review cannot ignore it, so keep the tooling copies on 13.0.6, the version the base already had.
+  glob@>=13.0.7 <14: '13.0.6'
   zod@4: '>=4.6.6 <5'
   sanitize-html@2: '>=2.17.7 <3'
   nodemailer@10: '>=10.1.4 <11'
