@@ -114,11 +114,11 @@ describe("deep object", async () => {
     test("pail server", async ({ bench }) => {
         await bench(
             "pail server",
-            async () => {
-                serverPail.info(deep);
-            },
             {
                 iterations: 10_000,
+            },
+            async () => {
+                serverPail.info(deep);
             },
         ).run();
     });
@@ -126,11 +126,11 @@ describe("deep object", async () => {
     test("pail browser", async ({ bench }) => {
         await bench(
             "pail browser",
-            async () => {
-                browserPail.info(deep);
-            },
             {
                 iterations: 10_000,
+            },
+            async () => {
+                browserPail.info(deep);
             },
         ).run();
     });
@@ -138,11 +138,11 @@ describe("deep object", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("consola server", async ({ bench }) => {
         await bench(
             "consola server",
-            async () => {
-                serverConsola.info(deep);
-            },
             {
                 iterations: 10_000,
+            },
+            async () => {
+                serverConsola.info(deep);
             },
         ).run();
     });
@@ -150,11 +150,11 @@ describe("deep object", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("consola browser", async ({ bench }) => {
         await bench(
             "consola browser",
-            async () => {
-                browserConsola.info(deep);
-            },
             {
                 iterations: 10_000,
+            },
+            async () => {
+                browserConsola.info(deep);
             },
         ).run();
     });
@@ -162,11 +162,11 @@ describe("deep object", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("tslog", async ({ bench }) => {
         await bench(
             "tslog",
-            async () => {
-                tsLog.info(deep);
-            },
             {
                 iterations: 10_000,
+            },
+            async () => {
+                tsLog.info(deep);
             },
         ).run();
     });
@@ -174,11 +174,11 @@ describe("deep object", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("bunyan node stream", async ({ bench }) => {
         await bench(
             "bunyan node stream",
-            async () => {
-                bunyanNodeStream.info(deep);
-            },
             {
                 iterations: 10_000,
+            },
+            async () => {
+                bunyanNodeStream.info(deep);
             },
         ).run();
     });
@@ -186,11 +186,11 @@ describe("deep object", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("winston node stream", async ({ bench }) => {
         await bench(
             "winston node stream",
-            async () => {
-                winstonNodeStream.info(deep);
-            },
             {
                 iterations: 10_000,
+            },
+            async () => {
+                winstonNodeStream.info(deep);
             },
         ).run();
     });
@@ -198,11 +198,11 @@ describe("deep object", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("pino destination", async ({ bench }) => {
         await bench(
             "pino destination",
-            async () => {
-                pinoDestination.info(deep);
-            },
             {
                 iterations: 10_000,
+            },
+            async () => {
+                pinoDestination.info(deep);
             },
         ).run();
     });
@@ -210,11 +210,11 @@ describe("deep object", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("pino node stream", async ({ bench }) => {
         await bench(
             "pino node stream",
-            async () => {
-                pinoNodeStream.info(deep);
-            },
             {
                 iterations: 10_000,
+            },
+            async () => {
+                pinoNodeStream.info(deep);
             },
         ).run();
     });
@@ -222,11 +222,11 @@ describe("deep object", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("pino min length", async ({ bench }) => {
         await bench(
             "pino min length",
-            async () => {
-                pinoMinLength.info(deep);
-            },
             {
                 iterations: 10_000,
+            },
+            async () => {
+                pinoMinLength.info(deep);
             },
         ).run();
     });
@@ -234,11 +234,11 @@ describe("deep object", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("ogma logger", async ({ bench }) => {
         await bench(
             "ogma logger",
-            async () => {
-                ogmaLogger.log(deep);
-            },
             {
                 iterations: 10_000,
+            },
+            async () => {
+                ogmaLogger.log(deep);
             },
         ).run();
     });
@@ -246,11 +246,11 @@ describe("deep object", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("ogma json logger", async ({ bench }) => {
         await bench(
             "ogma json logger",
-            async () => {
-                ogmaJsonLogger.log(deep);
-            },
             {
                 iterations: 10_000,
+            },
+            async () => {
+                ogmaJsonLogger.log(deep);
             },
         ).run();
     });
@@ -258,11 +258,11 @@ describe("deep object", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("diary", async ({ bench }) => {
         await bench(
             "diary",
-            async () => {
-                diaryLogger.info("info message");
-            },
             {
                 iterations: 10_000,
+            },
+            async () => {
+                diaryLogger.info("info message");
             },
         ).run();
     });
@@ -270,11 +270,11 @@ describe("deep object", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("roarr", async ({ bench }) => {
         await bench(
             "roarr",
-            async () => {
-                log.info(deep, "message");
-            },
             {
                 iterations: 10_000,
+            },
+            async () => {
+                log.info(deep, "message");
             },
         ).run();
     });
@@ -282,11 +282,11 @@ describe("deep object", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("rslog", async ({ bench }) => {
         await bench(
             "rslog",
-            async () => {
-                rslogLogger.info(deep);
-            },
             {
                 iterations: 10_000,
+            },
+            async () => {
+                rslogLogger.info(deep);
             },
         ).run();
     });

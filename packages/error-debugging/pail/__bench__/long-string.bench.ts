@@ -115,11 +115,11 @@ describe("long-string", async () => {
     test("pail server", async ({ bench }) => {
         await bench(
             "pail server",
-            async () => {
-                serverPail.info(longString);
-            },
             {
                 iterations: 10_000,
+            },
+            async () => {
+                serverPail.info(longString);
             },
         ).run();
     });
@@ -127,11 +127,11 @@ describe("long-string", async () => {
     test("pail browser", async ({ bench }) => {
         await bench(
             "pail browser",
-            async () => {
-                browserPail.info(longString);
-            },
             {
                 iterations: 10_000,
+            },
+            async () => {
+                browserPail.info(longString);
             },
         ).run();
     });
@@ -139,11 +139,11 @@ describe("long-string", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("consola server", async ({ bench }) => {
         await bench(
             "consola server",
-            async () => {
-                serverConsola.info(longString);
-            },
             {
                 iterations: 10_000,
+            },
+            async () => {
+                serverConsola.info(longString);
             },
         ).run();
     });
@@ -151,11 +151,11 @@ describe("long-string", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("consola browser", async ({ bench }) => {
         await bench(
             "consola browser",
-            async () => {
-                browserConsola.info(longString);
-            },
             {
                 iterations: 10_000,
+            },
+            async () => {
+                browserConsola.info(longString);
             },
         ).run();
     });
@@ -163,11 +163,11 @@ describe("long-string", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("tslog", async ({ bench }) => {
         await bench(
             "tslog",
-            async () => {
-                tsLog.info(longString);
-            },
             {
                 iterations: 10_000,
+            },
+            async () => {
+                tsLog.info(longString);
             },
         ).run();
     });
@@ -175,11 +175,11 @@ describe("long-string", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("bunyan node stream", async ({ bench }) => {
         await bench(
             "bunyan node stream",
-            async () => {
-                bunyanNodeStream.info(longString);
-            },
             {
                 iterations: 10_000,
+            },
+            async () => {
+                bunyanNodeStream.info(longString);
             },
         ).run();
     });
@@ -187,11 +187,11 @@ describe("long-string", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("winston node stream", async ({ bench }) => {
         await bench(
             "winston node stream",
-            async () => {
-                winstonNodeStream.info(longString);
-            },
             {
                 iterations: 10_000,
+            },
+            async () => {
+                winstonNodeStream.info(longString);
             },
         ).run();
     });
@@ -199,11 +199,11 @@ describe("long-string", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("pino destination", async ({ bench }) => {
         await bench(
             "pino destination",
-            async () => {
-                pinoDestination.info(longString);
-            },
             {
                 iterations: 10_000,
+            },
+            async () => {
+                pinoDestination.info(longString);
             },
         ).run();
     });
@@ -211,11 +211,11 @@ describe("long-string", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("pino node stream", async ({ bench }) => {
         await bench(
             "pino node stream",
-            async () => {
-                pinoNodeStream.info(longString);
-            },
             {
                 iterations: 10_000,
+            },
+            async () => {
+                pinoNodeStream.info(longString);
             },
         ).run();
     });
@@ -223,11 +223,11 @@ describe("long-string", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("pino min length", async ({ bench }) => {
         await bench(
             "pino min length",
-            async () => {
-                pinoMinLength.info(longString);
-            },
             {
                 iterations: 10_000,
+            },
+            async () => {
+                pinoMinLength.info(longString);
             },
         ).run();
     });
@@ -235,11 +235,11 @@ describe("long-string", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("ogma logger", async ({ bench }) => {
         await bench(
             "ogma logger",
-            async () => {
-                ogmaLogger.log(longString);
-            },
             {
                 iterations: 10_000,
+            },
+            async () => {
+                ogmaLogger.log(longString);
             },
         ).run();
     });
@@ -247,11 +247,11 @@ describe("long-string", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("ogma json logger", async ({ bench }) => {
         await bench(
             "ogma json logger",
-            async () => {
-                ogmaJsonLogger.log(longString);
-            },
             {
                 iterations: 10_000,
+            },
+            async () => {
+                ogmaJsonLogger.log(longString);
             },
         ).run();
     });
@@ -259,11 +259,11 @@ describe("long-string", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("diary", async ({ bench }) => {
         await bench(
             "diary",
-            async () => {
-                diaryLogger.info("info message");
-            },
             {
                 iterations: 10_000,
+            },
+            async () => {
+                diaryLogger.info("info message");
             },
         ).run();
     });
@@ -271,11 +271,11 @@ describe("long-string", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("roarr", async ({ bench }) => {
         await bench(
             "roarr",
-            async () => {
-                log.info(longString);
-            },
             {
                 iterations: 10_000,
+            },
+            async () => {
+                log.info(longString);
             },
         ).run();
     });
@@ -283,11 +283,11 @@ describe("long-string", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("rslog", async ({ bench }) => {
         await bench(
             "rslog",
-            async () => {
-                rslogLogger.info(longString);
-            },
             {
                 iterations: 10_000,
+            },
+            async () => {
+                rslogLogger.info(longString);
             },
         ).run();
     });

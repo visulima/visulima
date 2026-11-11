@@ -57,13 +57,13 @@ describe("child creation", async () => {
     test("pail server", async ({ bench }) => {
         await bench(
             "pail server",
+            {
+                iterations: 10_000,
+            },
             async () => {
                 const child = serverPail.child();
 
                 child.info("hello world");
-            },
-            {
-                iterations: 10_000,
             },
         ).run();
     });
@@ -71,13 +71,13 @@ describe("child creation", async () => {
     test("pail browser", async ({ bench }) => {
         await bench(
             "pail browser",
+            {
+                iterations: 10_000,
+            },
             async () => {
                 const child = browserPail.child();
 
                 child.info("hello world");
-            },
-            {
-                iterations: 10_000,
             },
         ).run();
     });
@@ -85,13 +85,13 @@ describe("child creation", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("bunyan node stream", async ({ bench }) => {
         await bench(
             "bunyan node stream",
+            {
+                iterations: 10_000,
+            },
             async () => {
                 const child = bunyanNodeStream.child({ component: "test" });
 
                 child.info("hello world");
-            },
-            {
-                iterations: 10_000,
             },
         ).run();
     });
@@ -99,13 +99,13 @@ describe("child creation", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("winston node stream", async ({ bench }) => {
         await bench(
             "winston node stream",
+            {
+                iterations: 10_000,
+            },
             async () => {
                 const child = winstonNodeStream.child({ component: "test" });
 
                 child.info("hello world");
-            },
-            {
-                iterations: 10_000,
             },
         ).run();
     });
@@ -113,13 +113,13 @@ describe("child creation", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("pino destination", async ({ bench }) => {
         await bench(
             "pino destination",
+            {
+                iterations: 10_000,
+            },
             async () => {
                 const child = pinoDestination.child({ component: "test" });
 
                 child.info("hello world");
-            },
-            {
-                iterations: 10_000,
             },
         ).run();
     });
@@ -127,13 +127,13 @@ describe("child creation", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("pino node stream", async ({ bench }) => {
         await bench(
             "pino node stream",
+            {
+                iterations: 10_000,
+            },
             async () => {
                 const child = pinoNodeStream.child({ component: "test" });
 
                 child.info("hello world");
-            },
-            {
-                iterations: 10_000,
             },
         ).run();
     });
@@ -141,13 +141,13 @@ describe("child creation", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("pino min length", async ({ bench }) => {
         await bench(
             "pino min length",
+            {
+                iterations: 10_000,
+            },
             async () => {
                 const child = pinoMinLength.child({ component: "test" });
 
                 child.info("hello world");
-            },
-            {
-                iterations: 10_000,
             },
         ).run();
     });
@@ -155,13 +155,13 @@ describe("child creation", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("roarr", async ({ bench }) => {
         await bench(
             "roarr",
+            {
+                iterations: 10_000,
+            },
             async () => {
                 const child = log.child({ component: "test" });
 
                 child.info("hello world");
-            },
-            {
-                iterations: 10_000,
             },
         ).run();
     });
@@ -171,14 +171,14 @@ describe("child child creation", async () => {
     test("pail server", async ({ bench }) => {
         await bench(
             "pail server",
+            {
+                iterations: 10_000,
+            },
             async () => {
                 const child = serverPail.child({ scope: ["api"] });
                 const grandChild = child.child({ scope: ["users"] });
 
                 grandChild.info("hello world");
-            },
-            {
-                iterations: 10_000,
             },
         ).run();
     });
@@ -186,14 +186,14 @@ describe("child child creation", async () => {
     test("pail browser", async ({ bench }) => {
         await bench(
             "pail browser",
+            {
+                iterations: 10_000,
+            },
             async () => {
                 const child = browserPail.child({ scope: ["api"] });
                 const grandChild = child.child({ scope: ["users"] });
 
                 grandChild.info("hello world");
-            },
-            {
-                iterations: 10_000,
             },
         ).run();
     });
@@ -201,14 +201,14 @@ describe("child child creation", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("bunyan node stream", async ({ bench }) => {
         await bench(
             "bunyan node stream",
+            {
+                iterations: 10_000,
+            },
             async () => {
                 const child = bunyanNodeStream.child({ component: "api" });
                 const grandChild = child.child({ module: "users" });
 
                 grandChild.info("hello world");
-            },
-            {
-                iterations: 10_000,
             },
         ).run();
     });
@@ -216,14 +216,14 @@ describe("child child creation", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("winston node stream", async ({ bench }) => {
         await bench(
             "winston node stream",
+            {
+                iterations: 10_000,
+            },
             async () => {
                 const child = winstonNodeStream.child({ component: "api" });
                 const grandChild = child.child({ module: "users" });
 
                 grandChild.info("hello world");
-            },
-            {
-                iterations: 10_000,
             },
         ).run();
     });
@@ -231,14 +231,14 @@ describe("child child creation", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("pino destination", async ({ bench }) => {
         await bench(
             "pino destination",
+            {
+                iterations: 10_000,
+            },
             async () => {
                 const child = pinoDestination.child({ component: "api" });
                 const grandChild = child.child({ module: "users" });
 
                 grandChild.info("hello world");
-            },
-            {
-                iterations: 10_000,
             },
         ).run();
     });
@@ -246,14 +246,14 @@ describe("child child creation", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("pino node stream", async ({ bench }) => {
         await bench(
             "pino node stream",
+            {
+                iterations: 10_000,
+            },
             async () => {
                 const child = pinoNodeStream.child({ component: "api" });
                 const grandChild = child.child({ module: "users" });
 
                 grandChild.info("hello world");
-            },
-            {
-                iterations: 10_000,
             },
         ).run();
     });
@@ -261,14 +261,14 @@ describe("child child creation", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("pino min length", async ({ bench }) => {
         await bench(
             "pino min length",
+            {
+                iterations: 10_000,
+            },
             async () => {
                 const child = pinoMinLength.child({ component: "api" });
                 const grandChild = child.child({ module: "users" });
 
                 grandChild.info("hello world");
-            },
-            {
-                iterations: 10_000,
             },
         ).run();
     });
@@ -276,14 +276,14 @@ describe("child child creation", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("roarr", async ({ bench }) => {
         await bench(
             "roarr",
+            {
+                iterations: 10_000,
+            },
             async () => {
                 const child = log.child({ component: "api" });
                 const grandChild = child.child({ module: "users" });
 
                 grandChild.info("hello world");
-            },
-            {
-                iterations: 10_000,
             },
         ).run();
     });
@@ -293,13 +293,13 @@ describe("child with overrides", async () => {
     test("pail server", async ({ bench }) => {
         await bench(
             "pail server",
+            {
+                iterations: 10_000,
+            },
             async () => {
                 const child = serverPail.child({ logLevel: "debug" });
 
                 child.debug("debug message");
-            },
-            {
-                iterations: 10_000,
             },
         ).run();
     });
@@ -307,13 +307,13 @@ describe("child with overrides", async () => {
     test("pail browser", async ({ bench }) => {
         await bench(
             "pail browser",
+            {
+                iterations: 10_000,
+            },
             async () => {
                 const child = browserPail.child({ logLevel: "debug" });
 
                 child.debug("debug message");
-            },
-            {
-                iterations: 10_000,
             },
         ).run();
     });
@@ -321,13 +321,13 @@ describe("child with overrides", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("bunyan node stream", async ({ bench }) => {
         await bench(
             "bunyan node stream",
+            {
+                iterations: 10_000,
+            },
             async () => {
                 const child = bunyanNodeStream.child({ component: "test" });
 
                 child.debug("debug message");
-            },
-            {
-                iterations: 10_000,
             },
         ).run();
     });
@@ -335,13 +335,13 @@ describe("child with overrides", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("winston node stream", async ({ bench }) => {
         await bench(
             "winston node stream",
+            {
+                iterations: 10_000,
+            },
             async () => {
                 const child = winstonNodeStream.child({ component: "test" });
 
                 child.debug("debug message");
-            },
-            {
-                iterations: 10_000,
             },
         ).run();
     });
@@ -349,13 +349,13 @@ describe("child with overrides", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("pino destination", async ({ bench }) => {
         await bench(
             "pino destination",
+            {
+                iterations: 10_000,
+            },
             async () => {
                 const child = pinoDestination.child({ component: "test" });
 
                 child.debug("debug message");
-            },
-            {
-                iterations: 10_000,
             },
         ).run();
     });
@@ -363,13 +363,13 @@ describe("child with overrides", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("pino node stream", async ({ bench }) => {
         await bench(
             "pino node stream",
+            {
+                iterations: 10_000,
+            },
             async () => {
                 const child = pinoNodeStream.child({ component: "test" });
 
                 child.debug("debug message");
-            },
-            {
-                iterations: 10_000,
             },
         ).run();
     });
@@ -377,13 +377,13 @@ describe("child with overrides", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("pino min length", async ({ bench }) => {
         await bench(
             "pino min length",
+            {
+                iterations: 10_000,
+            },
             async () => {
                 const child = pinoMinLength.child({ component: "test" });
 
                 child.debug("debug message");
-            },
-            {
-                iterations: 10_000,
             },
         ).run();
     });
@@ -391,13 +391,13 @@ describe("child with overrides", async () => {
     test.skipIf(process.env.CODSPEED_ENV)("roarr", async ({ bench }) => {
         await bench(
             "roarr",
+            {
+                iterations: 10_000,
+            },
             async () => {
                 const child = log.child({ component: "test" });
 
                 child.debug("debug message");
-            },
-            {
-                iterations: 10_000,
             },
         ).run();
     });
