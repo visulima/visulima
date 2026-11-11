@@ -1,6 +1,6 @@
 {
     "name": "@visulima/jsdoc-open-api",
-    "version": "4.0.31",
+    "version": "4.0.32",
     "description": "Generate OpenAPI/Swagger documentation from JSDoc comments, via CLI or webpack plugin.",
     "keywords": [
         "api",
@@ -101,7 +101,7 @@
     },
     "dependencies": {
         "@apidevtools/swagger-parser": "catalog:prod",
-        "@visulima/fs": "7.0.0",
+        "@visulima/fs": "7.0.1",
         "@visulima/yaml": "2.0.0",
         "comment-parser": "catalog:prod",
         "es-toolkit": "catalog:prod"

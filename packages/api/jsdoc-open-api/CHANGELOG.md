@@ -1,3 +1,17 @@
+## @visulima/jsdoc-open-api [4.0.32](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@4.0.31...@visulima/jsdoc-open-api@4.0.32) (2026-11-11)
+
+### Miscellaneous Chores
+
+* improve npm search metadata ([#979](https://github.com/visulima/visulima/issues/979)) ([3f4ed10](https://github.com/visulima/visulima/commit/3f4ed1087286a57b5abbccbb481e352e8a9d4f58))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 7.0.1
+* **webpack:** ^5.109.2 → ^5.112.2
+* **comment-parser:** 1.4.8 → 1.4.9
+* **es-toolkit:** ^1.50.0 → ^1.53.2
+
 ## @visulima/jsdoc-open-api [4.0.31](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@4.0.30...@visulima/jsdoc-open-api@4.0.31) (2026-10-15)
 
 
