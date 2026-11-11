@@ -1,3 +1,18 @@
+## @visulima/error [6.1.1](https://github.com/visulima/visulima/compare/@visulima/error@6.1.0...@visulima/error@6.1.1) (2026-11-11)
+
+### Bug Fixes
+
+* rename lowercase constructor parameters ([4cadae2](https://github.com/visulima/visulima/commit/4cadae228d052a6dd81e3f2a1b10bb49e5e81386))
+
+### Miscellaneous Chores
+
+* point every Discord link at the anolilab server ([#858](https://github.com/visulima/visulima/issues/858)) ([a1008ad](https://github.com/visulima/visulima/commit/a1008adea7b0be4a59ce545b143ee1cfb8b94ec9))
+
+
+### Dependencies
+
+* **ai:** >=7.0.14 → >=7.0.59
+
 ## @visulima/error [6.1.0](https://github.com/visulima/visulima/compare/%40visulima%2Ferror%406.0.0...%40visulima%2Ferror%406.1.0) (2026-08-02)
 
 ## @visulima/error [6.0.0](https://github.com/visulima/visulima/compare/@visulima/error@5.0.6...@visulima/error@6.0.0) (2026-07-03)
