@@ -1,3 +1,17 @@
+## @visulima/cerebro [4.0.2](https://github.com/visulima/visulima/compare/@visulima/cerebro@4.0.1...@visulima/cerebro@4.0.2) (2026-11-11)
+
+### Tests
+
+* **bench:** use vitest 5 test-context bench ([424a875](https://github.com/visulima/visulima/commit/424a87567a935ae96d1b7d5c8af9f16e2b854fdc))
+
+
+### Dependencies
+
+* **@visulima/command-line-args:** upgraded to 2.0.2
+* **@visulima/error:** upgraded to 6.1.1
+* **@visulima/pail:** upgraded to 6.0.1
+* **@visulima/string:** upgraded to 3.1.3
+
 ## @visulima/cerebro [4.0.1](https://github.com/visulima/visulima/compare/@visulima/cerebro@4.0.0...@visulima/cerebro@4.0.1) (2026-10-24)
 
 ### Bug Fixes
