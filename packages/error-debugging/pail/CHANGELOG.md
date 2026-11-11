@@ -1,3 +1,21 @@
+## @visulima/pail [6.0.1](https://github.com/visulima/visulima/compare/@visulima/pail@6.0.0...@visulima/pail@6.0.1) (2026-11-11)
+
+### Bug Fixes
+
+* **deps:** hold safe-stable-stringify at 2.x ([d97ba6f](https://github.com/visulima/visulima/commit/d97ba6f039396ca584736e2c18a446156f67ca3d))
+* **pail:** pass bench options as second argument ([fe84756](https://github.com/visulima/visulima/commit/fe8475672855793e0a997158b93958b1d775cebf))
+* **pail:** type stringify as configure() result ([8764c53](https://github.com/visulima/visulima/commit/8764c5362d538839b8729d547b1865427902f514))
+
+### Tests
+
+* **bench:** use vitest 5 test-context bench ([424a875](https://github.com/visulima/visulima/commit/424a87567a935ae96d1b7d5c8af9f16e2b854fdc))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.1.1
+* **@visulima/string:** upgraded to 3.1.3
+
 ## @visulima/pail [6.0.0](https://github.com/visulima/visulima/compare/@visulima/pail@5.0.1...@visulima/pail@6.0.0) (2026-10-15)
 
 ### ⚠ BREAKING CHANGES

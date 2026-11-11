@@ -1,6 +1,6 @@
 {
     "name": "@visulima/pail",
-    "version": "6.0.0",
+    "version": "6.0.1",
     "description": "Highly configurable Logger for Node.js, Edge and Browser.",
     "keywords": [
         "anolilab",
@@ -287,12 +287,12 @@
         "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
         "@visulima/ansi": "5.0.0",
-        "@visulima/error": "6.1.0",
+        "@visulima/error": "6.1.1",
         "@visulima/fmt": "4.0.0",
         "@visulima/inspector": "2.1.0",
         "@visulima/packem": "catalog:dev",
         "@visulima/redact": "5.0.0",
-        "@visulima/string": "3.1.1",
+        "@visulima/string": "3.1.3",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
         "compromise": "catalog:prod",
