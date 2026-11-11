@@ -1,4 +1,3 @@
-import type { stringify } from "safe-stable-stringify";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { configure as stringifyConfigure } from "safe-stable-stringify";
 import type { LiteralUnion, Primitive } from "type-fest";
@@ -6,6 +5,7 @@ import type { LiteralUnion, Primitive } from "type-fest";
 import { EMPTY_SYMBOL, EXTENDED_RFC_5424_LOG_LEVELS, LOG_TYPES } from "./constants";
 import { CounterManager } from "./counter-manager";
 import RawReporter from "./reporter/raw/raw-reporter.browser";
+import type { StringifyFunction } from "./stringify-function";
 import { TimerManager } from "./timer-manager";
 import type {
     ConstructorOptions,
@@ -123,7 +123,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
 
     protected readonly throttleMin: number;
 
-    protected readonly stringify: typeof stringify;
+    protected readonly stringify: StringifyFunction;
 
     protected groups: string[];
 
@@ -162,7 +162,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
         const parentTypes = (options as any).parentTypes as LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L> | undefined;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-        const parentStringify = (options as any).parentStringify as typeof stringify | undefined;
+        const parentStringify = (options as any).parentStringify as StringifyFunction | undefined;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
         const parentLogLevels = (options as any).parentLogLevels as Record<string, number> | undefined;
 
