@@ -1,3 +1,19 @@
+## @visulima/command-line-args [2.0.2](https://github.com/visulima/visulima/compare/@visulima/command-line-args@2.0.1...@visulima/command-line-args@2.0.2) (2026-11-11)
+
+### Miscellaneous Chores
+
+* point every Discord link at the anolilab server ([#858](https://github.com/visulima/visulima/issues/858)) ([a1008ad](https://github.com/visulima/visulima/commit/a1008adea7b0be4a59ce545b143ee1cfb8b94ec9))
+
+### Tests
+
+* **bench:** use vitest 5 test-context bench ([424a875](https://github.com/visulima/visulima/commit/424a87567a935ae96d1b7d5c8af9f16e2b854fdc))
+* fix colorized fn and shadowed Boolean tests ([#959](https://github.com/visulima/visulima/issues/959)) ([e969a7c](https://github.com/visulima/visulima/commit/e969a7c251c711481c5599448d7aab91b8608bef))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.1.1
+
 ## @visulima/command-line-args [2.0.1](https://github.com/visulima/visulima/compare/%40visulima%2Fcommand-line-args%402.0.0...%40visulima%2Fcommand-line-args%402.0.1) (2026-08-02)
 
 
