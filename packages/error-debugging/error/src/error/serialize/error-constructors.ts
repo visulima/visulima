@@ -25,17 +25,17 @@ const defaultErrorConstructors = /* @__PURE__ */ new Map<string, ErrorConstructo
 
 /**
  * Add a known error constructor to the registry.
- * @param constructor The error constructor to add
+ * @param ErrorClass The error constructor to add
  * @param name Optional custom name to use instead of instance.name
  * @throws {Error} If the constructor is already known or incompatible
  */
-export const addKnownErrorConstructor = (constructor: ErrorConstructor, name?: string): void => {
+export const addKnownErrorConstructor = (ErrorClass: ErrorConstructor, name?: string): void => {
     let instance: Error;
 
     try {
-        instance = new constructor();
+        instance = new ErrorClass();
     } catch (error) {
-        throw new Error(`The error constructor "${constructor.name}" is not compatible`, { cause: error });
+        throw new Error(`The error constructor "${ErrorClass.name}" is not compatible`, { cause: error });
     }
 
     const resolvedName = name ?? instance.name;
@@ -44,7 +44,7 @@ export const addKnownErrorConstructor = (constructor: ErrorConstructor, name?: s
         throw new Error(`The error constructor "${resolvedName}" is already known.`);
     }
 
-    defaultErrorConstructors.set(resolvedName, constructor);
+    defaultErrorConstructors.set(resolvedName, ErrorClass);
 };
 
 /**

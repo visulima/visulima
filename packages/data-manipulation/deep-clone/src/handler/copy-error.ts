@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import type { State } from "../types";
 import copyOwnProperties from "../utils/copy-own-properties";
 
@@ -10,7 +9,8 @@ const copyError = <Value extends EvalError | ExtendedError | RangeError | Refere
     state: State,
 ): Value => {
     // @ts-expect-error - We don't know the type of the object, can be an error
-    const error = new object.constructor(object.message) as EvalError | ExtendedError | RangeError | ReferenceError | SyntaxError | TypeError | URIError;
+    const ErrorClass: new (message: string) => EvalError | ExtendedError | RangeError | ReferenceError | SyntaxError | TypeError | URIError = object.constructor;
+    const error = new ErrorClass(object.message);
 
     state.cache.set(object, error);
 
