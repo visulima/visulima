@@ -1,3 +1,12 @@
+## @visulima/ono [3.0.3](https://github.com/visulima/visulima/compare/@visulima/ono@3.0.2...@visulima/ono@3.0.3) (2026-11-11)
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.1.1
+* **@shikijs/langs:** ^4.4.3 → ^4.6.0
+* **shiki:** ^4.4.3 → ^4.6.0
+
 ## @visulima/ono [3.0.2](https://github.com/visulima/visulima/compare/@visulima/ono@3.0.1...@visulima/ono@3.0.2) (2026-10-23)
 
 
