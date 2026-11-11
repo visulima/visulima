@@ -1,3 +1,15 @@
+## @visulima/package [6.0.1](https://github.com/visulima/visulima/compare/@visulima/package@6.0.0...@visulima/package@6.0.1) (2026-11-11)
+
+### Miscellaneous Chores
+
+* improve npm search metadata ([#979](https://github.com/visulima/visulima/issues/979)) ([3f4ed10](https://github.com/visulima/visulima/commit/3f4ed1087286a57b5abbccbb481e352e8a9d4f58))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 7.0.1
+* **@antfu/install-pkg:** ^2.0.1 → ^2.1.0
+
 ## @visulima/package [6.0.0](https://github.com/visulima/visulima/compare/@visulima/package@5.0.43...@visulima/package@6.0.0) (2026-10-15)
 
 ### ⚠ BREAKING CHANGES
