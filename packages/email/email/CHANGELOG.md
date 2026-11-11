@@ -1,3 +1,15 @@
+## @visulima/email [4.2.1](https://github.com/visulima/visulima/compare/@visulima/email@4.2.0...@visulima/email@4.2.1) (2026-11-11)
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.1.1
+* **@visulima/fs:** upgraded to 7.0.1
+* **@react-email/render:** ^2.1.0 → ^2.2.0
+* **html-to-text:** ^10.0.0 → ^10.0.1
+* **ical-generator:** 11.1.0 → 11.1.3
+* **mime:** ^4.1.0 → ^4.1.2
+
 ## @visulima/email [4.2.0](https://github.com/visulima/visulima/compare/@visulima/email@4.1.0...@visulima/email@4.2.0) (2026-10-23)
 
 ### Features
