@@ -1,3 +1,17 @@
+## @visulima/storage [3.0.1](https://github.com/visulima/visulima/compare/@visulima/storage@3.0.0...@visulima/storage@3.0.1) (2026-11-11)
+
+### Miscellaneous Chores
+
+* improve npm search metadata ([#979](https://github.com/visulima/visulima/issues/979)) ([3f4ed10](https://github.com/visulima/visulima/commit/3f4ed1087286a57b5abbccbb481e352e8a9d4f58))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 7.0.1
+* **@remix-run/multipart-parser:** 1.0.0 → 1.1.1
+* **mime:** ^4.1.0 → ^4.1.2
+* **nanoid:** 6.0.1 → 6.0.2
+
 ## @visulima/storage [3.0.0](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.39...@visulima/storage@3.0.0) (2026-10-15)
 
 ### ⚠ BREAKING CHANGES

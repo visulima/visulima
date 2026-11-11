@@ -1,6 +1,6 @@
 {
     "name": "@visulima/storage",
-    "version": "3.0.0",
+    "version": "3.0.1",
     "description": "Server-side file storage abstraction with S3, Azure, GCS, local filesystem and 20+ backends, plus TUS, multipart and REST upload handlers.",
     "keywords": [
         "anolilab",
@@ -335,7 +335,7 @@
         "@types/ssh2-sftp-client": "9.0.6",
         "@types/supertest": "catalog:types",
         "@vercel/blob": "catalog:dev",
-        "@visulima/fs": "7.0.0",
+        "@visulima/fs": "7.0.1",
         "@visulima/humanizer": "4.0.0",
         "@visulima/packem": "catalog:dev",
         "@visulima/path": "5.0.0",
