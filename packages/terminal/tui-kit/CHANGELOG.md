@@ -1,3 +1,18 @@
+## @visulima/tui-kit [1.0.35](https://github.com/visulima/visulima/compare/@visulima/tui-kit@1.0.34...@visulima/tui-kit@1.0.35) (2026-11-11)
+
+### Miscellaneous Chores
+
+* move the vis packages out to visulima/vis ([#975](https://github.com/visulima/visulima/issues/975)) ([558c24d](https://github.com/visulima/visulima/commit/558c24d2556e7773472d6adafc4908d68e932b35))
+
+
+### Dependencies
+
+* **@shikijs/themes:** ^4.4.3 → ^4.6.0
+* **marked:** ^18.0.9 → ^18.1.3
+* **@shikijs/langs:** ^4.4.3 → ^4.6.0
+* **type-fest:** 5.8.0 → 5.10.0
+* **shiki:** ^4.4.3 → ^4.6.0
+
 ## @visulima/tui-kit [1.0.34](https://github.com/visulima/visulima/compare/@visulima/tui-kit@1.0.33...@visulima/tui-kit@1.0.34) (2026-10-14)
 
 

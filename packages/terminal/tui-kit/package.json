@@ -1,6 +1,6 @@
 {
     "name": "@visulima/tui-kit",
-    "version": "1.0.34",
+    "version": "1.0.35",
     "description": "Component library for @visulima/tui — installable as a package, or copy-pasteable via the shadcn CLI registry",
     "keywords": [
         "cli",
@@ -512,8 +512,8 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/ansi": "4.2.0",
-        "@visulima/colorize": "2.2.0",
+        "@visulima/ansi": "5.0.0",
+        "@visulima/colorize": "3.0.0",
         "@visulima/spinner": "1.0.1",
         "type-fest": "catalog:prod"
     },
