@@ -1,3 +1,14 @@
+## @visulima/tsconfig [3.2.39](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.2.38...@visulima/tsconfig@3.2.39) (2026-11-11)
+
+### Miscellaneous Chores
+
+* improve npm search metadata ([#979](https://github.com/visulima/visulima/issues/979)) ([3f4ed10](https://github.com/visulima/visulima/commit/3f4ed1087286a57b5abbccbb481e352e8a9d4f58))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 7.0.1
+
 ## @visulima/tsconfig [3.2.38](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.2.37...@visulima/tsconfig@3.2.38) (2026-10-15)
 
 
