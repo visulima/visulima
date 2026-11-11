@@ -99,7 +99,7 @@
     "dependencies": {
         "@standard-schema/spec": "^1.1.0",
         "croner": "^10.0.1",
-        "xstate": "^5.32.5"
+        "xstate": "^5.33.4"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
@@ -107,7 +107,7 @@
         "@anolilab/semantic-release-pnpm": "catalog:dev",
         "@anolilab/semantic-release-preset": "catalog:dev",
         "@arethetypeswrong/cli": "catalog:dev",
-        "@electric-sql/pglite": "0.5.4",
+        "@electric-sql/pglite": "0.5.16",
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
         "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
@@ -117,17 +117,17 @@
         "conventional-changelog-conventionalcommits": "catalog:dev",
         "esbuild": "catalog:build",
         "eslint": "catalog:lint",
-        "eslint-plugin-zod": "4.9.1",
+        "eslint-plugin-zod": "4.14.2",
         "fallow": "catalog:lint",
-        "mysql-memory-server": "1.15.0",
-        "mysql2": "^3.23.3",
+        "mysql-memory-server": "1.18.0",
+        "mysql2": "^3.24.6",
         "prettier": "catalog:lint",
         "publint": "catalog:dev",
         "rimraf": "catalog:node",
         "secretlint": "catalog:lint",
         "semantic-release": "catalog:cli",
         "typescript": "catalog:tsc",
-        "unstorage": "^1.17.5",
+        "unstorage": "^1.17.6",
         "vitest": "catalog:test",
         "zod": "catalog:utils"
     },

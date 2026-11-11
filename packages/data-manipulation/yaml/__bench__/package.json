@@ -9,7 +9,7 @@
     "dependencies": {
         "@visulima/yaml": "workspace:*",
         "js-yaml": "4.3.2",
-        "yaml": "2.9.0",
+        "yaml": "2.9.1",
         "yamljs": "0.3.0"
     },
     "devDependencies": {

@@ -110,6 +110,7 @@
         "@anolilab/semantic-release-preset": "catalog:dev",
         "@arethetypeswrong/cli": "catalog:dev",
         "@cloudflare/vitest-pool-workers": "catalog:test",
+        "@mfederczuk/deeptools": "2.1.0-rc01",
         "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
         "@visulima/packem": "catalog:dev",
