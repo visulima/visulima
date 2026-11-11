@@ -1,6 +1,6 @@
 {
     "name": "@visulima/deep-clone",
-    "version": "5.0.0",
+    "version": "5.0.1",
     "description": "Fast deep clone for plain objects, arrays and nested values.",
     "keywords": [
         "anolilab",
