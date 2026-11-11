@@ -1,3 +1,18 @@
+## @visulima/fs [7.0.1](https://github.com/visulima/visulima/compare/@visulima/fs@7.0.0...@visulima/fs@7.0.1) (2026-11-11)
+
+### Bug Fixes
+
+* **deps:** patch node-forge, fast-xml-parser and glob ([63b8070](https://github.com/visulima/visulima/commit/63b8070d7f5eef8b2595e1712565e24d66b5eafc))
+
+### Tests
+
+* **bench:** use vitest 5 test-context bench ([424a875](https://github.com/visulima/visulima/commit/424a87567a935ae96d1b7d5c8af9f16e2b854fdc))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.1.1
+
 ## @visulima/fs [7.0.0](https://github.com/visulima/visulima/compare/@visulima/fs@6.1.0...@visulima/fs@7.0.0) (2026-10-15)
 
 ### ⚠ BREAKING CHANGES
