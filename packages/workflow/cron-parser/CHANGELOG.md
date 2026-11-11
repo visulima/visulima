@@ -1,3 +1,13 @@
+## @visulima/cron-parser [2.0.1](https://github.com/visulima/visulima/compare/@visulima/cron-parser@2.0.0...@visulima/cron-parser@2.0.1) (2026-11-11)
+
+### Bug Fixes
+
+* rename lowercase constructor parameters ([4cadae2](https://github.com/visulima/visulima/commit/4cadae228d052a6dd81e3f2a1b10bb49e5e81386))
+
+### Tests
+
+* **bench:** use vitest 5 test-context bench ([424a875](https://github.com/visulima/visulima/commit/424a87567a935ae96d1b7d5c8af9f16e2b854fdc))
+
 ## @visulima/cron-parser [2.0.0](https://github.com/visulima/visulima/compare/@visulima/cron-parser@1.1.0...@visulima/cron-parser@2.0.0) (2026-10-15)
 
 ### ⚠ BREAKING CHANGES
