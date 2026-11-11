@@ -1,9 +1,9 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { serializeError } from "@visulima/error/error";
+import type { stringify } from "safe-stable-stringify";
 import type { LiteralUnion } from "type-fest";
 
 import { EMPTY_SYMBOL } from "../../constants";
-import type { StringifyFunction } from "../../stringify-function";
 import type { ExtendedRfc5424LogLevels, ReadonlyMeta, StringifyAwareReporter } from "../../types";
 
 /**
@@ -39,7 +39,7 @@ export type AbstractJsonReporterOptions = {
  */
 export abstract class AbstractJsonReporter<L extends string = string> implements StringifyAwareReporter<L> {
     /** Custom stringify function for object serialization */
-    protected stringify: StringifyFunction | undefined;
+    protected stringify: typeof stringify | undefined;
 
     /** Error serialization options */
     protected errorOptions: AbstractJsonReporterOptions["error"];
@@ -56,7 +56,7 @@ export abstract class AbstractJsonReporter<L extends string = string> implements
      * Sets a custom stringify function for object serialization.
      * @param function_ The stringify function to use for serialization
      */
-    public setStringify(function_: StringifyFunction): void {
+    public setStringify(function_: typeof stringify): void {
         this.stringify = function_;
     }
 
@@ -104,7 +104,7 @@ export abstract class AbstractJsonReporter<L extends string = string> implements
         }
 
         // eslint-disable-next-line no-underscore-dangle
-        this._log((this.stringify as StringifyFunction)(rest), type.level);
+        this._log((this.stringify as typeof stringify)(rest), type.level);
     }
 
     /**

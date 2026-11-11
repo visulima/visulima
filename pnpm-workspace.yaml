@@ -275,7 +275,7 @@ catalogs:
     restore-cursor: ^5.1.0
     rotating-file-stream: ^3.2.10
     safe-regex2: 5.1.2
-    safe-stable-stringify: ^3.0.0
+    safe-stable-stringify: ^2.5.0
     serve: ^14.2.7
     sharp: ^0.35.5
     smol-toml: ^1.9.1

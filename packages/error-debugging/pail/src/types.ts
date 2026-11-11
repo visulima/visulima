@@ -1,8 +1,7 @@
 import type { AnsiColors } from "@visulima/colorize";
 import type { InteractiveManager } from "@visulima/interactive-manager";
+import type { stringify } from "safe-stable-stringify";
 import type { LiteralUnion, Primitive } from "type-fest";
-
-import type { StringifyFunction } from "./stringify-function";
 
 /**
  * Global namespace for extending Pail's metadata interface.
@@ -286,6 +285,6 @@ export interface ParentLoggerOptimization<T extends string = string, L extends s
     parentLogLevels?: Record<string, number>;
     parentLongestLabel?: string;
     parentMessages?: { timerEnd: string; timerStart: string };
-    parentStringify?: StringifyFunction;
+    parentStringify?: typeof stringify;
     parentTypes?: LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>;
 }
