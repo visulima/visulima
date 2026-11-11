@@ -1,3 +1,12 @@
+## @visulima/dev-toolbar [1.1.20](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.1.19...@visulima/dev-toolbar@1.1.20) (2026-11-11)
+
+
+### Dependencies
+
+* **@babel/generator:** ^8.0.0 → ^8.1.0
+* **@babel/parser:** ^8.0.4 → ^8.1.0
+* **@babel/traverse:** ^8.0.4 → ^8.1.0
+
 ## @visulima/dev-toolbar [1.1.19](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.1.18...@visulima/dev-toolbar@1.1.19) (2026-10-23)
 
 ### Miscellaneous Chores
