@@ -1,3 +1,9 @@
+## @visulima/disposable-email-domains [2.0.25](https://github.com/visulima/visulima/compare/@visulima/disposable-email-domains@2.0.24...@visulima/disposable-email-domains@2.0.25) (2026-11-14)
+
+### Bug Fixes
+
+* sync data sources (disposable email domains) ([e28576c](https://github.com/visulima/visulima/commit/e28576cf1627df464ecf55f00058581635d6d449))
+
 ## @visulima/disposable-email-domains [2.0.24](https://github.com/visulima/visulima/compare/@visulima/disposable-email-domains@2.0.23...@visulima/disposable-email-domains@2.0.24) (2026-11-13)
 
 ### Bug Fixes
