@@ -54,26 +54,26 @@ pnpm add @visulima/disposable-email-domains
 
 | Repository | Domains | Success | Performance |
 |------------|---------|---------|-------------|
-| disposable/disposable-email-domains | 109,514 | ✅ | 0.54s (1.7 MB) |
-| willwhite/freemail | 88,162 | ✅ | 0.44s (1.3 MB) |
-| FGRibreau/mailchecker | 57,702 | ✅ | 0.11s (864.3 KB) |
-| wesbos/burner-email-providers | 27,277 | ✅ | 0.05s (388.0 KB) |
+| disposable/disposable-email-domains | 109,610 | ✅ | 0.69s (1.7 MB) |
+| willwhite/freemail | 88,162 | ✅ | 0.55s (1.3 MB) |
+| FGRibreau/mailchecker | 57,702 | ✅ | 0.06s (864.3 KB) |
+| wesbos/burner-email-providers | 27,277 | ✅ | 0.17s (388.0 KB) |
 | groundcat/disposable-email-domain-list | 18,950 | ✅ | 0.05s (287.7 KB) |
-| 7c/fakefilter | 10,704 | ✅ | 0.02s (146.7 KB) |
-| sublime-security/static-files | 10,524 | ✅ | 0.31s (144.0 KB) |
-| disposable-email-domains/disposable-email-domains | 10,236 | ✅ | 0.15s (144.8 KB) |
-| eser/sanitizer-svc | 3,855 | ✅ | 0.18s (48.9 KB) |
-| unkn0w/disposable-email-domain-list | 3,616 | ✅ | 0.02s (45.7 KB) |
-| MattKetmo/EmailChecker | 2,515 | ✅ | 0.12s (32.4 KB) |
-| GeroldSetz/emailondeck.com-domains | 1,121 | ✅ | 0.17s (15.4 KB) |
-| castle/disposable-email-domains | 1,000 | ✅ | 0.19s (12.4 KB) |
-| jespernissen/disposable-maildomain-list | 971 | ✅ | 0.10s (12.5 KB) |
-| TheDahoom/disposable-email | 18 | ✅ | 0.17s (234 B) |
+| 7c/fakefilter | 10,701 | ✅ | 0.04s (146.6 KB) |
+| sublime-security/static-files | 10,524 | ✅ | 0.09s (144.0 KB) |
+| disposable-email-domains/disposable-email-domains | 10,274 | ✅ | 0.19s (145.5 KB) |
+| eser/sanitizer-svc | 3,855 | ✅ | 0.28s (48.9 KB) |
+| unkn0w/disposable-email-domain-list | 3,616 | ✅ | 0.10s (45.7 KB) |
+| MattKetmo/EmailChecker | 2,515 | ✅ | 0.11s (32.4 KB) |
+| GeroldSetz/emailondeck.com-domains | 1,121 | ✅ | 0.18s (15.4 KB) |
+| castle/disposable-email-domains | 1,000 | ✅ | 0.04s (12.4 KB) |
+| jespernissen/disposable-maildomain-list | 971 | ✅ | 0.12s (12.5 KB) |
+| TheDahoom/disposable-email | 18 | ✅ | 0.20s (234 B) |
 
 <!-- END_PLACEHOLDER_CONTRIBUTING -->
 <!-- START_PLACEHOLDER_LAST_UPDATED -->
 
-_Last updated: 2026-11-15_
+_Last updated: 2026-11-16_
 
 <!-- END_PLACEHOLDER_LAST_UPDATED -->
 
