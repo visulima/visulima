@@ -23,6 +23,10 @@
 
 </div>
 
+## Commercial support
+
+Visulima is maintained by [Daniel Bannert](https://github.com/prisis). For contract work on web and AI products, from a single feature to a full project, [book a free first call](https://anolilab.com/contact?utm_source=github&utm_medium=readme&utm_campaign=visulima) with Anolilab.
+
 ---
 
 <div align="center">
