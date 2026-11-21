@@ -54,26 +54,26 @@ pnpm add @visulima/disposable-email-domains
 
 | Repository | Domains | Success | Performance |
 |------------|---------|---------|-------------|
-| disposable/disposable-email-domains | 109,887 | ✅ | 0.40s (1.7 MB) |
-| willwhite/freemail | 88,162 | ✅ | 0.42s (1.3 MB) |
-| FGRibreau/mailchecker | 57,701 | ✅ | 0.33s (864.3 KB) |
+| disposable/disposable-email-domains | 109,887 | ✅ | 0.63s (1.7 MB) |
+| willwhite/freemail | 88,162 | ✅ | 0.57s (1.3 MB) |
+| FGRibreau/mailchecker | 57,701 | ✅ | 0.13s (864.3 KB) |
 | wesbos/burner-email-providers | 27,277 | ✅ | 0.05s (388.0 KB) |
 | groundcat/disposable-email-domain-list | 25,378 | ✅ | 0.06s (451.5 KB) |
 | 7c/fakefilter | 10,704 | ✅ | 0.02s (146.6 KB) |
-| sublime-security/static-files | 10,524 | ✅ | 0.20s (144.0 KB) |
-| disposable-email-domains/disposable-email-domains | 10,400 | ✅ | 0.15s (147.4 KB) |
-| eser/sanitizer-svc | 3,855 | ✅ | 0.16s (48.9 KB) |
+| sublime-security/static-files | 10,524 | ✅ | 0.13s (144.0 KB) |
+| disposable-email-domains/disposable-email-domains | 10,400 | ✅ | 0.17s (147.4 KB) |
+| eser/sanitizer-svc | 3,855 | ✅ | 0.17s (48.9 KB) |
 | unkn0w/disposable-email-domain-list | 3,616 | ✅ | 0.01s (45.7 KB) |
-| MattKetmo/EmailChecker | 2,515 | ✅ | 0.08s (32.4 KB) |
-| GeroldSetz/emailondeck.com-domains | 1,121 | ✅ | 0.15s (15.4 KB) |
-| castle/disposable-email-domains | 1,000 | ✅ | 0.02s (12.2 KB) |
-| jespernissen/disposable-maildomain-list | 969 | ✅ | 0.09s (12.4 KB) |
-| TheDahoom/disposable-email | 18 | ✅ | 0.15s (234 B) |
+| MattKetmo/EmailChecker | 2,515 | ✅ | 0.11s (32.4 KB) |
+| GeroldSetz/emailondeck.com-domains | 1,121 | ✅ | 0.17s (15.4 KB) |
+| castle/disposable-email-domains | 1,000 | ✅ | 0.01s (12.2 KB) |
+| jespernissen/disposable-maildomain-list | 969 | ✅ | 0.11s (12.4 KB) |
+| TheDahoom/disposable-email | 18 | ✅ | 0.17s (234 B) |
 
 <!-- END_PLACEHOLDER_CONTRIBUTING -->
 <!-- START_PLACEHOLDER_LAST_UPDATED -->
 
-_Last updated: 2026-11-20_
+_Last updated: 2026-11-21_
 
 <!-- END_PLACEHOLDER_LAST_UPDATED -->
 
