@@ -54,26 +54,26 @@ pnpm add @visulima/disposable-email-domains
 
 | Repository | Domains | Success | Performance |
 |------------|---------|---------|-------------|
-| disposable/disposable-email-domains | 110,081 | ✅ | 0.45s (1.7 MB) |
-| willwhite/freemail | 88,162 | ✅ | 0.39s (1.3 MB) |
-| FGRibreau/mailchecker | 57,703 | ✅ | 0.31s (864.3 KB) |
-| wesbos/burner-email-providers | 27,277 | ✅ | 0.25s (388.0 KB) |
-| groundcat/disposable-email-domain-list | 22,849 | ✅ | 0.13s (408.3 KB) |
-| 7c/fakefilter | 10,686 | ✅ | 0.02s (146.3 KB) |
-| sublime-security/static-files | 10,524 | ✅ | 0.08s (144.0 KB) |
-| disposable-email-domains/disposable-email-domains | 10,455 | ✅ | 0.14s (148.2 KB) |
-| eser/sanitizer-svc | 3,855 | ✅ | 0.25s (48.9 KB) |
-| unkn0w/disposable-email-domain-list | 3,616 | ✅ | 0.01s (45.7 KB) |
-| MattKetmo/EmailChecker | 2,515 | ✅ | 0.12s (32.4 KB) |
-| GeroldSetz/emailondeck.com-domains | 1,121 | ✅ | 0.21s (15.4 KB) |
-| castle/disposable-email-domains | 1,000 | ✅ | 0.02s (12.2 KB) |
-| jespernissen/disposable-maildomain-list | 969 | ✅ | 0.13s (12.4 KB) |
-| TheDahoom/disposable-email | 18 | ✅ | 0.22s (234 B) |
+| disposable/disposable-email-domains | 110,380 | ✅ | 0.44s (1.7 MB) |
+| willwhite/freemail | 88,162 | ✅ | 0.33s (1.3 MB) |
+| FGRibreau/mailchecker | 57,703 | ✅ | 0.04s (864.3 KB) |
+| wesbos/burner-email-providers | 27,277 | ✅ | 0.03s (388.0 KB) |
+| groundcat/disposable-email-domain-list | 22,849 | ✅ | 0.07s (408.3 KB) |
+| 7c/fakefilter | 10,681 | ✅ | 0.10s (146.2 KB) |
+| sublime-security/static-files | 10,524 | ✅ | 0.21s (144.0 KB) |
+| disposable-email-domains/disposable-email-domains | 10,455 | ✅ | 0.09s (148.2 KB) |
+| eser/sanitizer-svc | 3,855 | ✅ | 0.18s (48.9 KB) |
+| unkn0w/disposable-email-domain-list | 3,616 | ✅ | 0.06s (45.7 KB) |
+| MattKetmo/EmailChecker | 2,515 | ✅ | 0.14s (32.4 KB) |
+| GeroldSetz/emailondeck.com-domains | 1,121 | ✅ | 0.12s (15.4 KB) |
+| castle/disposable-email-domains | 1,000 | ✅ | 0.14s (12.3 KB) |
+| jespernissen/disposable-maildomain-list | 969 | ✅ | 0.10s (12.4 KB) |
+| TheDahoom/disposable-email | 18 | ✅ | 0.20s (234 B) |
 
 <!-- END_PLACEHOLDER_CONTRIBUTING -->
 <!-- START_PLACEHOLDER_LAST_UPDATED -->
 
-_Last updated: 2026-11-26_
+_Last updated: 2026-11-27_
 
 <!-- END_PLACEHOLDER_LAST_UPDATED -->
 
